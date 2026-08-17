@@ -8,6 +8,7 @@
  * REGRA DE OURO 3: os âncoras abaixo são canônicos (copiados do CLAUDE.md).
  */
 import {
+  calendario,
   cea,
   clusters,
   estilistas,
@@ -16,7 +17,15 @@ import {
   produtoPorCod,
   type LojaNomeada,
 } from '@/lib/cea'
-import { formatBRLCompact, formatDelta, formatNum, formatPct, formatPP } from '@/lib/format'
+import {
+  dataDoSnapshot,
+  formatBRLCompact,
+  formatDelta,
+  formatNum,
+  formatPct,
+  formatPP,
+  semanaISO,
+} from '@/lib/format'
 
 /* ================================================================= SEED ==== */
 
@@ -1278,3 +1287,326 @@ export function resumoIA(): BulletResumo[] {
     },
   ]
 }
+
+/* ============================= 20. WORKFLOW DA COLEÇÃO — 16 ETAPAS ======== */
+
+export type StatusEtapa = 'concluida' | 'atual' | 'pendente'
+
+export type Etapa = { numero: number; nome: string; status: StatusEtapa }
+
+/**
+ * As 16 etapas do processo de compra, na ordem e com os status da spec.
+ * A etapa atual é a Lista de Compras (âncora COLECAO.etapaAtual).
+ */
+export const ETAPAS_WORKFLOW: Etapa[] = [
+  'Workshop Planejamento',
+  'Atualização do Plano',
+  'Workshop Estilo',
+  'Análise Performance',
+  'Lista de Compras',
+  'Mapa da Coleção',
+  'Double Check',
+  'Montagem Line',
+  'Negociação',
+  'Emissão Pedidos',
+  'Aprovações',
+  'Agendamento',
+  'Entrega CD',
+  'Envio Lojas',
+  'Acompanhamento',
+  'Ajustes do Plano',
+].map((nome, i) => {
+  const indiceAtual = 4 // Lista de Compras é a 5ª etapa
+  return {
+    numero: i + 1,
+    nome,
+    status: i < indiceAtual ? 'concluida' : i === indiceAtual ? 'atual' : 'pendente',
+  } as Etapa
+})
+
+/* -------------------------------------------------- áreas e responsáveis -- */
+
+export type Area = 'Estilo' | 'Planejamento' | 'Compras' | 'Importação'
+
+export const AREAS: Area[] = ['Estilo', 'Planejamento', 'Compras', 'Importação']
+
+/** Quem responde por cada área (pessoas FICTÍCIAS do snapshot). */
+export const RESPONSAVEIS: { nome: string; area: Area; time: string }[] = [
+  { nome: PLANNER.nome, area: 'Planejamento', time: PLANNER.area },
+  ...estilistas.map((e) => ({
+    nome: e.nome,
+    area: (e.time.includes('Denim') || e.time.includes('Infantil') ? 'Compras' : 'Estilo') as Area,
+    time: e.time,
+  })),
+  { nome: 'Sérgio Matos', area: 'Importação', time: 'Importação & Sourcing' },
+]
+
+/* ------------------------------------------------ 21 entregas do kanban -- */
+
+export type Entrega = {
+  id: string
+  etapa: number
+  titulo: string
+  responsavel: string
+  area: Area
+  /** semana ISO do prazo — o seletor de semana da tela compara com esta */
+  semana: number
+  comentarios: number
+  anexos: number
+  /** referências reais citadas no card */
+  refs: string[]
+}
+
+/**
+ * As 21 entregas da coleção (âncora COLECAO.entregas), distribuídas pelas
+ * etapas. Os cards citam referências REAIS do catálogo.
+ */
+export const ENTREGAS_WORKFLOW: Entrega[] = [
+  // etapas concluídas
+  { id: 'E01', etapa: 1, titulo: 'Premissas de verba e sazonalidade fechadas', responsavel: PLANNER.nome, area: 'Planejamento', semana: 12, comentarios: 4, anexos: 2, refs: [] },
+  { id: 'E02', etapa: 1, titulo: 'Calendário de compras validado com Importação', responsavel: 'Sérgio Matos', area: 'Importação', semana: 12, comentarios: 2, anexos: 1, refs: [] },
+  { id: 'E03', etapa: 2, titulo: 'Plano revisado após leitura do 1T26', responsavel: PLANNER.nome, area: 'Planejamento', semana: 14, comentarios: 6, anexos: 3, refs: [] },
+  { id: 'E04', etapa: 3, titulo: 'Cartela Tropicália aprovada (mocha + floral pequeno)', responsavel: 'Helena Prado', area: 'Estilo', semana: 15, comentarios: 9, anexos: 5, refs: [] },
+  { id: 'E05', etapa: 3, titulo: 'Cápsula Mindse7 definida', responsavel: 'Théo Lima', area: 'Estilo', semana: 16, comentarios: 3, anexos: 4, refs: [] },
+  { id: 'E06', etapa: 4, titulo: 'Leitura de best e slow sellers do verão anterior', responsavel: PLANNER.nome, area: 'Planejamento', semana: 17, comentarios: 5, anexos: 2, refs: ['1083993'] },
+  { id: 'E07', etapa: 4, titulo: 'Performance de wide leg por lavagem', responsavel: 'Rafael Nunes', area: 'Compras', semana: 18, comentarios: 4, anexos: 3, refs: ['1033472'] },
+  // etapa atual — Lista de Compras
+  { id: 'E08', etapa: 5, titulo: 'Lista de compras do dorsal de básicos', responsavel: 'Letícia Ramos', area: 'Compras', semana: 20, comentarios: 7, anexos: 2, refs: ['1049412', '1046556'] },
+  { id: 'E09', etapa: 5, titulo: 'Recompra da Wide Leg 100% algodão', responsavel: 'Rafael Nunes', area: 'Compras', semana: 20, comentarios: 5, anexos: 1, refs: ['1033472'] },
+  { id: 'E10', etapa: 5, titulo: 'Programa de 6 cores do vestido de linho', responsavel: 'Helena Prado', area: 'Estilo', semana: 20, comentarios: 8, anexos: 4, refs: ['1075684'] },
+  { id: 'E11', etapa: 5, titulo: 'Grade do sutiã de renda por tamanho', responsavel: 'Letícia Ramos', area: 'Compras', semana: 21, comentarios: 3, anexos: 2, refs: ['7413962'] },
+  { id: 'E12', etapa: 5, titulo: 'Quantidades da vitrine de festa', responsavel: 'Júlia Sales', area: 'Estilo', semana: 21, comentarios: 6, anexos: 3, refs: ['1086292', '1096942'] },
+  // etapas pendentes
+  { id: 'E13', etapa: 6, titulo: 'Parede de setembro — zonas Vitrine/Dorsal/Need', responsavel: 'Helena Prado', area: 'Estilo', semana: 22, comentarios: 2, anexos: 6, refs: [] },
+  { id: 'E14', etapa: 7, titulo: 'Double check de coerência de clima por cluster', responsavel: PLANNER.nome, area: 'Planejamento', semana: 23, comentarios: 1, anexos: 1, refs: ['1096942'] },
+  { id: 'E15', etapa: 8, titulo: 'Montagem do line com 3 fornecedores', responsavel: 'Rafael Nunes', area: 'Compras', semana: 24, comentarios: 0, anexos: 2, refs: [] },
+  { id: 'E16', etapa: 9, titulo: 'Negociação de preço do patchwork', responsavel: 'Rafael Nunes', area: 'Compras', semana: 25, comentarios: 2, anexos: 1, refs: ['1099133'] },
+  { id: 'E17', etapa: 10, titulo: 'OC da Wide Leg para o CD Barueri', responsavel: 'Rafael Nunes', area: 'Compras', semana: 26, comentarios: 1, anexos: 2, refs: ['1033472'] },
+  { id: 'E18', etapa: 11, titulo: 'Aprovação de cor do patchwork bicolor', responsavel: 'Helena Prado', area: 'Estilo', semana: 26, comentarios: 4, anexos: 3, refs: ['1099133'] },
+  { id: 'E19', etapa: 12, titulo: 'Agendamento de recebimento no CD RJ', responsavel: 'Sérgio Matos', area: 'Importação', semana: 28, comentarios: 0, anexos: 1, refs: [] },
+  { id: 'E20', etapa: 13, titulo: 'Entrega do vestido de linho — D-15', responsavel: 'Sérgio Matos', area: 'Importação', semana: 30, comentarios: 3, anexos: 2, refs: ['1075684'] },
+  { id: 'E21', etapa: 15, titulo: 'Acompanhamento de reposição de NOS', responsavel: 'Letícia Ramos', area: 'Compras', semana: 32, comentarios: 2, anexos: 1, refs: ['1049412', '7413962'] },
+]
+
+/* ==================== 21. CALENDÁRIO ANUAL DE COMPRAS (Gantt 52 semanas) == */
+
+export const ANO_CALENDARIO = 2026
+export const SEMANAS_NO_ANO = 52
+
+export type Trilha = 'Nacional' | 'Importado'
+
+export type Campanha = {
+  nome: string
+  semanaInicio: number
+  semanaFim: number
+  /** true = confirmada em fonte pública (release/site), false = janela padrão de varejo */
+  real: boolean
+  obs?: string
+}
+
+/** Meses do snapshot → janela de semanas ISO do mês em 2026. */
+const MES_PARA_NUMERO: Record<string, number> = {
+  Jan: 1, Fev: 2, Mar: 3, Abr: 4, Mai: 5, Jun: 6,
+  Jul: 7, Ago: 8, Set: 9, Out: 10, Nov: 11, Dez: 12,
+}
+
+function semanasDoMes(mes: string): [number, number] {
+  const m = MES_PARA_NUMERO[mes]
+  const primeiro = new Date(Date.UTC(ANO_CALENDARIO, m - 1, 1))
+  const ultimo = new Date(Date.UTC(ANO_CALENDARIO, m, 0))
+  return [semanaISO(primeiro), Math.min(semanaISO(ultimo), SEMANAS_NO_ANO)]
+}
+
+/**
+ * Linha CAMPANHAS do Gantt, derivada do calendário comercial REAL do snapshot.
+ * Datas exatas viram janela de 3 semanas (2 de preparação + a semana do evento),
+ * convenção de campanha no varejo. Eventos de mês/período usam o mês inteiro.
+ */
+export const CAMPANHAS: Campanha[] = [
+  // liquidação de janeiro: janela padrão pós-Natal, não vem do snapshot
+  { nome: 'Liquidação de Verão', semanaInicio: 1, semanaFim: 4, real: false },
+  ...calendario
+    .filter((e): e is typeof e & { evento: string } => Boolean(e.evento))
+    .map((e) => {
+      if (e.data) {
+        const semana = semanaISO(dataDoSnapshot(e.data))
+        return {
+          nome: e.evento,
+          semanaInicio: Math.max(1, semana - 2),
+          semanaFim: semana,
+          real: true,
+          obs: e.obs,
+        }
+      }
+      if (e.periodo) {
+        // "Jun–Jul/2026" → do início de junho ao fim de julho
+        const [de, ate] = e.periodo.replace(/\/\d+/, '').split('–')
+        const [ini] = semanasDoMes(de.trim())
+        const [, fim] = semanasDoMes(ate.trim())
+        return { nome: e.evento, semanaInicio: ini, semanaFim: fim, real: true, obs: e.obs }
+      }
+      const [ini, fim] = semanasDoMes(e.mes ?? 'Jan')
+      return { nome: e.evento, semanaInicio: ini, semanaFim: fim, real: true, obs: e.obs }
+    }),
+].sort((a, b) => a.semanaInicio - b.semanaInicio)
+
+/* ------------------------------------------------- atividades do Gantt --- */
+
+export type Atividade = {
+  id: string
+  colecao: string
+  trilha: Trilha
+  area: Area
+  nome: string
+  semanaInicio: number
+  semanaFim: number
+}
+
+/** Pool de atividades por área, com deslocamento e duração em semanas. */
+const MODELO_ATIVIDADES: Record<Area, { nome: string; offset: number; duracao: number; trilha: Trilha }[]> = {
+  Estilo: [
+    { nome: 'Workshop de Estilo', offset: 0, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Pesquisa de tendência', offset: 1, duracao: 3, trilha: 'Nacional' },
+    { nome: 'Cartela de cores', offset: 3, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Mapa da Coleção', offset: 5, duracao: 3, trilha: 'Nacional' },
+    { nome: 'Double check de estilo', offset: 8, duracao: 1, trilha: 'Nacional' },
+    { nome: 'Aprovação de cor importada', offset: 6, duracao: 2, trilha: 'Importado' },
+  ],
+  Planejamento: [
+    { nome: 'Workshop de Planejamento', offset: 0, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Atualização do Plano', offset: 2, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Análise de performance', offset: 3, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Habilitadores e clusterização', offset: 5, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Retroalimentação do plano', offset: 9, duracao: 2, trilha: 'Nacional' },
+  ],
+  Compras: [
+    { nome: 'Lista de Compras', offset: 6, duracao: 3, trilha: 'Nacional' },
+    { nome: 'Montagem do Line', offset: 9, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Negociação nacional', offset: 10, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Emissão de pedidos', offset: 12, duracao: 2, trilha: 'Nacional' },
+    { nome: 'Lista de Compras importada', offset: 2, duracao: 3, trilha: 'Importado' },
+    { nome: 'Negociação importada', offset: 5, duracao: 3, trilha: 'Importado' },
+    { nome: 'Emissão de pedidos importados', offset: 8, duracao: 2, trilha: 'Importado' },
+  ],
+  Importação: [
+    { nome: 'Sourcing Ásia', offset: 0, duracao: 4, trilha: 'Importado' },
+    { nome: 'Aprovação de amostra', offset: 4, duracao: 2, trilha: 'Importado' },
+    { nome: 'Reserva de container', offset: 9, duracao: 1, trilha: 'Importado' },
+    { nome: 'Booking e embarque', offset: 10, duracao: 2, trilha: 'Importado' },
+    { nome: 'Trânsito marítimo', offset: 12, duracao: 6, trilha: 'Importado' },
+    { nome: 'Desembaraço aduaneiro', offset: 18, duracao: 2, trilha: 'Importado' },
+    { nome: 'Inspeção de qualidade', offset: 20, duracao: 1, trilha: 'Importado' },
+    { nome: 'Entrega no CD', offset: 21, duracao: 1, trilha: 'Importado' },
+    { nome: 'Envio para lojas', offset: 22, duracao: 2, trilha: 'Importado' },
+  ],
+}
+
+/**
+ * As 4 coleções do calendário. A contagem por área é explícita para fechar
+ * exatamente os cards-âncora da tela: Estilo 23 · Planejamento 17 ·
+ * Compras 26 · Importação 36 (102 atividades no ano).
+ */
+const COLECOES_CALENDARIO: {
+  nome: string
+  semanaInicio: number
+  quantidades: Record<Area, number>
+}[] = [
+  { nome: 'Verão 1 · 26-27', semanaInicio: 3, quantidades: { Estilo: 6, Planejamento: 4, Compras: 7, Importação: 9 } },
+  { nome: 'Verão 2 · 27', semanaInicio: 15, quantidades: { Estilo: 6, Planejamento: 4, Compras: 7, Importação: 9 } },
+  { nome: 'Inverno 1 · 27', semanaInicio: 24, quantidades: { Estilo: 6, Planejamento: 5, Compras: 6, Importação: 9 } },
+  { nome: 'Inverno 2 · 27', semanaInicio: 33, quantidades: { Estilo: 5, Planejamento: 4, Compras: 6, Importação: 9 } },
+]
+
+export const COLECOES_DO_CALENDARIO = COLECOES_CALENDARIO.map((c) => c.nome)
+
+function gerarAtividades(): Atividade[] {
+  const out: Atividade[] = []
+  for (const col of COLECOES_CALENDARIO) {
+    for (const area of AREAS) {
+      const modelos = MODELO_ATIVIDADES[area].slice(0, col.quantidades[area])
+      modelos.forEach((m, i) => {
+        const inicio = Math.min(col.semanaInicio + m.offset, SEMANAS_NO_ANO)
+        out.push({
+          id: `${col.nome}-${area}-${i}`,
+          colecao: col.nome,
+          trilha: m.trilha,
+          area,
+          nome: m.nome,
+          semanaInicio: inicio,
+          semanaFim: Math.min(inicio + m.duracao - 1, SEMANAS_NO_ANO),
+        })
+      })
+    }
+  }
+  return out
+}
+
+export const ATIVIDADES_CALENDARIO: Atividade[] = gerarAtividades()
+
+/** Cards de contagem do topo do calendário: 23 / 17 / 26 / 36. */
+export const CONTAGEM_POR_AREA = AREAS.map((area) => ({
+  area,
+  total: ATIVIDADES_CALENDARIO.filter((a) => a.area === area).length,
+}))
+
+/* --------------------------------------------------------- conflitos ----- */
+
+export type Conflito = {
+  id: string
+  titulo: string
+  descricao: string
+  atividadeId: string
+  /** semanas a deslocar quando a sugestão é aplicada */
+  deslocamento: number
+  sugestao: string
+}
+
+/**
+ * Os 2 conflitos abertos do âncora. Cada um aponta para uma atividade real do
+ * Gantt: aplicar a sugestão desloca a barra e o conflito desaparece.
+ */
+export const CONFLITOS_CALENDARIO: Conflito[] = [
+  {
+    id: 'C1',
+    titulo: 'Estilo em duas coleções na mesma semana',
+    descricao:
+      'O Workshop de Estilo do Inverno 1 abre na mesma semana em que o Mapa da Coleção do Verão 2 precisa fechar. A mesma equipe de estilo responde pelos dois.',
+    atividadeId: 'Inverno 1 · 27-Estilo-0',
+    deslocamento: 2,
+    sugestao: 'Adiar o Workshop de Estilo do Inverno 1 em 2 semanas',
+  },
+  {
+    id: 'C2',
+    titulo: 'Recebimento no CD durante a Black Friday',
+    descricao:
+      'A entrega no CD do Inverno 2 cai na janela de Black Friday, quando os dois CDs operam no limite para reposição de loja.',
+    atividadeId: 'Inverno 2 · 27-Importação-7',
+    deslocamento: -3,
+    sugestao: 'Antecipar a entrega no CD em 3 semanas',
+  },
+]
+
+/* -------------------------------------------------------- premissas ------ */
+
+export const PREMISSAS_CALENDARIO: { titulo: string; texto: string }[] = [
+  {
+    titulo: 'Lead time nacional de 45 dias',
+    texto:
+      'Da emissão do pedido à entrega no CD. Fornecedores de malha e jeans do Nordeste e do Sul operam nessa janela.',
+  },
+  {
+    titulo: 'Lead time importado de 90 dias',
+    texto:
+      'Sourcing na Ásia, trânsito marítimo e desembaraço. É o que empurra a lista de compras importada para antes da nacional.',
+  },
+  {
+    titulo: 'Coleção de 120 dias em loja',
+    texto:
+      'O segmento N5 separa a coleção (120 dias) do dorsal/NOS, que é reposto continuamente e não entra neste calendário.',
+  },
+  {
+    titulo: 'Dois CDs, uma janela',
+    texto:
+      'Barueri e Rio de Janeiro compartilham o pico de recebimento. Duas coleções não podem descarregar na mesma semana.',
+  },
+]

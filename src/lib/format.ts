@@ -92,3 +92,39 @@ export function tendencia(v: number): Tendencia {
   if (v < 0) return 'baixa'
   return 'neutra'
 }
+
+/* ------------------------------------------------- semanas ISO e datas ---- */
+
+/** Segunda-feira da semana ISO informada (base do Gantt anual). */
+export function segundaDaSemanaISO(semana: number, ano = 2026): Date {
+  const jan4 = new Date(Date.UTC(ano, 0, 4))
+  const diaDeJan4 = (jan4.getUTCDay() + 6) % 7 // 0 = segunda
+  const segundaDaSemana1 = new Date(jan4)
+  segundaDaSemana1.setUTCDate(jan4.getUTCDate() - diaDeJan4)
+  const d = new Date(segundaDaSemana1)
+  d.setUTCDate(segundaDaSemana1.getUTCDate() + (semana - 1) * 7)
+  return d
+}
+
+/** Número da semana ISO de uma data. */
+export function semanaISO(data: Date): number {
+  const d = new Date(Date.UTC(data.getUTCFullYear(), data.getUTCMonth(), data.getUTCDate()))
+  const diaDaSemana = (d.getUTCDay() + 6) % 7
+  d.setUTCDate(d.getUTCDate() - diaDaSemana + 3) // quinta da mesma semana ISO
+  const jan4 = new Date(Date.UTC(d.getUTCFullYear(), 0, 4))
+  const diaDeJan4 = (jan4.getUTCDay() + 6) % 7
+  const segundaDaSemana1 = new Date(jan4)
+  segundaDaSemana1.setUTCDate(jan4.getUTCDate() - diaDeJan4)
+  return Math.floor((d.getTime() - segundaDaSemana1.getTime()) / (7 * 86_400_000)) + 1
+}
+
+/** 12/05 — data curta para cards de kanban. */
+export function formatDataCurta(d: Date): string {
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })
+}
+
+/** "10/05/2026" → Date (UTC), formato do snapshot. */
+export function dataDoSnapshot(br: string): Date {
+  const [dia, mes, ano] = br.split('/').map(Number)
+  return new Date(Date.UTC(ano, mes - 1, dia))
+}

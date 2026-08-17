@@ -4,9 +4,19 @@
  * simulada continua calibrada nos âncoras do CLAUDE.md e se as marginais
  * (clusters, regiões) fecham exatamente.
  */
+import { produtoPorCod } from '../src/lib/cea'
 import {
   AGREGADOS_FROTA,
   ALERTAS_CRITICOS,
+  ATIVIDADES_CALENDARIO,
+  CAMPANHAS,
+  COLECAO,
+  CONFLITOS_CALENDARIO,
+  CONTAGEM_POR_AREA,
+  ENTREGAS_WORKFLOW,
+  ETAPAS_WORKFLOW,
+  PREMISSAS_CALENDARIO,
+  SEMANAS_NO_ANO,
   DASHBOARD,
   FOLLOWUP_FORNECEDORES,
   PECAS_VENDIDAS_COLECAO,
@@ -160,6 +170,64 @@ checar('bullets gerados', bullets.length, 4, 0)
 const semNumero = bullets.filter((b) => !/\d/.test(b.texto)).length
 if (semNumero > 0) falhas++
 console.log(`  ${semNumero === 0 ? '✓' : '✗'} todos os bullets citam indicadores`)
+
+console.log('\n— WORKFLOW: 16 ETAPAS E 21 ENTREGAS (Fase 2) —')
+checar('etapas do processo', ETAPAS_WORKFLOW.length, 16, 0)
+checar('entregas no quadro', ENTREGAS_WORKFLOW.length, COLECAO.entregas, 0)
+const atuais = ETAPAS_WORKFLOW.filter((e) => e.status === 'atual')
+if (atuais.length !== 1 || atuais[0].nome !== COLECAO.etapaAtual) falhas++
+console.log(
+  `${atuais.length === 1 && atuais[0].nome === COLECAO.etapaAtual ? '✓' : '✗'} etapa atual única: ${atuais.map((e) => e.nome).join(', ')} (âncora ${COLECAO.etapaAtual})`,
+)
+const etapasInvalidas = ENTREGAS_WORKFLOW.filter(
+  (e) => !ETAPAS_WORKFLOW.some((x) => x.numero === e.etapa),
+)
+falhas += etapasInvalidas.length
+console.log(
+  `${etapasInvalidas.length === 0 ? '✓' : '✗'} toda entrega aponta para uma etapa existente`,
+)
+const refsInvalidas = ENTREGAS_WORKFLOW.flatMap((e) => e.refs).filter((r) => !produtoPorCod(r))
+falhas += refsInvalidas.length
+console.log(
+  refsInvalidas.length === 0
+    ? `✓ as ${ENTREGAS_WORKFLOW.flatMap((e) => e.refs).length} refs citadas nos cards existem no catálogo`
+    : `✗ refs inexistentes nos cards: ${refsInvalidas.join(', ')}`,
+)
+for (const ref of ['1033472', '1099133', '1075684', '1049412', '7413962']) {
+  const citada = ENTREGAS_WORKFLOW.some((e) => e.refs.includes(ref))
+  if (!citada) falhas++
+  console.log(`  ${citada ? '✓' : '✗'} card cita a ref ${ref}`)
+}
+
+console.log('\n— CALENDÁRIO: GANTT ANUAL —')
+checar('atividades no ano', ATIVIDADES_CALENDARIO.length, 102, 0)
+const ancoraPorArea: Record<string, number> = {
+  Estilo: 23,
+  Planejamento: 17,
+  Compras: 26,
+  'Importação': 36,
+}
+for (const c of CONTAGEM_POR_AREA) {
+  checar(`${c.area} · atividades`, c.total, ancoraPorArea[c.area], 0)
+}
+checar('conflitos abertos', CONFLITOS_CALENDARIO.length, 2, 0)
+for (const c of CONFLITOS_CALENDARIO) {
+  const alvo = ATIVIDADES_CALENDARIO.find((a) => a.id === c.atividadeId)
+  if (!alvo) falhas++
+  console.log(
+    `  ${alvo ? '✓' : '✗'} ${c.id} aponta para "${alvo?.nome ?? c.atividadeId}" (deslocamento ${c.deslocamento > 0 ? '+' : ''}${c.deslocamento} semanas)`,
+  )
+}
+const foraDaGrade = ATIVIDADES_CALENDARIO.filter(
+  (a) => a.semanaInicio < 1 || a.semanaFim > SEMANAS_NO_ANO || a.semanaFim < a.semanaInicio,
+)
+falhas += foraDaGrade.length
+console.log(`${foraDaGrade.length === 0 ? '✓' : '✗'} todas as barras caem dentro das 52 semanas`)
+checar('premissas do calendário', PREMISSAS_CALENDARIO.length, 4, 0)
+console.log(`  campanhas na régua: ${CAMPANHAS.length} (${CAMPANHAS.filter((c) => c.real).length} do snapshot real)`)
+for (const c of CAMPANHAS.filter((x) => x.real).slice(0, 3)) {
+  console.log(`  ✓ ${c.nome}: semanas ${c.semanaInicio}–${c.semanaFim}`)
+}
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)
