@@ -11,7 +11,8 @@ const COR_SUB: Record<TomSub, string> = {
   alerta: 'text-warn',
 }
 
-const SETA: Record<TomSub, string> = { alta: '▲', baixa: '▼', neutra: '', alerta: '▲' }
+/** 'alerta' não leva seta: é um aviso de patamar, não uma direção de variação. */
+const SETA: Record<TomSub, string> = { alta: '▲', baixa: '▼', neutra: '', alerta: '' }
 
 type Props = {
   label: string
@@ -60,8 +61,11 @@ export function KpiCard({
         onClick ? 'focus-ring transition hover:border-cea-blue/40 hover:shadow-pop' : ''
       } ${className}`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <span className="kpi-label">{label}</span>
+      {/* min-h reserva duas linhas de label: assim os valores de uma fileira de
+          KpiCards ficam na mesma linha de base, mesmo com rótulos de tamanhos
+          diferentes ("Cobertura" × "Aderência IA · distribuição"). */}
+      <div className="flex min-h-[30px] items-start justify-between gap-2">
+        <span className="kpi-label leading-tight">{label}</span>
         {dica && <Tooltip texto={dica} />}
       </div>
 

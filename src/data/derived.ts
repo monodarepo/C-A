@@ -7,7 +7,16 @@
  * os números são idênticos em todo reload e batem entre telas.
  * REGRA DE OURO 3: os âncoras abaixo são canônicos (copiados do CLAUDE.md).
  */
-import { cea, clusters, lojasNomeadas, type LojaNomeada } from '@/lib/cea'
+import {
+  cea,
+  clusters,
+  estilistas,
+  fornecedores,
+  lojasNomeadas,
+  produtoPorCod,
+  type LojaNomeada,
+} from '@/lib/cea'
+import { formatBRLCompact, formatDelta, formatNum, formatPct, formatPP } from '@/lib/format'
 
 /* ================================================================= SEED ==== */
 
@@ -873,4 +882,399 @@ export function serieSparkline(
     const ruido = i === pontos - 1 ? 1 : jitter(rand, 0.05)
     return { i, v: Number((tendencia * ruido).toFixed(2)) }
   })
+}
+
+/* ============================ 15. DASHBOARD — ATRIBUTOS DA SEMANA (Fase 1) == */
+
+/**
+ * Leitura de atributos da semana (dimensões N3–N7).
+ * Os valores lidos (cor, tecido, padronagem, comprimento, manga) são os da
+ * cartela REAL do snapshot (`atributosReais`); os deltas são a leitura da
+ * semana do mockup. `validarAtributosSemana()` garante que nenhum valor citado
+ * saiu da cartela oficial.
+ */
+export type LeituraAtributo = {
+  dimensao: string
+  nivel: string
+  valor: string
+  /** participação no mix, quando a leitura é de share */
+  share: number | null
+  delta: number | null
+  unidadeDelta: string
+  /** termos da cartela real que sustentam a leitura */
+  fonte: { lista: keyof typeof cea.atributosReais; termos: string[] }
+}
+
+export const ATRIBUTOS_SEMANA: LeituraAtributo[] = [
+  {
+    dimensao: 'Cor mais vendida',
+    nivel: 'N7 · Cor',
+    valor: 'Marrom / Mocha',
+    share: 18,
+    delta: 9,
+    unidadeDelta: 'YoY',
+    fonte: { lista: 'coresCartela', termos: ['marrom', 'mocha'] },
+  },
+  {
+    dimensao: 'Tecido líder',
+    nivel: 'N5 · Material',
+    valor: 'Viscose com Linho',
+    share: null,
+    delta: 11,
+    unidadeDelta: 'de sell-through',
+    fonte: { lista: 'materiais', termos: ['viscose+linho'] },
+  },
+  {
+    dimensao: 'Padronagem',
+    nivel: 'N6 · Padronagem',
+    valor: 'Floral Pequeno',
+    share: null,
+    delta: 8,
+    unidadeDelta: 'vs mercado',
+    fonte: { lista: 'padronagens', termos: ['floral pequeno'] },
+  },
+  {
+    dimensao: 'Comprimento (vestido)',
+    nivel: 'N4 · Comprimento',
+    valor: 'Midi',
+    share: 51,
+    delta: null,
+    unidadeDelta: 'do mix',
+    fonte: { lista: 'decotes', termos: [] },
+  },
+  {
+    dimensao: 'Manga',
+    nivel: 'N6 · Manga',
+    valor: 'Curta · Bufante',
+    share: null,
+    delta: -5,
+    unidadeDelta: 'na manga longa',
+    fonte: { lista: 'mangas', termos: ['curta', 'bufante'] },
+  },
+]
+
+/** Autoteste: todo termo citado existe na cartela real do JSON. */
+export function validarAtributosSemana(): string[] {
+  const erros: string[] = []
+  for (const a of ATRIBUTOS_SEMANA) {
+    const cartela = cea.atributosReais[a.fonte.lista] ?? []
+    for (const t of a.fonte.termos) {
+      if (!cartela.includes(t)) erros.push(`"${t}" não está em atributosReais.${a.fonte.lista}`)
+    }
+  }
+  return erros
+}
+
+/* ================================ 16. DASHBOARD — RANKING DE ESTILISTAS ==== */
+
+export type LinhaEstilista = {
+  nome: string
+  time: string
+  pecas: number
+  vendido: number
+  sellThrough: number
+  /** variação vs LY, em % */
+  tendencia: number
+}
+
+/** Peças vendidas da coleção = plano × sell-through da coleção (âncoras). */
+export const PECAS_VENDIDAS_COLECAO = Math.round(
+  (PLANO.pecas * DASHBOARD.sellThroughColecao) / 100,
+)
+
+/** "29,99–55,99" → 42.99 (média do "coração" da faixa observada no site). */
+function coracaoMedio(faixa: string): number {
+  const [a, b] = faixa.split('–').map((s) => Number(s.trim().replace('.', '').replace(',', '.')))
+  return (a + b) / 2
+}
+
+const CORACAO_CAMISETA_M = coracaoMedio(
+  String(cea.piramidePrecoObservada.camisetasMasculinas.coracao),
+)
+const CORACAO_SUTIA = coracaoMedio(String(cea.piramidePrecoObservada.sutias.coracao))
+const CORACAO_INFANTIL = coracaoMedio(String(cea.piramidePrecoObservada.infantilCamisetas.coracao))
+
+const faixa = (id: FaixaPreco['id']) => PIRAMIDE_PRECO.find((f) => f.id === id)!.precoRef
+
+/**
+ * Preço médio por peça de cada time, ancorado em preços REAIS do snapshot:
+ * faixas da pirâmide de vestidos e o "coração" de cada categoria observada.
+ */
+const PRECO_MEDIO_POR_TIME: Record<string, number> = {
+  'Sr. Feminino Casual': faixa('P2'), // 159 — acessível, o miolo do feminino
+  'Denim Lab / &jeans': faixa('P3'), // 199 — jeans senta na faixa média
+  'Festa & Vestidos': faixa('P4'), // 249 — premium
+  // 199,99 — preço real do vestido de tule Mindse7 no snapshot
+  'Mindse7 Studio': cea.produtos.find((p) => p.marca === 'Mindse7')?.precoPor ?? faixa('P3'),
+  'ACE Performance': (faixa('P1') + faixa('P2')) / 2, // 129 — esportivo entre entrada e acessível
+  'Infantil & Licenças': CORACAO_INFANTIL, // 47,99
+  'Íntimo & Básicos': (CORACAO_SUTIA + CORACAO_CAMISETA_M) / 2, // 56,49
+}
+
+/** Participação de cada time nas peças da coleção (mix de sortimento). */
+const MIX_POR_TIME: Record<string, number> = {
+  'Sr. Feminino Casual': 24,
+  'Íntimo & Básicos': 20,
+  'Infantil & Licenças': 16,
+  'Denim Lab / &jeans': 15,
+  'Festa & Vestidos': 12,
+  'Mindse7 Studio': 8,
+  'ACE Performance': 5,
+}
+
+/**
+ * Ranking de estilistas (pessoas FICTÍCIAS do snapshot).
+ * Calibrado para: soma das peças = peças vendidas da coleção e sell-through
+ * ponderado = 63,8% (âncora do dashboard).
+ */
+function gerarRankingEstilistas(): LinhaEstilista[] {
+  const rand = mulberry32(SEED + 101)
+
+  const cru = estilistas.map((e) => ({
+    ...e,
+    pesoRaw: (MIX_POR_TIME[e.time] ?? 10) * jitter(rand, 0.12),
+    stRaw: DASHBOARD.sellThroughColecao * jitter(rand, 0.11),
+    tendenciaRaw: FINANCEIRO_2T26.sssVestuario + (rand() * 2 - 1) * 11,
+  }))
+
+  const somaPesos = soma(cru.map((c) => c.pesoRaw))
+  const comPecas = cru.map((c) => ({
+    ...c,
+    pecas: Math.round((PECAS_VENDIDAS_COLECAO * c.pesoRaw) / somaPesos),
+  }))
+
+  // sell-through ponderado por peças precisa fechar no âncora
+  const totalPecas = soma(comPecas.map((c) => c.pecas))
+  const stPonderado = soma(comPecas.map((c) => c.stRaw * c.pecas)) / totalPecas
+  const ajusteST = DASHBOARD.sellThroughColecao - stPonderado
+
+  return comPecas
+    .map((c) => ({
+      nome: c.nome,
+      time: c.time,
+      pecas: c.pecas,
+      vendido: Math.round(c.pecas * (PRECO_MEDIO_POR_TIME[c.time] ?? faixa('P2'))),
+      sellThrough: Number((c.stRaw + ajusteST).toFixed(1)),
+      tendencia: Number(c.tendenciaRaw.toFixed(1)),
+    }))
+    .sort((a, b) => b.vendido - a.vendido)
+}
+
+export const RANKING_ESTILISTAS: LinhaEstilista[] = gerarRankingEstilistas()
+
+export const TOTAIS_ESTILISTAS = {
+  pecas: soma(RANKING_ESTILISTAS.map((e) => e.pecas)),
+  vendido: soma(RANKING_ESTILISTAS.map((e) => e.vendido)),
+  get sellThrough() {
+    return soma(RANKING_ESTILISTAS.map((e) => e.sellThrough * e.pecas)) / this.pecas
+  },
+  get precoMedio() {
+    return this.vendido / this.pecas
+  },
+}
+
+/* =============================== 17. DASHBOARD — FOLLOW-UP DE FORNECEDOR == */
+
+export type StatusFornecedor = 'OK' | 'ATENÇÃO' | 'CRÍTICO'
+
+export type LinhaFornecedor = {
+  fornecedor: string
+  pedidos: number
+  atrasos: number
+  /** % de pedidos entregues no prazo */
+  otdPct: number
+  status: StatusFornecedor
+  observacao: string
+}
+
+/**
+ * Carteira por fornecedor: os atrasos NÃO são sorteados, são fixos por
+ * fornecedor para casarem com a observação — um fornecedor "OK" não pode
+ * carregar um texto dizendo que trava a emissão. Só o volume de pedidos é
+ * seedado. Observações citam referências REAIS do catálogo; os fornecedores
+ * são FICTÍCIOS (snapshot.ficticios) e a tela sinaliza isso.
+ */
+const CARTEIRA_POR_FORNECEDOR: Record<string, { atrasos: number; observacao: string }> = {
+  'Renda Fina Ltda': {
+    atrasos: 4,
+    observacao: 'Grade do Sutiã Renda 7413962 incompleta nos tamanhos B e C.',
+  },
+  'Denim União': {
+    atrasos: 3,
+    observacao: 'Aprovação de cor pendente na Wide Leg Patchwork 1099133 — trava a emissão.',
+  },
+  'Malharia Santa Clara': {
+    atrasos: 2,
+    observacao: 'Tricot canelado em liquidação — sem reposição prevista para a virada.',
+  },
+  'Global Sourcing Ásia': {
+    atrasos: 2,
+    observacao: 'Importado com lead time de 90 dias — cronograma no limite da janela.',
+  },
+  'Têxtil Horizonte': {
+    atrasos: 1,
+    observacao: 'Camiseta Básica 1049412 exige acerto de grade tamanho a tamanho na reposição.',
+  },
+  'Confecções Aurora': {
+    atrasos: 0,
+    observacao: 'Vestido Linho 1075684 (6 cores) confirmado para D-15 no CD Barueri.',
+  },
+  'Nordeste Malhas': {
+    atrasos: 0,
+    observacao: 'Malha de básicos dentro do prazo; capacidade extra oferecida para o verão.',
+  },
+}
+
+/**
+ * Volume de pedidos por fornecedor, calibrado para somar as 284 ordens de
+ * compra do âncora do Sortimento Vivo.
+ * Status é REGRA, não sorteio: 0 atrasos = OK, 1–2 = ATENÇÃO, 3+ = CRÍTICO.
+ */
+function gerarFollowUpFornecedores(): LinhaFornecedor[] {
+  const rand = mulberry32(SEED + 202)
+
+  const cru = fornecedores.map((f) => ({
+    fornecedor: f,
+    pesoRaw: jitter(rand, 0.35),
+    atrasos: CARTEIRA_POR_FORNECEDOR[f]?.atrasos ?? 0,
+  }))
+
+  const somaPesos = soma(cru.map((c) => c.pesoRaw))
+  const linhas = cru.map((c) => {
+    const pedidos = Math.round((VIVO.ordensCompra * c.pesoRaw) / somaPesos)
+    const status: StatusFornecedor = c.atrasos === 0 ? 'OK' : c.atrasos <= 2 ? 'ATENÇÃO' : 'CRÍTICO'
+    return {
+      fornecedor: c.fornecedor,
+      pedidos,
+      atrasos: c.atrasos,
+      otdPct: Number((((pedidos - c.atrasos) / pedidos) * 100).toFixed(1)),
+      status,
+      observacao: CARTEIRA_POR_FORNECEDOR[c.fornecedor]?.observacao ?? '',
+    }
+  })
+
+  // sobra/falta do arredondamento vai para o maior fornecedor, para fechar 284
+  const diferenca = VIVO.ordensCompra - soma(linhas.map((l) => l.pedidos))
+  if (diferenca !== 0) {
+    const maior = linhas.reduce((a, b) => (b.pedidos > a.pedidos ? b : a))
+    maior.pedidos += diferenca
+    maior.otdPct = Number((((maior.pedidos - maior.atrasos) / maior.pedidos) * 100).toFixed(1))
+  }
+
+  const ordem: Record<StatusFornecedor, number> = { 'CRÍTICO': 0, 'ATENÇÃO': 1, OK: 2 }
+  return linhas.sort((a, b) => ordem[a.status] - ordem[b.status] || b.pedidos - a.pedidos)
+}
+
+export const FOLLOWUP_FORNECEDORES: LinhaFornecedor[] = gerarFollowUpFornecedores()
+
+/* ==================================== 18. DASHBOARD — ALERTAS CRÍTICOS ==== */
+
+export type Alerta = {
+  id: string
+  tom: 'crit' | 'warn' | 'info'
+  tipo: string
+  cod: string
+  produto: string
+  texto: string
+  metrica: string
+  rota: string
+  cta: string
+}
+
+/** 3 alertas com deep-link, cada um ancorado num produto real do snapshot. */
+export const ALERTAS_CRITICOS: Alerta[] = [
+  {
+    id: 'ruptura-1049412',
+    tom: 'crit',
+    tipo: 'Ruptura de dorsal',
+    cod: '1049412',
+    produto: produtoPorCod('1049412')?.nome ?? '',
+    texto:
+      'Hero NOS de 22 cores com grade furada nas lojas de maior giro. Reposição tamanho a tamanho é o gargalo.',
+    metrica: `${VIVO.rupturas} rupturas ativas na rede`,
+    rota: '/vivo',
+    cta: 'Ver no Sortimento Vivo',
+  },
+  {
+    id: 'markdown-1083993',
+    tom: 'warn',
+    tipo: 'Markdown sugerido',
+    cod: '1083993',
+    produto: produtoPorCod('1083993')?.nome ?? '',
+    texto:
+      'Slow seller esgotado após remarcação profunda — o aprendizado de preço vale para o restante do tricot.',
+    metrica: `de ${formatBRLCompact(produtoPorCod('1083993')?.precoDe ?? 0)} para ${formatBRLCompact(
+      produtoPorCod('1083993')?.precoPor ?? 0,
+    )} (${produtoPorCod('1083993')?.desc})`,
+    rota: '/pricing',
+    cta: 'Abrir Pricing & Markdown',
+  },
+  {
+    id: 'recompra-1033472',
+    tom: 'info',
+    tipo: 'Oportunidade de recompra',
+    cod: '1033472',
+    produto: produtoPorCod('1033472')?.nome ?? '',
+    texto:
+      'Core do programa wide leg girando acima da meta de sell-through — há espaço de ATB antes do fechamento.',
+    metrica: `ATB disponível: ${formatBRLCompact(OTB.atb)}`,
+    rota: '/plano',
+    cta: 'Abrir Plano de Sortimento',
+  },
+]
+
+/* ======================================= 19. DASHBOARD — RESUMO DA IA ===== */
+
+export type BulletResumo = { titulo: string; texto: string }
+
+/**
+ * Resumo executivo "gerado" pela IA: 4 bullets montados a partir dos âncoras.
+ * Nada aqui é texto solto com número digitado — todos vêm das constantes.
+ */
+export function resumoIA(): BulletResumo[] {
+  const folgaMarkdown = DASHBOARD.markdownLimite - DASHBOARD.markdownAcumulado
+  const folgaCobertura = DASHBOARD.coberturaMeta - DASHBOARD.coberturaDias
+
+  return [
+    {
+      titulo: 'A coleção gira mais rápido do que o planejado',
+      texto: `Sell-through em ${formatPct(DASHBOARD.sellThroughColecao)} (${formatPP(
+        DASHBOARD.sellThroughVsLY,
+      )} vs LY) com cobertura de ${formatNum(DASHBOARD.coberturaDias)} dias contra meta de ${formatNum(
+        DASHBOARD.coberturaMeta,
+      )} — ${formatNum(folgaCobertura)} dias a menos de pulmão. O risco desta semana é ruptura de dorsal, não excesso.`,
+    },
+    {
+      titulo: 'Margem sustentada com folga promocional',
+      texto: `Margem realizada de ${formatPct(
+        DASHBOARD.margemRealizada,
+      )} no ${FINANCEIRO_2T26.trimestresExpansaoMargem}º trimestre consecutivo de expansão, e markdown acumulado em ${formatPct(
+        DASHBOARD.markdownAcumulado,
+      )} contra limite de ${formatPct(DASHBOARD.markdownLimite, 0)} — restam ${formatPct(
+        folgaMarkdown,
+      )} de verba de remarcação.`,
+    },
+    {
+      titulo: 'Digital e C&A Pay puxando a conversão',
+      texto: `Digital em ${formatPct(DASHBOARD.digitalShare)} das vendas (${formatDelta(
+        DASHBOARD.digitalVar,
+      )}) e C&A Pay em ${formatPct(
+        DASHBOARD.ceaPayShare,
+        0,
+      )} dos pagamentos, com ticket de ${formatBRLCompact(VIVO.ticket)} no dia. A aderência da distribuição sugerida pela IA está em ${formatPct(
+        DASHBOARD.aderenciaIA,
+        0,
+      )} para ${formatNum(COLECAO.skusAtivos)} SKUs em ${formatNum(REDE.totalLojas)} lojas.`,
+    },
+    {
+      titulo: 'O plano estourou a banda do OTB',
+      texto: `O recorte em aprovação soma ${formatBRLCompact(
+        PLANO.investimento,
+      )} contra OTB de ${formatBRLCompact(PLANO.otbRecorte)}: ${formatDelta(
+        PLANO.estouroPct,
+      )} (${formatBRLCompact(PLANO.estouroValor, 2)}) acima do teto de ${formatBRLCompact(
+        PLANO.teto,
+      )}. Precisa de compensação antes da emissão dos pedidos.`,
+    },
+  ]
 }

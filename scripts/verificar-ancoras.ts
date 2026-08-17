@@ -6,7 +6,14 @@
  */
 import {
   AGREGADOS_FROTA,
+  ALERTAS_CRITICOS,
   DASHBOARD,
+  FOLLOWUP_FORNECEDORES,
+  PECAS_VENDIDAS_COLECAO,
+  RANKING_ESTILISTAS,
+  TOTAIS_ESTILISTAS,
+  resumoIA,
+  validarAtributosSemana,
   DISTRIBUICAO_REGIONAL,
   FATURAMENTO_MES_REDE,
   FINANCEIRO_2T26,
@@ -90,6 +97,69 @@ console.log('\n— PLANO —')
 checar('estouro sobre o OTB do recorte (%)', (PLANO.investimento / PLANO.otbRecorte - 1) * 100, PLANO.estouroPct, 0.01)
 checar('teto da banda (alvo +3%)', PLANO.teto, PLANO.otbRecorte * 1.03, 0.01)
 checar('piso da banda (alvo −3%)', PLANO.piso, PLANO.otbRecorte * 0.97, 0.01)
+
+console.log('\n— DASHBOARD: RANKING DE ESTILISTAS (Fase 1) —')
+checar('peças = plano × sell-through', TOTAIS_ESTILISTAS.pecas, PECAS_VENDIDAS_COLECAO, 0.0001)
+checar('sell-through ponderado (%)', TOTAIS_ESTILISTAS.sellThrough, DASHBOARD.sellThroughColecao, 0.001)
+console.log(
+  `  vendido total ${(TOTAIS_ESTILISTAS.vendido / 1e6).toFixed(1)} mi · preço médio R$ ${TOTAIS_ESTILISTAS.precoMedio.toFixed(2)}`,
+)
+for (const e of RANKING_ESTILISTAS) {
+  console.log(
+    `  ${e.nome.padEnd(16)} ${e.time.padEnd(21)} ${String(e.pecas).padStart(7)} pç · R$ ${(e.vendido / 1e6).toFixed(1)} mi · ST ${e.sellThrough}% · ${e.tendencia > 0 ? '+' : ''}${e.tendencia}%`,
+  )
+}
+
+console.log('\n— DASHBOARD: FOLLOW-UP DE FORNECEDOR —')
+checar(
+  'pedidos na carteira = OCs do Vivo',
+  FOLLOWUP_FORNECEDORES.reduce((a, f) => a + f.pedidos, 0),
+  VIVO.ordensCompra,
+  0,
+)
+for (const f of FOLLOWUP_FORNECEDORES) {
+  const esperado = f.atrasos === 0 ? 'OK' : f.atrasos <= 2 ? 'ATENÇÃO' : 'CRÍTICO'
+  if (f.status !== esperado) falhas++
+  console.log(
+    `  ${f.status === esperado ? '✓' : '✗'} ${f.fornecedor.padEnd(22)} ${String(f.pedidos).padStart(3)} pedidos · ${f.atrasos} atraso(s) · ${f.status}`,
+  )
+}
+const semObs = FOLLOWUP_FORNECEDORES.filter((f) => !f.observacao)
+falhas += semObs.length
+console.log(
+  semObs.length === 0
+    ? '  ✓ todos os fornecedores têm observação preenchida'
+    : `  ✗ sem observação: ${semObs.map((f) => f.fornecedor).join(', ')}`,
+)
+const refsCitadas = ['1075684', '1099133', '7413962']
+for (const ref of refsCitadas) {
+  const citada = FOLLOWUP_FORNECEDORES.some((f) => f.observacao.includes(ref))
+  if (!citada) falhas++
+  console.log(`  ${citada ? '✓' : '✗'} observação cita a ref real ${ref}`)
+}
+
+console.log('\n— DASHBOARD: ATRIBUTOS DA SEMANA —')
+const errosAtributos = validarAtributosSemana()
+falhas += errosAtributos.length
+if (errosAtributos.length === 0) {
+  console.log('✓ todos os termos citados existem na cartela real do JSON')
+} else {
+  errosAtributos.forEach((e) => console.log(`✗ ${e}`))
+}
+
+console.log('\n— DASHBOARD: ALERTAS CRÍTICOS —')
+for (const a of ALERTAS_CRITICOS) {
+  const temProduto = a.produto.length > 0
+  if (!temProduto) falhas++
+  console.log(`  ${temProduto ? '✓' : '✗'} ${a.cod} → ${a.rota} · ${a.produto || 'PRODUTO NÃO ENCONTRADO'}`)
+}
+
+console.log('\n— DASHBOARD: RESUMO DA IA —')
+const bullets = resumoIA()
+checar('bullets gerados', bullets.length, 4, 0)
+const semNumero = bullets.filter((b) => !/\d/.test(b.texto)).length
+if (semNumero > 0) falhas++
+console.log(`  ${semNumero === 0 ? '✓' : '✗'} todos os bullets citam indicadores`)
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)
