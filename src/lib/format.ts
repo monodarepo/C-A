@@ -14,9 +14,18 @@ const BRL0 = new Intl.NumberFormat('pt-BR', {
 
 const NUM = new Intl.NumberFormat('pt-BR')
 
+/**
+ * O Intl devolve hífen no negativo (-R$ 1,38); o resto da UI usa o menos
+ * tipográfico (−) do formatDelta. Uma função só normaliza os dois, senão a
+ * mesma tela mistura os dois traços.
+ */
+function menos(texto: string): string {
+  return texto.replace(/-/g, '−')
+}
+
 /** R$ 159,99 */
 export function formatBRL(v: number, casas: 0 | 2 = 2): string {
-  return casas === 0 ? BRL0.format(v) : BRL.format(v)
+  return menos(casas === 0 ? BRL0.format(v) : BRL.format(v))
 }
 
 /** R$ 2,08 bi · R$ 435 mi · R$ 46,4 mil — escala automática para KPIs. */
@@ -30,10 +39,12 @@ export function formatBRLCompact(v: number, casas = 1): string {
 
 /** 1.208.400 */
 export function formatNum(v: number, casas = 0): string {
-  return new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: casas,
-    maximumFractionDigits: casas,
-  }).format(v)
+  return menos(
+    new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: casas,
+      maximumFractionDigits: casas,
+    }).format(v),
+  )
 }
 
 /** 1,2 mi · 246,8 mil — para eixos de gráfico e contadores. */
@@ -42,7 +53,7 @@ export function formatCompact(v: number, casas = 1): string {
   if (abs >= 1e9) return `${formatNum(v / 1e9, casas)} bi`
   if (abs >= 1e6) return `${formatNum(v / 1e6, casas)} mi`
   if (abs >= 1e3) return `${formatNum(v / 1e3, casas)} mil`
-  return NUM.format(v)
+  return menos(NUM.format(v))
 }
 
 /** 59,1% — recebe o número já em pontos percentuais (59.1), não a fração. */

@@ -13,6 +13,7 @@ import {
   cea,
   clusters,
   concorrentes,
+  produtos,
   estilistas,
   fornecedores,
   lojasNomeadas,
@@ -4019,3 +4020,814 @@ export const ESCOPO_PLM = {
   naoConfundir:
     'Não é a tela de markdown. Aqui sai a sugestão; a remarcação em si é executada no Pricing.',
 } as const
+
+/* ============================= 33. HISTÓRICO (Fase 9) ==================== */
+
+/**
+ * O que o recorte do Histórico descreve.
+ *
+ * Os âncoras (R$ 118,4 mi · 1.243.500 pç · ticket R$ 95,22 · margem 59,1%) não
+ * são a rede inteira — a rede fatura ~R$ 632 mi/mês. São a coleção equivalente
+ * do ano anterior no mesmo recorte que o Plano trabalha, e os números fecham
+ * entre si nessa leitura:
+ *   118,4 mi ÷ 1.243.500 pç = R$ 95,22 de ticket ✓
+ *   118,4 mi × (1 − 59,1%) = R$ 48,4 mi de custo ≈ os R$ 46,4 mi do plano ✓
+ *   1.243.500 pç vs 1.208.400 planejadas = o plano entra 2,8% menor ✓
+ */
+export const COLECOES_HISTORICO = [
+  { id: 'V2526', rotulo: 'Verão 25-26', atual: false, fator: 1, nota: 'LY equivalente — base dos âncoras' },
+  { id: 'I26', rotulo: 'Inverno 26', atual: false, fator: 0.86, nota: 'estação encerrada, menor volume' },
+  { id: 'V2627', rotulo: 'Verão 26-27', atual: true, fator: 0.61, nota: 'coleção ativa, leitura parcial (semana 19)' },
+] as const
+
+export type ColecaoHistorico = (typeof COLECOES_HISTORICO)[number]['id']
+
+export const COLECAO_HISTORICO_PADRAO: ColecaoHistorico = 'V2526'
+
+export const CANAIS = ['Físico', 'Digital'] as const
+export type Canal = (typeof CANAIS)[number]
+
+/** Todos os produtos reais do snapshot formam o universo de SKUs do recorte. */
+export type SkuHistorico = {
+  id: string
+  cod?: string
+  nome: string
+  dept: string
+  categoria: string
+  cor: string
+  /** preço de venda praticado (real quando o snapshot traz) */
+  pv: number
+  /** true = o preço do snapshot já está remarcado */
+  remarcado: boolean
+  markdownPct: number
+  heroi: boolean
+  margem: number
+  sellThrough: number
+}
+
+/**
+ * Quantas cores o programa tem, segundo o snapshot. Entradas como
+ * "+22 cores" na lista de cores são a contagem do programa inteiro.
+ */
+function coresDoProduto(p: Produto): number {
+  if (!p.cores?.length) return 1
+  const extra = p.cores
+    .map((c) => /\+\s*(\d+)/.exec(c)?.[1])
+    .find((n): n is string => Boolean(n))
+  return extra ? Number(extra) : p.cores.length
+}
+
+function gerarSkusHistorico(): SkuHistorico[] {
+  const rand = mulberry32(SEED + 909)
+  const base = produtos.map((p, i) => {
+    const remarcado = Boolean(p.desc)
+    const markdownPct = remarcado ? Number(p.desc!.replace('%', '')) : 0
+    return {
+      id: `S${String(i + 1).padStart(2, '0')}`,
+      cod: p.cod,
+      nome: p.nome,
+      dept: p.dept,
+      categoria: p.cat,
+      cor: p.cor ?? p.cores?.[0] ?? '—',
+      pv: pvDoProduto(p),
+      remarcado,
+      markdownPct,
+      heroi: Boolean(p.cod && (HEROIS_CODS as readonly string[]).includes(p.cod)),
+      /* Peça remarcada no catálogo é peça que não vendeu no preço cheio: entra
+         com sell-through baixo. É sinal do próprio snapshot, não sorteio. */
+      sellThrough: remarcado
+        ? arredondar(entre(rand, 34, 52) * jitter(rand, 0.05), 1)
+        : arredondar(entre(rand, 58, 88) * jitter(rand, 0.05), 1),
+      /* Peça remarcada queima margem; peça de preço cheio fica acima da média.
+         A escala final (ESCALA_MARGEM) fecha a ponderada nos 59,1% do âncora. */
+      margem: arredondar((remarcado ? 44 : 61) * jitter(rand, 0.06), 1),
+    }
+  })
+
+  return base
+}
+
+const SKUS_BASE = gerarSkusHistorico()
+
+/**
+ * Peças vendidas por SKU no recorte.
+ * Fecha DOIS âncoras ao mesmo tempo — 1.243.500 peças e ticket de R$ 95,22 —
+ * pela alocação de dois vínculos: peso comercial define a ordem, o preço de
+ * venda define a média.
+ */
+const PESO_SKU = SKUS_BASE.map((s, i) => {
+  const rand = mulberry32(SEED + 910 + Number(s.id.slice(1)))
+  const porPapel = s.heroi ? 4.2 : s.remarcado ? 1.4 : 2.1
+  const porCategoria = s.categoria === 'Vestidos' ? 1.1 : s.categoria === 'Blusas' ? 1.25 : 1
+  /* Programa de muitas cores vende mais unidade que referência de cor única —
+     é por isso que a camiseta básica em 22 cores é o maior giro da rede. O
+     número de cores vem do próprio snapshot. */
+  const porCores = Math.min(2, 1 + 0.05 * (coresDoProduto(produtos[i]) - 1))
+  return porPapel * porCategoria * porCores * jitter(rand, 0.22)
+})
+
+const QTD_POR_SKU = alocarComMedia(
+  SKUS_BASE.map((s, i) => ({ peso: PESO_SKU[i], valor: s.pv })),
+  HISTORICO.pecas,
+  HISTORICO.ticket,
+)
+
+/** Escala das margens para a ponderada por receita cair exatamente em 59,1%. */
+const ESCALA_MARGEM = (() => {
+  const receita = SKUS_BASE.map((s, i) => QTD_POR_SKU[i] * s.pv)
+  const ponderada = soma(SKUS_BASE.map((s, i) => s.margem * receita[i])) / soma(receita)
+  return HISTORICO.margem / ponderada
+})()
+
+export const SKUS_HISTORICO: SkuHistorico[] = SKUS_BASE.map((s) => ({
+  ...s,
+  margem: arredondar(s.margem * ESCALA_MARGEM, 1),
+}))
+
+export type FatoHistorico = {
+  skuId: string
+  regiao: Regiao
+  canal: Canal
+  pecas: number
+  receita: number
+}
+
+/**
+ * Tabela-fato do Histórico: SKU × região × canal (57 × 5 × 2 = 570 linhas).
+ * É o que faz os filtros da tela filtrarem de verdade — todo KPI, gráfico e
+ * tabela sai de uma soma desta tabela, nunca de número solto.
+ * Região segue a distribuição real da rede; canal, a fatia digital de 7,7%.
+ */
+function gerarFatos(): FatoHistorico[] {
+  const rand = mulberry32(SEED + 911)
+  const fatos: FatoHistorico[] = []
+
+  SKUS_HISTORICO.forEach((s, i) => {
+    const total = QTD_POR_SKU[i]
+    const celulas: { regiao: Regiao; canal: Canal; peso: number }[] = []
+    for (const r of DISTRIBUICAO_REGIONAL) {
+      for (const canal of CANAIS) {
+        const fatiaCanal = canal === 'Digital' ? HISTORICO.digitalShare / 100 : 1 - HISTORICO.digitalShare / 100
+        celulas.push({
+          regiao: r.regiao,
+          canal,
+          peso: (r.pct / 100) * fatiaCanal * jitter(rand, 0.12),
+        })
+      }
+    }
+    const somaPesos = soma(celulas.map((c) => c.peso))
+    const qtds = celulas.map((c) => Math.round((total * c.peso) / somaPesos))
+    // resíduo do arredondamento vai para a maior célula: o total do SKU fecha exato
+    const maior = qtds.indexOf(Math.max(...qtds))
+    qtds[maior] += total - soma(qtds)
+    celulas.forEach((c, k) => {
+      fatos.push({
+        skuId: s.id,
+        regiao: c.regiao,
+        canal: c.canal,
+        pecas: qtds[k],
+        receita: qtds[k] * s.pv,
+      })
+    })
+  })
+
+  return fatos
+}
+
+export const FATOS_HISTORICO: FatoHistorico[] = gerarFatos()
+
+export type FiltroHistorico = {
+  colecao: ColecaoHistorico
+  /** id do SKU ou 'todos' */
+  sku: string
+  categoria: string
+  regiao: string
+  /** id da loja ou 'todas' — rateia pela participação da loja na região */
+  loja: string
+  canal: string
+  /** meses do recorte, 1 a 6 (6 = período inteiro) */
+  meses: number
+}
+
+export const FILTRO_HISTORICO_PADRAO: FiltroHistorico = {
+  colecao: COLECAO_HISTORICO_PADRAO,
+  sku: 'todos',
+  categoria: 'todas',
+  regiao: 'todas',
+  loja: 'todas',
+  canal: 'todos',
+  meses: 6,
+}
+
+export const CATEGORIAS_HISTORICO = [...new Set(SKUS_HISTORICO.map((s) => s.categoria))].sort()
+
+export const MESES_HISTORICO = ['Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'] as const
+
+/**
+ * Série mensal do recorte: 6 meses fechando a receita do âncora, com a margem
+ * de cada mês ponderando exatamente nos 59,1%. A curva sobe até o pico da
+ * estação (jun/jul) — forma sazonal, não ruído puro.
+ */
+const FORMA_MENSAL = [0.13, 0.15, 0.17, 0.2, 0.19, 0.16]
+
+export const SERIE_MENSAL_HISTORICO = (() => {
+  const rand = mulberry32(SEED + 912)
+  const receitas = FORMA_MENSAL.map((f) => HISTORICO.receita * f)
+  // fecha a receita exata no último mês
+  const ajuste = HISTORICO.receita - soma(receitas)
+  receitas[receitas.length - 1] += ajuste
+
+  const margensBrutas = MESES_HISTORICO.map(() => HISTORICO.margem * jitter(rand, 0.04))
+  const ponderada = soma(margensBrutas.map((m, i) => m * receitas[i])) / HISTORICO.receita
+  const escala = HISTORICO.margem / ponderada
+
+  return MESES_HISTORICO.map((mes, i) => ({
+    mes,
+    receita: Math.round(receitas[i]),
+    margem: arredondar(margensBrutas[i] * escala, 1),
+    pecas: Math.round((receitas[i] / HISTORICO.receita) * HISTORICO.pecas),
+  }))
+})()
+
+/** Participação de cada UF no recorte, indexada em SP = 100 (heatmap). */
+export const HEATMAP_UF = (() => {
+  const porUf = new Map<string, { uf: string; regiao: Regiao; lojas: number; faturamento: number }>()
+  for (const l of LOJAS) {
+    const atual = porUf.get(l.uf) ?? { uf: l.uf, regiao: l.regiao, lojas: 0, faturamento: 0 }
+    atual.lojas += 1
+    atual.faturamento += l.faturamentoMes
+    porUf.set(l.uf, atual)
+  }
+  const lista = [...porUf.values()]
+  const sp = lista.find((u) => u.uf === 'SP')?.faturamento ?? 1
+  return lista
+    .map((u) => ({
+      ...u,
+      indice: arredondar((u.faturamento / sp) * 100, 0),
+      /** receita do recorte atribuída à UF, proporcional ao peso da frota */
+      receita: (u.faturamento / soma(lista.map((x) => x.faturamento))) * HISTORICO.receita,
+    }))
+    .sort((a, b) => b.indice - a.indice)
+})()
+
+/**
+ * Estoque do recorte por região, com status por regra de cobertura.
+ *
+ * A cobertura da frota inteira quase não varia entre regiões (o gerador jitera
+ * por loja e a média regional achata tudo em 45–47 dias). O que varia de
+ * verdade numa coleção de VERÃO lida em agosto é o clima: o Sul, com quase toda
+ * a frota em clima frio, ainda não entrou na estação e carrega mais estoque;
+ * Nordeste e Norte já vendem a coleção há semanas. É a mesma leitura de clima
+ * que bloqueia célula na Distribuição.
+ *
+ * A cobertura de cada região é a da rede (46 dias) corrigida pelo desvio do
+ * fator climático, e a média ponderada pela venda volta a fechar nos 46 dias —
+ * o âncora do Dashboard continua de pé.
+ */
+export type EstoqueRegiao = {
+  regiao: Regiao
+  lojas: number
+  /** fração da frota da região em clima quente ou híbrido quente */
+  fatorClima: number
+  estoque: number
+  venda30d: number
+  coberturaDias: number
+  ev: number
+  status: 'Saudável' | 'Atenção' | 'Excesso'
+}
+
+/** Amplitude da correção climática sobre a cobertura (±35%). */
+const AMPLITUDE_CLIMA_COBERTURA = 0.35
+
+export const ESTOQUE_POR_REGIAO: EstoqueRegiao[] = (() => {
+  const base = DISTRIBUICAO_REGIONAL.map((r) => {
+    const ls = LOJAS.filter((l) => l.regiao === r.regiao)
+    const quentes = ls.filter((l) => l.clima === 'Quente' || l.clima === 'Híbrida Quente').length
+    return {
+      regiao: r.regiao,
+      lojas: ls.length,
+      fatorClima: arredondar(quentes / ls.length, 2),
+      venda30d: soma(ls.map((l) => l.venda30d)),
+    }
+  })
+
+  const vendaTotal = soma(base.map((b) => b.venda30d))
+  const fatorMedio = soma(base.map((b) => b.fatorClima * b.venda30d)) / vendaTotal
+
+  /* cobertura = 46 dias × (1 − amplitude × desvio do fator climático).
+     Região mais quente que a média vende mais rápido ⇒ cobertura menor. */
+  const coberturas = base.map(
+    (b) =>
+      DASHBOARD.coberturaDias * (1 - AMPLITUDE_CLIMA_COBERTURA * (b.fatorClima - fatorMedio)),
+  )
+  // renormaliza para a média ponderada cair exatamente nos 46 dias do âncora
+  const ponderada = soma(coberturas.map((c, i) => c * base[i].venda30d)) / vendaTotal
+  const escala = DASHBOARD.coberturaDias / ponderada
+
+  return base.map((b, i) => {
+    const coberturaDias = arredondar(coberturas[i] * escala, 1)
+    const estoque = Math.round((b.venda30d / 30) * coberturaDias)
+    return {
+      ...b,
+      estoque,
+      coberturaDias,
+      ev: arredondar(estoque / b.venda30d, 2),
+      /* Banda de gestão em torno do âncora de 46 dias: ±15% é saudável, acima
+         sobra coleção de verão parada, abaixo falta peça para o pico. */
+      status:
+        coberturaDias > DASHBOARD.coberturaDias * 1.15
+          ? 'Excesso'
+          : coberturaDias < DASHBOARD.coberturaDias * 0.85
+            ? 'Atenção'
+            : 'Saudável',
+    }
+  })
+})()
+
+/** Receita e peças por SKU no recorte inteiro — base de best/slow sellers. */
+export function totaisDoSku(skuId: string, fatos = FATOS_HISTORICO) {
+  const linhas = fatos.filter((f) => f.skuId === skuId)
+  return {
+    pecas: soma(linhas.map((f) => f.pecas)),
+    receita: soma(linhas.map((f) => f.receita)),
+  }
+}
+
+export type RankingSku = SkuHistorico & { pecas: number; receita: number }
+
+const RANKING_COMPLETO: RankingSku[] = SKUS_HISTORICO.map((s) => ({
+  ...s,
+  ...totaisDoSku(s.id),
+}))
+
+/**
+ * Best sellers por PEÇAS, não por receita: sortimento se planeja em unidade, e
+ * ranking por receita esconderia justamente o NOS de preço baixo — a camiseta
+ * básica de R$ 29,99 que é o maior giro da rede. A receita aparece na tabela ao
+ * lado, para a leitura não ficar cega ao valor.
+ */
+export const BEST_SELLERS: RankingSku[] = [...RANKING_COMPLETO]
+  .sort((a, b) => b.pecas - a.pecas)
+  .slice(0, 6)
+
+export const SLOW_SELLERS: RankingSku[] = [...RANKING_COMPLETO]
+  .sort((a, b) => a.sellThrough - b.sellThrough)
+  .slice(0, 6)
+
+export const RANKING_SKUS: RankingSku[] = [...RANKING_COMPLETO].sort(
+  (a, b) => b.receita - a.receita,
+)
+
+/* ========================= 34. SORTIMENTO VIVO (Fase 9) ================== */
+
+/** A estação de verão roda 26 semanas; a leitura de hoje é a semana 19. */
+export const SEMANAS_ESTACAO = 26
+
+/**
+ * Painel Plano × Venda × Estoque × Carteira.
+ *
+ * Toda a cadeia sai dos âncoras — só a venda semanal é residual, e está
+ * marcada como tal:
+ *
+ *   vendido        = 63,8% (ST) × 1.208.400 pç do plano ............ 770.959 pç
+ *   plano de venda = vendido ÷ 74,2% ........................... 1.038.999 pç
+ *                    (86% do plano de compra: o resto já nasce previsto para
+ *                     liquidação e carry-over — é o que faz o ST de 63,8% e a
+ *                     aderência de 74,2% conviverem sem se contradizer)
+ *   estação percorrida = 19 ÷ 26 semanas ........................... 73,1%
+ *                    ⇒ 74,2% vendido com 73,1% da estação corrida = NO RITMO
+ *   necessidade  = plano − vendido ................................ 437.441 pç
+ *   disponível   = necessidade + excesso .......................... 533.441 pç
+ *   venda semanal = disponível ÷ 12,8 sem de cobertura ............. 41.675 pç
+ *                    (2,7% acima da média da estação — semana de pico)
+ *   excesso à frente = disponível − necessidade .................... +96.000 pç
+ */
+export const PECAS_VENDIDAS_VIVO = Math.round(
+  (PLANO.pecas * DASHBOARD.sellThroughColecao) / 100,
+)
+
+export const ADERENCIA_PLANO_VENDA = 74.2
+export const COBERTURA_COLECAO_SEMANAS = 12.8
+export const EXCESSO_A_FRENTE_PECAS = 96_000
+
+export const PAINEL_RITMO = (() => {
+  const planoVenda = Math.round(PECAS_VENDIDAS_VIVO / (ADERENCIA_PLANO_VENDA / 100))
+  const necessidade = PLANO.pecas - PECAS_VENDIDAS_VIVO
+  const disponivel = necessidade + EXCESSO_A_FRENTE_PECAS
+  const vendaSemanal = Math.round(disponivel / COBERTURA_COLECAO_SEMANAS)
+  const estacaoPercorrida = (COLECAO.semana / SEMANAS_ESTACAO) * 100
+
+  return {
+    planoVenda,
+    /** fatia do plano de compra que o plano prevê vender na estação */
+    fatiaVendavel: arredondar((planoVenda / PLANO.pecas) * 100, 1),
+    vendido: PECAS_VENDIDAS_VIVO,
+    aderencia: ADERENCIA_PLANO_VENDA,
+    estacaoPercorrida: arredondar(estacaoPercorrida, 1),
+    /** p.p. de vantagem da venda sobre o calendário da estação */
+    vantagem: arredondar(ADERENCIA_PLANO_VENDA - estacaoPercorrida, 1),
+    necessidade,
+    disponivel,
+    vendaSemanal,
+    vendaMediaEstacao: Math.round(PECAS_VENDIDAS_VIVO / COLECAO.semana),
+    cobertura: COBERTURA_COLECAO_SEMANAS,
+    semanasRestantes: SEMANAS_ESTACAO - COLECAO.semana,
+    excesso: EXCESSO_A_FRENTE_PECAS,
+    /** semanas de venda que o excesso representa */
+    excessoSemanas: arredondar(EXCESSO_A_FRENTE_PECAS / (disponivel / COBERTURA_COLECAO_SEMANAS), 1),
+  }
+})()
+
+export type StatusRitmo = { rotulo: string; tom: 'ok' | 'warn' | 'crit' }
+
+/** Bandas de leitura de cada bloco do painel — regra, não rótulo escrito à mão. */
+export const STATUS_RITMO = {
+  venda: (PAINEL_RITMO.vantagem >= 0
+    ? { rotulo: 'NO RITMO', tom: 'ok' }
+    : PAINEL_RITMO.vantagem >= -3
+      ? { rotulo: 'ATENÇÃO', tom: 'warn' }
+      : { rotulo: 'ATRASADO', tom: 'crit' }) as StatusRitmo,
+  estoque: (PAINEL_RITMO.cobertura <= 10
+    ? { rotulo: 'APERTADO', tom: 'warn' }
+    : PAINEL_RITMO.cobertura <= 14
+      ? { rotulo: 'EQUILIBRADO', tom: 'ok' }
+      : { rotulo: 'PESADO', tom: 'crit' }) as StatusRitmo,
+  carteira: (PAINEL_RITMO.excesso <= 0
+    ? { rotulo: 'AJUSTADA', tom: 'ok' }
+    : PAINEL_RITMO.excesso < 50_000
+      ? { rotulo: 'ATENÇÃO', tom: 'warn' }
+      : { rotulo: 'EXCESSO À FRENTE', tom: 'crit' }) as StatusRitmo,
+} as const
+
+/**
+ * Deltas de cada tick de 5s do painel ao vivo.
+ * Pré-computados com seed fixa: a demo mostra o mesmo filme em qualquer
+ * máquina, e os KPIs só crescem no ritmo do dia (GMV/dia ÷ ticks do dia).
+ */
+export type TickVivo = {
+  gmv: number
+  transacoes: number
+  pecas: number
+}
+
+export const TICKS_VIVO: TickVivo[] = (() => {
+  const rand = mulberry32(SEED + 1313)
+  const ticksNoDia = (24 * 60 * 60) / 5
+  const gmvPorTick = VIVO.gmvDia / ticksNoDia
+  const transacoesPorTick = VIVO.transacoes / ticksNoDia
+  return Array.from({ length: 120 }, () => {
+    const f = jitter(rand, 0.45)
+    return {
+      gmv: Math.round(gmvPorTick * f),
+      transacoes: Math.round(transacoesPorTick * f * jitter(rand, 0.2)),
+      pecas: Math.round(transacoesPorTick * f * VIVO.upt),
+    }
+  })
+})()
+
+export type Severidade = 'Crítica' | 'Alta' | 'Média'
+
+export type AlertaSortimento = {
+  id: string
+  cod?: string
+  produto: string
+  categoria: string
+  cor: string
+  /** lojas afetadas (falta) ou lojas com sobra (excesso) */
+  lojas: number
+  pecas: number
+  /** cobertura em dias na situação atual */
+  cobertura: number
+  severidade: Severidade
+  nota: string
+}
+
+/**
+ * Alertas de falta e de excesso, sempre sobre produto real do snapshot.
+ *
+ * Contagens vêm dos âncoras do Sortimento Vivo: 38 rupturas viram 7 alertas de
+ * FALTA (uma linha por referência; várias lojas na mesma linha) e o excesso
+ * lista 24 referências, das quais a tela mostra 5 e abre o resto.
+ *
+ * A severidade é regra: cobertura abaixo de 7 dias é crítica na falta; acima de
+ * 90 dias é crítica no excesso.
+ */
+export const ALERTAS_FALTA_TOTAL = 7
+export const ALERTAS_EXCESSO_TOTAL = 24
+
+function severidadeFalta(cobertura: number): Severidade {
+  return cobertura < 7 ? 'Crítica' : cobertura < 14 ? 'Alta' : 'Média'
+}
+
+function severidadeExcesso(cobertura: number): Severidade {
+  return cobertura > 90 ? 'Crítica' : cobertura > 70 ? 'Alta' : 'Média'
+}
+
+export const ALERTAS_FALTA: AlertaSortimento[] = (() => {
+  const rand = mulberry32(SEED + 1414)
+  /* Falta é problema de quem vende rápido: ordena o recorte pelos maiores
+     sell-through e pega as 7 primeiras referências. */
+  const candidatos = [...RANKING_SKUS].sort((a, b) => b.sellThrough - a.sellThrough).slice(0, ALERTAS_FALTA_TOTAL)
+  /* As 7 linhas repartem exatamente as 38 rupturas do âncora: rateio pelo peso
+     e o resto do arredondamento cai na primeira linha. */
+  const pesos = candidatos.map(() => 1 + rand())
+  const somaPesos = soma(pesos)
+  const lojasPorAlerta = pesos.map((w) => Math.max(1, Math.round((VIVO.rupturas * w) / somaPesos)))
+  lojasPorAlerta[0] += VIVO.rupturas - soma(lojasPorAlerta)
+  return candidatos.map((s, i) => {
+    const cobertura = arredondar(entre(rand, 2, 19) * jitter(rand, 0.1), 1)
+    return {
+      id: `F${i + 1}`,
+      cod: s.cod,
+      produto: s.nome,
+      categoria: s.categoria,
+      cor: s.cor,
+      lojas: Math.max(1, lojasPorAlerta[i]),
+      pecas: Math.round(s.pecas * 0.04 * jitter(rand, 0.3)),
+      cobertura,
+      severidade: severidadeFalta(cobertura),
+      nota:
+        cobertura < 7
+          ? `Sell-through de ${formatPct(s.sellThrough)} e menos de uma semana de cobertura — repor por tamanho antes do fim de semana.`
+          : `Giro alto (${formatPct(s.sellThrough)}) com cobertura curta: entrar na próxima onda de reposição.`,
+    }
+  })
+})()
+
+export const ALERTAS_EXCESSO: AlertaSortimento[] = (() => {
+  const rand = mulberry32(SEED + 1515)
+  /* Excesso é o inverso: parte dos menores sell-through e completa até 24
+     referências percorrendo o recorte em ordem crescente de giro. */
+  const candidatos = [...RANKING_SKUS]
+    .sort((a, b) => a.sellThrough - b.sellThrough)
+    .slice(0, ALERTAS_EXCESSO_TOTAL)
+  return candidatos.map((s, i) => {
+    const cobertura = arredondar(entre(rand, 48, 120) * jitter(rand, 0.08), 1)
+    return {
+      id: `E${i + 1}`,
+      cod: s.cod,
+      produto: s.nome,
+      categoria: s.categoria,
+      cor: s.cor,
+      lojas: entre(rand, 12, 96),
+      pecas: Math.round(s.pecas * 0.18 * jitter(rand, 0.35)),
+      cobertura,
+      severidade: severidadeExcesso(cobertura),
+      nota: s.remarcado
+        ? `Já remarcado em ${formatDelta(s.markdownPct)} e ainda com ${formatNum(Math.round(cobertura))} dias de cobertura — avaliar segunda dose no Pricing.`
+        : `Cobertura de ${formatNum(Math.round(cobertura))} dias sem markdown ativo: candidato à próxima ação de preço.`,
+    }
+  })
+})()
+
+/* ============================== 35. PRICING (Fase 9) ===================== */
+
+/** Os 5 markdowns reais que a tela oferece como candidatos a ação. */
+export type CandidatoPreco = {
+  id: string
+  cod?: string
+  produto: string
+  categoria: string
+  cor: string
+  precoDe: number
+  precoPor: number
+  markdownPct: number
+  /** peças em estoque candidatas à ação */
+  estoque: number
+  cobertura: number
+  sellThrough: number
+}
+
+export const CANDIDATOS_PRECO: CandidatoPreco[] = (() => {
+  const rand = mulberry32(SEED + 1616)
+  /* Os candidatos são exatamente as peças cujo snapshot já traz preço de e
+     preço por — markdown real de catálogo. A spec pede 5: −63 −47 −53 −32 −55. */
+  const alvos = [-63, -47, -53, -32, -55]
+  return alvos.map((md, i) => {
+    const p = produtos.find((x) => x.desc === `${md}%`)!
+    const sku = SKUS_HISTORICO.find((s) => s.nome === p.nome)
+    const estoque = Math.round(entre(rand, 4_200, 28_000) * jitter(rand, 0.15))
+    return {
+      id: `P${i + 1}`,
+      cod: p.cod,
+      produto: p.nome,
+      categoria: p.cat,
+      cor: p.cor ?? '—',
+      precoDe: p.precoDe!,
+      precoPor: p.precoPor!,
+      markdownPct: md,
+      estoque,
+      cobertura: arredondar(entre(rand, 42, 118) * jitter(rand, 0.1), 0),
+      sellThrough: sku?.sellThrough ?? 45,
+    }
+  })
+})()
+
+/** Tipos de etiqueta que a ação pode assumir. */
+export const TIPOS_ETIQUETA = [
+  { id: 'de-por', nome: 'De / Por', nota: 'Etiqueta dupla com preço anterior riscado.' },
+  { id: 'unico', nome: 'Preço único', nota: 'Preço fechado, sem referência ao anterior.' },
+  { id: 'leve3', nome: 'Leve 3 pague 2', nota: 'Mecânica de volume — puxa UPT, não derruba etiqueta.' },
+  { id: 'carrinho', nome: 'Desconto no carrinho', nota: 'Desconto aplicado no caixa, preserva a etiqueta na peça.' },
+  { id: 'cea-pay', nome: 'Exclusivo C&A Pay', nota: `Condicionado ao meio de pagamento próprio (${DASHBOARD.ceaPayShare}% das vendas).` },
+] as const
+
+export type TipoEtiqueta = (typeof TIPOS_ETIQUETA)[number]['id']
+
+/** Regras de preço por canal — o que pode e o que não pode divergir. */
+export const REGRAS_CANAL = [
+  {
+    canal: 'Físico',
+    regra: 'Preço por cluster. Cluster A sustenta etiqueta cheia mais tempo; D absorve a liquidação primeiro.',
+    tom: 'info' as const,
+  },
+  {
+    canal: 'Digital',
+    regra: `Preço único nacional, sem quebra por cluster. Digital é ${formatPct(DASHBOARD.digitalShare)} da receita e a vitrine é comparável em segundos.`,
+    tom: 'info' as const,
+  },
+  {
+    canal: 'Divergência',
+    regra: 'Digital nunca acima do físico do cluster A. Abaixo é permitido só em ação de canal, com vigência e verba próprias.',
+    tom: 'warn' as const,
+  },
+]
+
+/** Profundidade recomendada de markdown no cluster A. */
+export const PROFUNDIDADE_CLUSTER_A = { min: -10, max: -15 } as const
+
+export type LinhaDrillPreco = {
+  id: string
+  nivel: 'N1' | 'SKU'
+  paiId?: string
+  rotulo: string
+  cod?: string
+  /** preço praticado no físico do cluster A */
+  precoFisicoA: number
+  precoDigital: number
+  /** preço médio do mesmo tipo de peça no mercado digital */
+  precoMercadoDigital: number
+  recomendacao: 'Manter' | 'Reduzir' | 'Subir'
+  profundidade: number
+  acao: string
+}
+
+/**
+ * Drill-down N1 → SKU do preço praticado.
+ *
+ * Físico A é o preço real do snapshot. Digital nasce do mesmo preço (regra de
+ * preço único nacional) com desvio só onde há ação de canal. Mercado digital usa
+ * o índice de posicionamento dos pares aspirativos já calculado no Benchmark, de
+ * modo que as duas telas contam a mesma história.
+ *
+ * A recomendação é regra: mais de 6% acima do mercado pede redução; mais de 6%
+ * abaixo abre espaço para subir; no meio, manter.
+ */
+/**
+ * A referência de mercado muda com a faixa de preço da peça: uma camiseta de
+ * entrada compete com o bloco de valor (e com o marketplace digital), um
+ * vestido premium compete com os pares aspirativos. Um índice único achataria
+ * tudo numa recomendação só — que é o que acontece se comparamos camiseta
+ * básica e vestido de R$ 260 contra a mesma média.
+ */
+const INDICE_MERCADO_PARES =
+  soma(MARCAS_PARES.map((m) => m.precoMedio)) / MARCAS_PARES.length / BENCHMARK.ticketCA
+/** Média das 6 marcas com preço — a referência do meio da escada. */
+const INDICE_MERCADO_TOTAL =
+  soma(MARCAS_COM_PRECO.map((m) => m.precoMedio)) / MARCAS_COM_PRECO.length / BENCHMARK.ticketCA
+
+const PISO_ESCADA = 40
+const TETO_ESCADA = 250
+
+function indiceMercadoDigital(pv: number): number {
+  const t = Math.min(1, Math.max(0, (pv - PISO_ESCADA) / (TETO_ESCADA - PISO_ESCADA)))
+  return INDICE_MERCADO_TOTAL + t * (INDICE_MERCADO_PARES - INDICE_MERCADO_TOTAL)
+}
+
+function recomendar(precoA: number, mercado: number): { rec: LinhaDrillPreco['recomendacao']; prof: number } {
+  const gap = (precoA / mercado - 1) * 100
+  if (gap > 6) {
+    /* A profundidade sai do gap, mas presa na banda que a própria tela
+       recomenda para o cluster A (−10% a −15%): sugerir −8% contradiria o card
+       de profundidade, e abaixo de −10% o cliente do cluster A nem percebe a
+       ação. */
+    const bruta = -gap
+    const prof = Math.min(
+      PROFUNDIDADE_CLUSTER_A.min,
+      Math.max(PROFUNDIDADE_CLUSTER_A.max, bruta),
+    )
+    return { rec: 'Reduzir', prof: arredondar(prof, 0) }
+  }
+  if (gap < -6) return { rec: 'Subir', prof: arredondar(Math.min(8, -gap), 0) }
+  return { rec: 'Manter', prof: 0 }
+}
+
+export const DRILL_PRECO: LinhaDrillPreco[] = (() => {
+  const rand = mulberry32(SEED + 1717)
+  const linhas: LinhaDrillPreco[] = []
+  const porDept = new Map<string, RankingSku[]>()
+  for (const s of RANKING_SKUS) {
+    porDept.set(s.dept, [...(porDept.get(s.dept) ?? []), s])
+  }
+
+  for (const [dept, skus] of porDept) {
+    const filhos = skus.slice(0, 4).map((s, i) => {
+      const precoDigital = arredondar(s.pv * (rand() < 0.25 ? 0.95 : 1), 2)
+      const precoMercadoDigital = arredondar(s.pv * indiceMercadoDigital(s.pv) * jitter(rand, 0.1), 2)
+      const { rec, prof } = recomendar(s.pv, precoMercadoDigital)
+      return {
+        id: `${dept}-${i}`,
+        nivel: 'SKU' as const,
+        paiId: dept,
+        rotulo: s.nome,
+        cod: s.cod,
+        precoFisicoA: s.pv,
+        precoDigital,
+        precoMercadoDigital,
+        recomendacao: rec,
+        profundidade: prof,
+        acao:
+          rec === 'Reduzir'
+            ? `Markdown de ${formatPct(prof)} no cluster A, alinhando ao mercado digital.`
+            : rec === 'Subir'
+              ? `Espaço de ${formatPct(prof)} de trade-up sem sair do mercado.`
+              : 'Preço alinhado — manter etiqueta e observar giro.',
+      }
+    })
+
+    const media = (f: (l: LinhaDrillPreco) => number) => arredondar(soma(filhos.map(f)) / filhos.length, 2)
+    const precoA = media((l) => l.precoFisicoA)
+    const mercado = media((l) => l.precoMercadoDigital)
+    const { rec, prof } = recomendar(precoA, mercado)
+    linhas.push({
+      id: dept,
+      nivel: 'N1',
+      rotulo: dept,
+      precoFisicoA: precoA,
+      precoDigital: media((l) => l.precoDigital),
+      precoMercadoDigital: mercado,
+      recomendacao: rec,
+      profundidade: prof,
+      acao:
+        rec === 'Reduzir'
+          ? 'Departamento acima do mercado digital — revisar preço das entradas.'
+          : rec === 'Subir'
+            ? 'Departamento abaixo do mercado — avaliar trade-up nas linhas premium.'
+            : 'Departamento alinhado ao mercado digital.',
+    })
+    linhas.push(...filhos)
+  }
+
+  return linhas
+})()
+
+/**
+ * Calendário de preço: o que está ativo agora e o que vem.
+ * Datas reais do calendário comercial do snapshot; a contagem de dias sai da
+ * data de coleta (17/08/2026) — os 102 dias até a Black Friday da spec.
+ */
+export type JanelaPreco = {
+  nome: string
+  quando: string
+  dias: number | null
+  status: 'ATIVO' | 'PROGRAMADO'
+  nota: string
+}
+
+export const CALENDARIO_PRECO: JanelaPreco[] = (() => {
+  /* meta.dataColeta vem em ISO (2026-08-17); os eventos, em dd/mm/aaaa. */
+  const [ano, mes, dia] = cea.meta.dataColeta.split('-').map(Number)
+  const hoje = new Date(ano, mes - 1, dia)
+  const diasAte = (br: string) => {
+    const [d, m, a] = br.split('/').map(Number)
+    return Math.round((new Date(a, m - 1, d).getTime() - hoje.getTime()) / 86_400_000)
+  }
+  const eventos = calendario.filter((e): e is typeof e & { evento: string } => Boolean(e.evento))
+  const diaDosPais = eventos.find((e) => e.evento === 'Dia dos Pais')
+  const blackFriday = eventos.find((e) => e.evento === 'Black Friday')
+  const natal = eventos.find((e) => e.evento === 'Natal')
+
+  return [
+    {
+      nome: diaDosPais?.evento ?? 'Dia dos Pais',
+      quando: 'agosto',
+      dias: null,
+      status: 'ATIVO',
+      nota: diaDosPais?.obs ?? 'campanha ativa no site agora',
+    },
+    {
+      nome: blackFriday?.evento ?? 'Black Friday',
+      quando: blackFriday?.data ?? '27/11/2026',
+      dias: diasAte(blackFriday?.data ?? '27/11/2026'),
+      status: 'PROGRAMADO',
+      nota: 'Maior janela de markdown do ano — verba e profundidade travadas com 30 dias de antecedência.',
+    },
+    {
+      nome: natal?.evento ?? 'Natal',
+      quando: 'dezembro',
+      dias: null,
+      status: 'PROGRAMADO',
+      nota: 'Preço cheio até 20/12; liquidação de verão abre na semana 1.',
+    },
+  ]
+})()

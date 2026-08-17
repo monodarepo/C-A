@@ -4,7 +4,7 @@
  * simulada continua calibrada nos âncoras do CLAUDE.md e se as marginais
  * (clusters, regiões) fecham exatamente.
  */
-import { produtoPorCod } from '../src/lib/cea'
+import { produtoPorCod, produtos } from '../src/lib/cea'
 import { formatDelta } from '../src/lib/format'
 import {
   AGREGADOS_FROTA,
@@ -116,6 +116,27 @@ import {
   TOTAL_CLASSIFICADO_PLM,
   riscoPorCobertura,
   MARKDOWNS_REAIS,
+  ALERTAS_EXCESSO,
+  ALERTAS_EXCESSO_TOTAL,
+  ALERTAS_FALTA,
+  CALENDARIO_PRECO,
+  CANDIDATOS_PRECO,
+  DRILL_PRECO,
+  ESTOQUE_POR_REGIAO,
+  FATOS_HISTORICO,
+  HEATMAP_UF,
+  PAINEL_RITMO,
+  PROFUNDIDADE_CLUSTER_A,
+  RANKING_SKUS,
+  SEMANAS_ESTACAO,
+  SERIE_MENSAL_HISTORICO,
+  SKUS_HISTORICO,
+  STATUS_RITMO,
+  TICKS_VIVO,
+  TIPOS_ETIQUETA,
+  BEST_SELLERS,
+  SLOW_SELLERS,
+  VIVO as VIVO_ANCORA,
 } from '../src/data/derived'
 import { VIVO } from '../src/data/derived'
 
@@ -869,6 +890,220 @@ console.log(
 )
 const pausados = GATILHOS_PLM.filter((g) => !g.monitorando).length
 checar('gatilhos pausados no estado inicial', pausados, 1, 0)
+
+console.log('\n— HISTÓRICO —')
+const somaFatos = (f: (x: (typeof FATOS_HISTORICO)[number]) => number) =>
+  FATOS_HISTORICO.reduce((a, x) => a + f(x), 0)
+checar('SKUs do recorte', SKUS_HISTORICO.length, 57, 0)
+checar('linhas da tabela-fato (SKU × região × canal)', FATOS_HISTORICO.length, 57 * 5 * 2, 0)
+checar('peças do recorte', somaFatos((f) => f.pecas), HISTORICO.pecas, 0)
+checar('receita do recorte', somaFatos((f) => f.receita), HISTORICO.receita, 0.0005)
+checar(
+  'ticket = receita ÷ peças',
+  somaFatos((f) => f.receita) / somaFatos((f) => f.pecas),
+  HISTORICO.ticket,
+  0.001,
+)
+const receitaSku = RANKING_SKUS.reduce((a, s) => a + s.receita, 0)
+checar(
+  'margem ponderada pela receita',
+  RANKING_SKUS.reduce((a, s) => a + s.margem * s.receita, 0) / receitaSku,
+  HISTORICO.margem,
+  0.001,
+)
+checar(
+  'participação do canal digital (%)',
+  (somaFatos((f) => (f.canal === 'Digital' ? f.receita : 0)) / somaFatos((f) => f.receita)) * 100,
+  HISTORICO.digitalShare,
+  0.01,
+)
+for (const r of DISTRIBUICAO_REGIONAL) {
+  checar(
+    `região ${r.regiao} · % da receita`,
+    (somaFatos((f) => (f.regiao === r.regiao ? f.receita : 0)) / somaFatos((f) => f.receita)) * 100,
+    r.pct,
+    0.02,
+  )
+}
+checar('meses da série', SERIE_MENSAL_HISTORICO.length, 6, 0)
+checar(
+  'série mensal fecha a receita',
+  SERIE_MENSAL_HISTORICO.reduce((a, m) => a + m.receita, 0),
+  HISTORICO.receita,
+  0.0001,
+)
+checar(
+  'margem mensal ponderada',
+  SERIE_MENSAL_HISTORICO.reduce((a, m) => a + m.margem * m.receita, 0) /
+    SERIE_MENSAL_HISTORICO.reduce((a, m) => a + m.receita, 0),
+  HISTORICO.margem,
+  0.001,
+)
+const spNoTopo = HEATMAP_UF[0]?.uf === 'SP' && HEATMAP_UF[0]?.indice === 100
+if (!spNoTopo) falhas++
+console.log(`${spNoTopo ? '✓' : '✗'} heatmap indexado em SP = 100 (${HEATMAP_UF.length} UFs)`)
+const ufForaDaEscala = HEATMAP_UF.filter((u) => u.indice > 100 || u.indice < 0)
+falhas += ufForaDaEscala.length
+console.log(`${ufForaDaEscala.length === 0 ? '✓' : '✗'} nenhuma UF acima do índice de SP`)
+checar(
+  'cobertura regional ponderada (dias)',
+  ESTOQUE_POR_REGIAO.reduce((a, r) => a + r.coberturaDias * r.venda30d, 0) /
+    ESTOQUE_POR_REGIAO.reduce((a, r) => a + r.venda30d, 0),
+  DASHBOARD.coberturaDias,
+  0.001,
+)
+const statusDistintos = new Set(ESTOQUE_POR_REGIAO.map((r) => r.status)).size
+if (statusDistintos < 2) falhas++
+console.log(
+  `${statusDistintos >= 2 ? '✓' : '✗'} a tabela de estoque por região tem leitura (${statusDistintos} status distintos: ${ESTOQUE_POR_REGIAO.map((r) => `${r.regiao} ${r.status}`).join(', ')})`,
+)
+const skuForaDoCatalogo = SKUS_HISTORICO.filter(
+  (s) => !produtos.some((p) => p.nome === s.nome),
+)
+falhas += skuForaDoCatalogo.length
+console.log(
+  `${skuForaDoCatalogo.length === 0 ? '✓' : '✗'} todo SKU do recorte é um produto real do snapshot`,
+)
+const bestOrdenado = BEST_SELLERS.every((s, i) => i === 0 || BEST_SELLERS[i - 1].pecas >= s.pecas)
+const slowOrdenado = SLOW_SELLERS.every(
+  (s, i) => i === 0 || SLOW_SELLERS[i - 1].sellThrough <= s.sellThrough,
+)
+if (!bestOrdenado || !slowOrdenado) falhas++
+console.log(
+  `${bestOrdenado && slowOrdenado ? '✓' : '✗'} best sellers por peças e slow sellers por sell-through, em ordem`,
+)
+const nosNoTopo = BEST_SELLERS[0]?.cod === '1049412'
+if (!nosNoTopo) falhas++
+console.log(
+  `${nosNoTopo ? '✓' : '✗'} o NOS de 22 cores (1049412) lidera o giro em unidades`,
+)
+
+console.log('\n— SORTIMENTO VIVO —')
+checar('vendido = ST × plano', PAINEL_RITMO.vendido, (PLANO.pecas * DASHBOARD.sellThroughColecao) / 100, 0.0001)
+checar('aderência plano × venda (%)', PAINEL_RITMO.aderencia, 74.2, 0)
+checar('cobertura da coleção (semanas)', PAINEL_RITMO.cobertura, 12.8, 0)
+checar('excesso à frente (peças)', PAINEL_RITMO.excesso, 96_000, 0)
+checar(
+  'vendido ÷ plano de venda = aderência',
+  (PAINEL_RITMO.vendido / PAINEL_RITMO.planoVenda) * 100,
+  PAINEL_RITMO.aderencia,
+  0.001,
+)
+checar('necessidade = plano − vendido', PAINEL_RITMO.necessidade, PLANO.pecas - PAINEL_RITMO.vendido, 0)
+checar('disponível = necessidade + excesso', PAINEL_RITMO.disponivel, PAINEL_RITMO.necessidade + PAINEL_RITMO.excesso, 0)
+checar('venda semanal = disponível ÷ cobertura', PAINEL_RITMO.vendaSemanal, PAINEL_RITMO.disponivel / PAINEL_RITMO.cobertura, 0.0001)
+checar('estação percorrida (%)', PAINEL_RITMO.estacaoPercorrida, (COLECAO.semana / SEMANAS_ESTACAO) * 100, 0.001)
+checar('semanas restantes', PAINEL_RITMO.semanasRestantes, SEMANAS_ESTACAO - COLECAO.semana, 0)
+const rotulos = `${STATUS_RITMO.venda.rotulo} · ${STATUS_RITMO.estoque.rotulo} · ${STATUS_RITMO.carteira.rotulo}`
+const rotulosOk = rotulos === 'NO RITMO · EQUILIBRADO · EXCESSO À FRENTE'
+if (!rotulosOk) falhas++
+console.log(`${rotulosOk ? '✓' : '✗'} painel lê "${rotulos}" (spec: NO RITMO · EQUILIBRADO · EXCESSO À FRENTE)`)
+checar('alertas de falta', ALERTAS_FALTA.length, 7, 0)
+checar(
+  'lojas dos alertas de falta = rupturas do dia',
+  ALERTAS_FALTA.reduce((a, x) => a + x.lojas, 0),
+  VIVO_ANCORA.rupturas,
+  0,
+)
+checar('alertas de excesso', ALERTAS_EXCESSO.length, ALERTAS_EXCESSO_TOTAL, 0)
+checar('alertas de excesso (âncora)', ALERTAS_EXCESSO_TOTAL, 24, 0)
+const severidadeErrada = [
+  ...ALERTAS_FALTA.filter(
+    (a) => a.severidade !== (a.cobertura < 7 ? 'Crítica' : a.cobertura < 14 ? 'Alta' : 'Média'),
+  ),
+  ...ALERTAS_EXCESSO.filter(
+    (a) => a.severidade !== (a.cobertura > 90 ? 'Crítica' : a.cobertura > 70 ? 'Alta' : 'Média'),
+  ),
+]
+falhas += severidadeErrada.length
+console.log(
+  `${severidadeErrada.length === 0 ? '✓' : '✗'} a severidade de todo alerta vem da regra de cobertura`,
+)
+const alertaForaDoRecorte = [...ALERTAS_FALTA, ...ALERTAS_EXCESSO].filter(
+  (a) => !SKUS_HISTORICO.some((s) => s.nome === a.produto),
+)
+falhas += alertaForaDoRecorte.length
+console.log(
+  `${alertaForaDoRecorte.length === 0 ? '✓' : '✗'} todo alerta aponta para produto real do snapshot`,
+)
+const tickNegativo = TICKS_VIVO.filter((t) => t.gmv <= 0 || t.transacoes < 0)
+falhas += tickNegativo.length
+console.log(
+  `${tickNegativo.length === 0 ? '✓' : '✗'} os ${TICKS_VIVO.length} ticks pré-computados só somam (nenhum negativo)`,
+)
+
+console.log('\n— PRICING —')
+checar('candidatos a ação de preço', CANDIDATOS_PRECO.length, 5, 0)
+const MD_SPEC = [-63, -47, -53, -32, -55]
+const mdErrado = CANDIDATOS_PRECO.filter((c, i) => c.markdownPct !== MD_SPEC[i])
+falhas += mdErrado.length
+console.log(
+  `${mdErrado.length === 0 ? '✓' : '✗'} os 5 markdowns da spec, na ordem (${MD_SPEC.join(' · ')})`,
+)
+const mdForaDosAncoras = CANDIDATOS_PRECO.filter(
+  (c) => !(MARKDOWNS_REAIS as readonly number[]).includes(c.markdownPct),
+)
+falhas += mdForaDosAncoras.length
+console.log(
+  `${mdForaDosAncoras.length === 0 ? '✓' : '✗'} todo candidato é um dos 6 markdowns reais do CLAUDE.md`,
+)
+const precoErrado = CANDIDATOS_PRECO.filter((c) => {
+  const p = produtos.find((x) => x.nome === c.produto)
+  return p?.precoDe !== c.precoDe || p?.precoPor !== c.precoPor
+})
+falhas += precoErrado.length
+console.log(
+  `${precoErrado.length === 0 ? '✓' : '✗'} de/por de cada candidato vem do catálogo, não da tela`,
+)
+const mdCalculadoErrado = CANDIDATOS_PRECO.filter(
+  (c) => Math.abs((c.precoPor / c.precoDe - 1) * 100 - c.markdownPct) > 1,
+)
+falhas += mdCalculadoErrado.length
+console.log(
+  `${mdCalculadoErrado.length === 0 ? '✓' : '✗'} o % de markdown confere com de/por em todos`,
+)
+checar('tipos de etiqueta', TIPOS_ETIQUETA.length, 5, 0)
+checar(
+  'lojas somadas dos 4 clusters',
+  REDE.clusters.reduce((a, c) => a + c.lojas, 0),
+  REDE.totalLojas,
+  0,
+)
+checar('profundidade cluster A · piso', PROFUNDIDADE_CLUSTER_A.min, -10, 0)
+checar('profundidade cluster A · teto', PROFUNDIDADE_CLUSTER_A.max, -15, 0)
+const bf = CALENDARIO_PRECO.find((j) => j.nome === 'Black Friday')
+checar('dias até a Black Friday', bf?.dias ?? 0, 102, 0)
+const paisAtivo = CALENDARIO_PRECO.find((j) => j.nome === 'Dia dos Pais')?.status === 'ATIVO'
+if (!paisAtivo) falhas++
+console.log(`${paisAtivo ? '✓' : '✗'} Dia dos Pais entra como janela ATIVA (obs do snapshot)`)
+const n1SemFilho = DRILL_PRECO.filter(
+  (l) => l.nivel === 'N1' && !DRILL_PRECO.some((f) => f.paiId === l.id),
+)
+falhas += n1SemFilho.length
+console.log(`${n1SemFilho.length === 0 ? '✓' : '✗'} todo N1 do drill-down abre em SKUs`)
+const recomendacaoErrada = DRILL_PRECO.filter((l) => {
+  const gap = (l.precoFisicoA / l.precoMercadoDigital - 1) * 100
+  const esperado = gap > 6 ? 'Reduzir' : gap < -6 ? 'Subir' : 'Manter'
+  return l.recomendacao !== esperado
+})
+falhas += recomendacaoErrada.length
+console.log(
+  `${recomendacaoErrada.length === 0 ? '✓' : '✗'} a recomendação de preço vem da regra de gap contra o mercado`,
+)
+const profundidadeForaDaBanda = DRILL_PRECO.filter(
+  (l) =>
+    l.recomendacao === 'Reduzir' &&
+    (l.profundidade > PROFUNDIDADE_CLUSTER_A.min || l.profundidade < PROFUNDIDADE_CLUSTER_A.max),
+)
+falhas += profundidadeForaDaBanda.length
+console.log(
+  `${profundidadeForaDaBanda.length === 0 ? '✓' : '✗'} nenhuma redução sugerida fora da banda de ${PROFUNDIDADE_CLUSTER_A.min}% a ${PROFUNDIDADE_CLUSTER_A.max}% do cluster A`,
+)
+const variedade = new Set(DRILL_PRECO.filter((l) => l.nivel === 'SKU').map((l) => l.recomendacao))
+if (variedade.size < 2) falhas++
+console.log(
+  `${variedade.size >= 2 ? '✓' : '✗'} o drill-down tem leitura (${variedade.size} recomendações distintas: ${[...variedade].join(', ')})`,
+)
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)
