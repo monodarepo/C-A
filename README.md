@@ -24,6 +24,8 @@ npm run dev      # Vite em :5173 + conector Express em :3001 (proxy /api)
 | `npm run lint`        | ESLint — obrigatório antes de cada commit                         |
 | `npm run verificar`   | autoteste dos números-âncora — ~293 verificações, sai com erro se algum não fechar |
 | `npm run qa`          | varredura do código atrás do que as regras de ouro proíbem        |
+| `npm run fotos`       | baixa as fotos reais do catálogo C&A e gera o manifesto (ver abaixo) |
+| `npm run build:pagina`| empacota o app num HTML único, sem requisição externa             |
 
 ## Telas
 
@@ -89,6 +91,35 @@ O mini-backend em `server/index.ts` faz proxy do catálogo público para evitar 
 
 Timeout de 3s, cache em memória de 1h e `{ fallback: true }` em qualquer erro — **a demo funciona
 perfeitamente offline do conector**, caindo no snapshot local.
+
+## Fotos dos produtos
+
+As imagens são as **fotos públicas do catálogo do cea.com.br**, baixadas uma única vez e
+commitadas no repo — a demo serve tudo local e não depende de rede na hora de apresentar.
+
+```bash
+npm run fotos            # baixa o que falta e atualiza src/data/fotos.json
+npm run fotos -- --forcar # rebaixa tudo, ignorando o que já existe
+```
+
+Para cada produto do snapshot que tem código, o script tenta três caminhos e para no primeiro
+que trouxer imagem: busca por RefId na API de catálogo, busca por termo (pegando o resultado mais
+parecido com o nome) e, por último, a PDP do produto via `og:image`. Baixa duas versões de cada
+cor — 500px para card e 160px para thumb — em `public/produtos/{cod}-{cor}-{lado}.jpg`, e escreve
+o manifesto em `src/data/fotos.json`. Roda com 3 requisições em paralelo, 400 ms entre chamadas e
+2 retentativas com backoff; item que falha entra na contagem de "sem foto" e **nunca aborta o
+script**. Preço coletado vai só para o manifesto: divergência aparece no log, mas a fonte da
+verdade continua sendo o `cea_data.json`.
+
+Na tela, o `ProductImage` resolve em três níveis: **foto local** → **conector VTEX em runtime**
+(uma tentativa por sessão, 2 s de timeout) → **silhueta SVG**. A silhueta é o desenho da peça
+por categoria (vestido, camiseta, camisa, calça, bermuda, legging, sutiã, top, camiseta infantil)
+preenchido com a cor real da variante — é o que aparece se as duas primeiras falharem, e foi
+desenhada para ser apresentável, não para ser um retângulo cinza. `<img>` que quebra cai para a
+silhueta automaticamente.
+
+> Se `public/produtos/` estiver vazio, é porque a coleta ainda não rodou num ambiente com acesso
+> ao cea.com.br. O app funciona igual — só aparece com silhuetas em vez de fotografia.
 
 ## Como os números se sustentam
 

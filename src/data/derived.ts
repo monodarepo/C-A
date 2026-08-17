@@ -2914,6 +2914,8 @@ export const ITENS_NEED: ItemNeed[] = [
  */
 export const INCLUSAO_MAPA = {
   produto: 'Camiseta Torcida Brasil',
+  /** peça criada para a janela da Copa: não existe no catálogo, então não tem ref */
+  cor: 'amarelo',
   eventoId: 'EV1',
   pecas: 24_000,
   pv: 49.99,

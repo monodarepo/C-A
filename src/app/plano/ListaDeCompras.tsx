@@ -1,6 +1,6 @@
 import { SectionCard } from '@/components/ui/SectionCard'
 import { StatusChip, type TomChip } from '@/components/ui/StatusChip'
-import { FotoProduto } from '@/components/ui/FotoProduto'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { Stepper } from '@/components/ui/Stepper'
 import { Button } from '@/components/ui/Button'
 import { formatBRL, formatNum, formatPct } from '@/lib/format'
@@ -69,11 +69,11 @@ export function ListaDeCompras({ linhas }: { linhas: LinhaPlano[] }) {
                     <StatusChip tom={TOM_STATUS[l.status]}>{l.status}</StatusChip>
                   </td>
                   <td className="px-3 py-2">
-                    <FotoProduto
-                      cod={l.heroi ? l.ref : undefined}
+                    <ProductImage
+                      cod={l.ref}
                       nome={l.produto}
+                      categoria={l.categoria}
                       cor={l.cor}
-                      tamanho={36}
                     />
                   </td>
                   <td className="num px-3 py-2 text-[12px] font-semibold text-slate-500">

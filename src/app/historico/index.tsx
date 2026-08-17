@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Tabs } from '@/components/ui/Tabs'
 import { useToast } from '@/components/ui/Toast'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { GraficoMensalHistorico, type PontoMes } from './GraficosHistorico'
 import {
   CANAIS,
@@ -809,6 +810,7 @@ function ListaRanking({
       {itens.map((s, i) => (
         <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
           <span className="num w-5 shrink-0 text-[12px] font-bold text-slate-300">{i + 1}</span>
+          <ProductImage cod={s.cod} nome={s.nome} categoria={s.categoria} cor={s.cor} />
           <div className="min-w-[180px] flex-1">
             <p className="text-[12.5px] font-medium leading-snug text-ink">{s.nome}</p>
             <p className="num text-[11px] text-muted">

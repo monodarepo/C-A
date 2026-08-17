@@ -5,7 +5,7 @@ import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
 import { StatusChip } from '@/components/ui/StatusChip'
-import { FotoProduto } from '@/components/ui/FotoProduto'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
 import {
@@ -242,9 +242,16 @@ function FichaProduto({ ficha }: { ficha: FichaPLM }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-start gap-3.5">
-        <FotoProduto cod={ficha.cod} nome={ficha.nome} cor={ficha.cor} tamanho={84} />
-        <div className="min-w-[240px] flex-1">
+      {/* foto à esquerda, ao lado do bloco de identificação E do stepper */}
+      <div className="grid gap-4 md:grid-cols-[200px_1fr]">
+        <ProductImage
+          cod={ficha.cod}
+          nome={ficha.nome}
+          categoria={ficha.categoria}
+          cor={ficha.cor}
+          tamanho="hero"
+        />
+        <div className="min-w-0 space-y-2.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="num text-[11.5px] font-semibold text-slate-400">ref {ficha.cod}</span>
             <StatusChip tom={ficha.bemSucedida ? 'ok' : 'info'}>
@@ -252,13 +259,13 @@ function FichaProduto({ ficha }: { ficha: FichaPLM }) {
             </StatusChip>
             {ficha.bemSucedida && <StatusChip tom="ok">Jornada bem-sucedida ✓</StatusChip>}
           </div>
-          <h3 className="mt-1 font-display text-[17px] font-semibold leading-tight text-cea-deep">
+          <h3 className="font-display text-[17px] font-semibold leading-tight text-cea-deep">
             {ficha.nome}
           </h3>
-          <p className="mt-0.5 text-[12.5px] text-muted">
+          <p className="text-[12.5px] text-muted">
             {ficha.categoria} · {ficha.cor} · {ficha.idadeSemanas} semanas em loja
           </p>
-          <p className="num mt-1.5 text-[13px]">
+          <p className="num text-[13px]">
             {ficha.precoDe && (
               <span className="mr-1.5 text-muted line-through">{formatBRL(ficha.precoDe)}</span>
             )}
@@ -269,10 +276,10 @@ function FichaProduto({ ficha }: { ficha: FichaPLM }) {
               </span>
             )}
           </p>
+
+          <StepperFases fase={ficha.fase} />
         </div>
       </div>
-
-      <StepperFases fase={ficha.fase} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <KpiCard
@@ -350,7 +357,9 @@ function StepperFases({ fase }: { fase: number }) {
                 >
                   {passada ? '✓' : f.n}
                 </span>
-                <span className="text-[11.5px] font-semibold leading-none">{f.nome}</span>
+                <span className="whitespace-nowrap text-[11.5px] font-semibold leading-none">
+                  {f.nome}
+                </span>
               </div>
               <p
                 className={`mt-1 text-[10px] leading-none ${atual ? 'text-white/70' : 'text-slate-400'}`}

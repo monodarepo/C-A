@@ -5,7 +5,7 @@ import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { EmptyGate } from '@/components/ui/EmptyGate'
 import { StatusChip } from '@/components/ui/StatusChip'
-import { FotoProduto } from '@/components/ui/FotoProduto'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import { usePlano } from '@/app/PlanoProvider'
 import { COLECAO, LIMITE_ACEITE_LINE, LINHAS_LINE, LINHAS_PLANO } from '@/data/derived'
@@ -148,11 +148,12 @@ export default function LinePage() {
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
-                        <FotoProduto
-                          cod={linhaPlano?.heroi ? l.ref : undefined}
+                        <ProductImage
+                          cod={l.ref}
                           nome={l.produto}
+                          categoria={linhaPlano?.categoria}
                           cor={linhaPlano?.cor}
-                          tamanho={30}
+                          lado={34}
                         />
                         <span className="max-w-[200px] font-medium leading-snug text-ink">
                           {l.produto}

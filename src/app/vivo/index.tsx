@@ -6,6 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Sparkline } from '@/components/ui/Sparkline'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import {
   ALERTAS_EXCESSO,
@@ -411,6 +412,7 @@ function ListaAlertas({
       {itens.map((a) => (
         <li key={a.id} className="px-4 py-2.5">
           <div className="flex flex-wrap items-start justify-between gap-2">
+            <ProductImage cod={a.cod} nome={a.produto} categoria={a.categoria} cor={a.cor} />
             <div className="min-w-[200px] flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 <StatusChip tom={TOM_SEVERIDADE[a.severidade]}>{a.severidade}</StatusChip>

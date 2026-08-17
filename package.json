@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "verificar": "tsx scripts/verificar-ancoras.ts",
     "qa": "tsx scripts/qa.ts",
-    "build:pagina": "tsx scripts/build-pagina.ts"
+    "build:pagina": "tsx scripts/build-pagina.ts",
+    "fotos": "tsx scripts/fetch-fotos.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

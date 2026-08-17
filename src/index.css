@@ -50,6 +50,36 @@
   }
 }
 
+/* Shimmer da foto de produto: varre um brilho enquanto a imagem carrega.
+   Com prefers-reduced-motion vira um cinza estático — o espaço já está
+   reservado pelo aspect-ratio, então nada salta de lugar de qualquer forma. */
+.shimmer {
+  background: linear-gradient(
+    100deg,
+    rgb(226 232 240) 20%,
+    rgb(241 245 249) 40%,
+    rgb(226 232 240) 60%
+  );
+  background-size: 220% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 180% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+    background: rgb(226 232 240);
+  }
+}
+
 /* scrollbar discreta para kanbans e gantt horizontais */
 .scroll-x {
   overflow-x: auto;

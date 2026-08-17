@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Tabs } from '@/components/ui/Tabs'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import {
   ARVORE_CADASTRO,
@@ -546,17 +547,32 @@ export default function CadastroPage() {
         )}
 
         {passo === 2 && (
-          <div className="space-y-3">
-            <CampoSelect
-              rotulo="Sessão de grade"
-              valor={rascunho.sessao}
-              opcoes={SESSOES_GABARITO.map((s) => ({ v: s, r: s }))}
-              onChange={(v) => setRascunho({ ...rascunho, sessao: v })}
-            />
-            <Banner tom="info">
-              A sessão define a curva de tamanhos e o gabarito de packs por porte de loja. É o que a
-              tela de Grade usa depois para abrir a quantidade do line tamanho a tamanho.
-            </Banner>
+          <div className="grid gap-3 sm:grid-cols-[150px_1fr]">
+            {/* prévia da peça: a cor escolhida no passo 1 já aparece aqui */}
+            <div>
+              <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted">
+                Prévia
+              </span>
+              <ProductImage
+                nome={rascunho.nome || 'Peça sem nome'}
+                categoria={rascunho.categoria}
+                cor={rascunho.cor}
+                tamanho="card"
+                rotulo
+              />
+            </div>
+            <div className="space-y-3">
+              <CampoSelect
+                rotulo="Sessão de grade"
+                valor={rascunho.sessao}
+                opcoes={SESSOES_GABARITO.map((s) => ({ v: s, r: s }))}
+                onChange={(v) => setRascunho({ ...rascunho, sessao: v })}
+              />
+              <Banner tom="info">
+                A sessão define a curva de tamanhos e o gabarito de packs por porte de loja. É o que
+                a tela de Grade usa depois para abrir a quantidade do line tamanho a tamanho.
+              </Banner>
+            </div>
           </div>
         )}
 

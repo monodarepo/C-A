@@ -4,7 +4,7 @@ import { SectionCard } from '@/components/ui/SectionCard'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Tabs } from '@/components/ui/Tabs'
-import { FotoProduto } from '@/components/ui/FotoProduto'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import { usePlano } from '@/app/PlanoProvider'
 import {
@@ -238,7 +238,9 @@ export default function MapaPage() {
                   </p>
                 </header>
 
-                <div className="flex flex-col gap-2">
+                {/* grade de 2: com a foto mandando no card, uma coluna só deixaria
+                    cada peça com 480px de altura e mataria a leitura da parede */}
+                <div className="grid grid-cols-2 gap-2">
                   {cards.map((s) => (
                     <article
                       key={s.id}
@@ -249,39 +251,61 @@ export default function MapaPage() {
                         setArrastando(s.id)
                       }}
                       onDragEnd={() => setArrastando(null)}
-                      className={`cursor-grab rounded-lg border bg-card p-2 shadow-card transition active:cursor-grabbing ${
-                        arrastando === s.id ? 'opacity-40' : 'hover:shadow-pop'
+                      className={`group cursor-grab overflow-hidden rounded-lg border bg-card shadow-card transition duration-150 active:cursor-grabbing ${
+                        arrastando === s.id
+                          ? 'opacity-40'
+                          : 'hover:-translate-y-0.5 hover:shadow-pop motion-reduce:hover:translate-y-0'
                       } ${s.aprovado ? 'border-line' : 'border-warn/60'}`}
                     >
-                      <div className="flex items-start gap-2">
-                        <FotoProduto cod={s.cod} nome={s.produto} cor={s.cor} tamanho={38} />
-                        <div className="min-w-0 flex-1">
-                          <p className="line-clamp-2 text-[11.5px] font-medium leading-tight text-ink">
-                            {s.produto}
-                          </p>
-                          <p className="mt-0.5 text-[10.5px] capitalize text-muted">{s.cor}</p>
-                        </div>
-                        <div className="flex shrink-0 flex-col items-end gap-0.5 text-[10px]">
+                      {/* a foto é o card: ocupa a maior parte e é o que vende a peça */}
+                      <div className="relative">
+                        <ProductImage
+                          cod={s.cod}
+                          nome={s.produto}
+                          cor={s.cor}
+                          tamanho="card"
+                          className="!rounded-none !border-0 w-full"
+                        />
+                        <span className="absolute right-1 top-1 flex flex-col items-end gap-0.5">
                           {s.badges.map((b) => (
-                            <span key={b} title={ICONE_BADGE[b].titulo} aria-label={ICONE_BADGE[b].titulo}>
+                            <span
+                              key={b}
+                              title={ICONE_BADGE[b].titulo}
+                              aria-label={ICONE_BADGE[b].titulo}
+                              className="grid h-[18px] w-[18px] place-items-center rounded-full bg-white/90 text-[10px] shadow-sm"
+                            >
                               {ICONE_BADGE[b].icone}
                             </span>
                           ))}
-                        </div>
-                      </div>
-                      <footer className="mt-1.5 flex items-center justify-between gap-2 border-t border-line pt-1.5 text-[10px]">
-                        <span className="num text-muted">{formatNum(s.unidades)} un</span>
-                        <span className="truncate text-slate-400" title={s.fornecedor}>
-                          {s.fornecedor}
                         </span>
-                        {!s.aprovado && (
-                          <span className="shrink-0 font-bold uppercase text-warn">pendente</span>
+                        {s.cod && (
+                          <span className="num absolute left-1 top-1 rounded bg-cea-deep/85 px-1.5 py-0.5 text-[10px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                            ref {s.cod}
+                          </span>
                         )}
-                      </footer>
+                        {!s.aprovado && (
+                          <span className="absolute inset-x-0 bottom-0 bg-warn/90 py-0.5 text-center text-[9.5px] font-bold uppercase tracking-wide text-white">
+                            pendente
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="p-2">
+                        <p className="line-clamp-2 text-[11.5px] font-medium leading-tight text-ink">
+                          {s.produto}
+                        </p>
+                        <p className="mt-0.5 text-[10.5px] capitalize text-muted">{s.cor}</p>
+                        <footer className="mt-1.5 flex items-center justify-between gap-2 border-t border-line pt-1.5 text-[10px]">
+                          <span className="num text-muted">{formatNum(s.unidades)} un</span>
+                          <span className="truncate text-slate-400" title={s.fornecedor}>
+                            {s.fornecedor}
+                          </span>
+                        </footer>
+                      </div>
                     </article>
                   ))}
                   {cards.length === 0 && (
-                    <p className="py-6 text-center text-[11px] text-slate-400">
+                    <p className="col-span-2 py-6 text-center text-[11px] text-slate-400">
                       Arraste um card para cá
                     </p>
                   )}

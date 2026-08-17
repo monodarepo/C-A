@@ -6,6 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import { usePlano } from '@/app/PlanoProvider'
 import { ReguaDeBanda } from '@/app/plano/ReguaDeBanda'
@@ -164,7 +165,12 @@ export default function RetroalimentacaoPage() {
         >
           <div className="rounded-lg border border-[#F6D8A0] bg-[var(--warn-soft)] p-3.5">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              <ProductImage
+                nome={INCLUSAO_MAPA.produto}
+                cor={INCLUSAO_MAPA.cor}
+                lado={44}
+              />
+              <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-semibold text-[#A15C00]">
                   {INCLUSAO_MAPA.produto}
                 </p>
@@ -209,10 +215,15 @@ export default function RetroalimentacaoPage() {
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-[12.5px] font-medium leading-snug text-ink">
-                      {v.produto}
-                    </p>
-                    <p className="text-[11px] text-muted">{ev?.nome}</p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <ProductImage cod={v.ref} nome={v.produto} lado={34} />
+                      <div className="min-w-0">
+                        <p className="text-[12.5px] font-medium leading-snug text-ink">
+                          {v.produto}
+                        </p>
+                        <p className="text-[11px] text-muted">{ev?.nome}</p>
+                      </div>
+                    </div>
                   </div>
                   <span className="num shrink-0 text-[13px] font-semibold text-cea-deep">
                     {brl(v.valor)}
@@ -279,10 +290,13 @@ export default function RetroalimentacaoPage() {
                       <StatusChip tom="neutro">sem quantidade</StatusChip>
                     )}
                   </div>
-                  <p className="mt-0.5 text-[12.5px] font-medium leading-snug text-ink">
-                    {c.produto}
-                  </p>
-                  <p className="text-[11.5px] leading-snug text-muted">{c.motivo}</p>
+                  <div className="mt-0.5 flex items-start gap-2">
+                    <ProductImage cod={c.ref} nome={c.produto} lado={34} />
+                    <div className="min-w-0">
+                      <p className="text-[12.5px] font-medium leading-snug text-ink">{c.produto}</p>
+                      <p className="text-[11.5px] leading-snug text-muted">{c.motivo}</p>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">

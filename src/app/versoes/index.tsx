@@ -5,6 +5,7 @@ import { SectionCard } from '@/components/ui/SectionCard'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import { usePlano } from '@/app/PlanoProvider'
 import { iniciaisPessoa } from '@/lib/cea'
@@ -348,8 +349,16 @@ export default function VersoesPage() {
                     <td className="num px-3 py-2 text-[12px] font-semibold text-slate-500">
                       {q.ref}
                     </td>
-                    <td className="max-w-[220px] px-3 py-2 font-medium leading-snug text-ink">
-                      {q.produto}
+                    <td className="max-w-[220px] px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <ProductImage
+                          cod={q.ref}
+                          nome={q.produto}
+                          categoria={q.categoria}
+                          lado={34}
+                        />
+                        <span className="font-medium leading-snug text-ink">{q.produto}</span>
+                      </div>
                     </td>
                     <td className="px-3 py-2 text-[12px] text-slate-600">{q.categoria}</td>
                     <td

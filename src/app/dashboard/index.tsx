@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { StatusChip } from '@/components/ui/StatusChip'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { DataTable, type Coluna } from '@/components/ui/DataTable'
 import { Barra } from '@/components/ui/Barra'
 import { Button } from '@/components/ui/Button'
@@ -375,9 +376,12 @@ export default function DashboardPage() {
                 </StatusChip>
                 <span className="num text-[11px] font-semibold text-muted">{a.cod}</span>
               </div>
-              <p className="font-display text-[14px] font-semibold leading-snug text-cea-deep">
-                {a.produto}
-              </p>
+              <div className="flex items-start gap-2.5">
+                <ProductImage cod={a.cod} nome={a.produto} lado={32} />
+                <p className="font-display text-[14px] font-semibold leading-snug text-cea-deep">
+                  {a.produto}
+                </p>
+              </div>
               <p className="text-[12px] leading-snug text-slate-600">{a.texto}</p>
               <p className="num text-[12px] font-semibold text-ink">{a.metrica}</p>
               <span className="mt-auto pt-1 text-[12px] font-semibold text-cea-blue">

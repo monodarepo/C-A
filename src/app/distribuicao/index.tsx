@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { EmptyGate } from '@/components/ui/EmptyGate'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Tabs } from '@/components/ui/Tabs'
@@ -260,8 +261,17 @@ export default function DistribuicaoPage() {
                         <td className="num px-3 py-2 text-[12px] font-semibold text-slate-500">
                           {c.ref}
                         </td>
-                        <td className="max-w-[220px] px-3 py-2 font-medium leading-snug text-ink">
-                          {c.produto}
+                        <td className="max-w-[220px] px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <ProductImage
+                              cod={c.ref}
+                              nome={c.produto}
+                              categoria={c.categoria}
+                              cor={c.cor}
+                              lado={34}
+                            />
+                            <span className="font-medium leading-snug text-ink">{c.produto}</span>
+                          </div>
                         </td>
                         <td className="px-3 py-2 text-[12px] text-slate-600">{c.categoria}</td>
                         <td className="px-3 py-2 text-[12px] text-slate-600">{c.cor}</td>

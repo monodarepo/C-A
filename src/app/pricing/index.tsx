@@ -6,6 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import {
   CALENDARIO_PRECO,
@@ -557,6 +558,7 @@ function LinhaCandidato({
           className="focus-ring mt-0.5 h-4 w-4 shrink-0 accent-[var(--cea-blue)]"
           aria-label={`Selecionar ${c.produto}`}
         />
+        <ProductImage cod={c.cod} nome={c.produto} categoria={c.categoria} cor={c.cor} />
         <div className="min-w-0 flex-1">
           <p className="text-[12.5px] font-medium leading-snug text-ink">{c.produto}</p>
           <p className="num mt-0.5 text-[11.5px] text-muted">
