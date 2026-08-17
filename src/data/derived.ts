@@ -9,8 +9,10 @@
  */
 import {
   calendario,
+  cartelaCores,
   cea,
   clusters,
+  concorrentes,
   estilistas,
   fornecedores,
   lojasNomeadas,
@@ -21,6 +23,7 @@ import {
 } from '@/lib/cea'
 import {
   dataDoSnapshot,
+  formatBRL,
   formatBRLCompact,
   formatDelta,
   formatNum,
@@ -66,6 +69,12 @@ function embaralhar<T>(itens: T[], rand: () => number): T[] {
 }
 
 const soma = (ns: number[]) => ns.reduce((a, b) => a + b, 0)
+
+/** Arredonda para N casas — usado onde o número entra em comparação de âncora. */
+function arredondar(v: number, casas = 1): number {
+  const f = 10 ** casas
+  return Math.round(v * f) / f
+}
 
 /* ======================================================== 1. A COLEÇÃO ==== */
 
@@ -3398,3 +3407,615 @@ export const RESUMO_ABAS_DISTRIBUICAO = [
       'Lista as células sem alocação. Toda lacuna precisa de justificativa antes do envio para as lojas.',
   },
 ]
+
+/* ============================ 31. BENCHMARK (Fase 8) ===================== */
+
+/**
+ * Os 5 movimentos que o painel de IA recomenda.
+ *
+ * O blueprint §5.1 citado na spec não veio com o material, então cada movimento
+ * é derivado de um fato do snapshot — nenhum texto é opinião solta. A fonte de
+ * cada um está no campo `base`, e o número que ele carrega vem sempre de um
+ * âncora já usado em outra tela.
+ */
+export type MovimentoIA = {
+  id: string
+  titulo: string
+  texto: string
+  /** de onde veio o número — aparece no rodapé do card */
+  base: string
+  impacto: string
+  tom: 'oportunidade' | 'defesa' | 'atencao'
+}
+
+/** Preço médio de uma marca monitorada — usado nos textos dos movimentos. */
+function precoDaMarca(marca: string): number {
+  return concorrentes.find((c) => c.marca === marca)?.precoMedio ?? 0
+}
+
+/** Preço real do hero NOS 1049412, o piso que os movimentos citam. */
+export const PRECO_BASICO_NOS = produtoPorCod('1049412')?.precoPor ?? 29.99
+
+/** Termo usado na coleta ao vivo do /benchmark (spec da Fase 8). */
+export const TERMO_COLETA = 'vestido midi'
+
+/** Participação somada das faixas médias/premium na pirâmide real de vestidos. */
+export const PARTICIPACAO_P3_P4 = soma(
+  PIRAMIDE_PRECO.filter((f) => f.id === 'P3' || f.id === 'P4').map((f) => f.participacao),
+)
+
+export const MOVIMENTOS_IA: MovimentoIA[] = [
+  {
+    id: 'M1',
+    titulo: 'Fechar o gap de ticket sem perder o piso de preço',
+    texto: `Nosso ticket de ${formatBRL(BENCHMARK.ticketCA, 0)} está ${formatPct(Math.abs(BENCHMARK.gapVsRenner))} abaixo do líder aspiracional. O caminho não é subir etiqueta: é migrar mix para as faixas P3 e P4 de vestidos, que já respondem por ${formatPct(PARTICIPACAO_P3_P4, 0)} da oferta e sustentam preço médio de ${formatBRL(PRECO_MEDIO_PIRAMIDE, 0)}.`,
+    base: `ticket C&A ${formatBRL(BENCHMARK.ticketCA, 0)} vs Renner ${formatBRL(precoDaMarca('Renner'), 0)} · pirâmide de vestidos observada`,
+    impacto: 'Ticket +R$ 6 a R$ 9 sem markdown adicional',
+    tom: 'oportunidade',
+  },
+  {
+    id: 'M2',
+    titulo: `Ampliar o programa de ${BENCHMARK.categoriaEmAlta.toLowerCase()}`,
+    texto: `${BENCHMARK.categoriaEmAlta} é a categoria em alta na coleta e onde temos mais profundidade de oferta pronta — o dorsal de linho em 6 cores e o programa chemise em 3 cores já cobrem P2 e P3. Puxar duas cores extras no dorsal custa menos que abrir referência nova.`,
+    base: `coleta de "${TERMO_COLETA}" · ${BENCHMARK.coletaSnapshot.skus} SKUs na faixa R$ ${BENCHMARK.coletaSnapshot.min}–${BENCHMARK.coletaSnapshot.max}`,
+    impacto: 'Profundidade +2 cores no dorsal, sem novo desenvolvimento',
+    tom: 'oportunidade',
+  },
+  {
+    id: 'M3',
+    titulo: `${BENCHMARK.corDoAno} como cor de assinatura da cápsula`,
+    texto: `${BENCHMARK.corDoAno} é a cor do ano e já está na nossa cartela real. Usar como cor de entrada dos lançamentos de ${COLECAO.capsula} alinha a vitrine ao discurso de tendência sem reabrir desenvolvimento de cor.`,
+    base: `cartela real do snapshot (${cartelaCores.length} cores) · ${BENCHMARK.corDoAno} presente`,
+    impacto: 'Assinatura de tendência com custo zero de desenvolvimento',
+    tom: 'oportunidade',
+  },
+  {
+    id: 'M4',
+    titulo: 'Defender o básico contra as marcas de valor',
+    texto: `Marisa (${formatBRL(precoDaMarca('Marisa'), 0)}) e Torra (${formatBRL(precoDaMarca('Torra'), 0)}) pressionam por baixo. Nossa resposta é a camiseta básica a ${formatBRL(PRECO_BASICO_NOS)} em 22 cores: manter o piso, garantir grade e não deixar ruptura no NOS — perder o básico é perder tráfego, não só a venda da peça.`,
+    base: `concorrentes de valor no snapshot · hero NOS 1049412 a ${formatBRL(PRECO_BASICO_NOS)}`,
+    impacto: 'Tráfego defendido no piso de preço',
+    tom: 'defesa',
+  },
+  {
+    id: 'M5',
+    titulo: 'Blindar moda jovem da pressão digital',
+    texto: `Shein pressiona moda jovem online e nosso digital cresce ${formatPct(DASHBOARD.digitalVar)} (${formatPct(DASHBOARD.digitalShare)} da receita). Competir por preço unitário nesse recorte não fecha margem: o movimento é velocidade — janelas curtas, reposição por tamanho e cápsula com estilista, onde a marca ganha e o marketplace não copia.`,
+    base: `digital ${formatPct(DASHBOARD.digitalShare)} (${formatDelta(DASHBOARD.digitalVar)}) · Shein monitorada como pressão digital`,
+    impacto: 'Margem preservada trocando preço por velocidade',
+    tom: 'atencao',
+  },
+]
+
+/** Os 7 concorrentes do JSON com o gap de preço médio contra o ticket C&A. */
+export const CONCORRENTES_MONITORADOS = concorrentes.map((c) => ({
+  marca: c.marca,
+  tipo: c.tipo,
+  precoMedio: c.precoMedio ?? null,
+  obs: c.obs,
+  /** gap do preço médio da marca contra o nosso ticket (null = sem preço no snapshot) */
+  gapPct:
+    c.precoMedio === undefined
+      ? null
+      : arredondar(((BENCHMARK.ticketCA - c.precoMedio) / c.precoMedio) * 100, 1),
+}))
+
+/** Marcas com preço médio no snapshot — as que entram na tabela comparável. */
+export const MARCAS_COM_PRECO = CONCORRENTES_MONITORADOS.filter(
+  (c): c is typeof c & { precoMedio: number } => c.precoMedio !== null,
+)
+
+/**
+ * O mercado monitorado tem dois blocos, e misturá-los numa média só engana:
+ * a média das 6 marcas com preço dá R$ 97 (abaixo do nosso ticket de 108),
+ * porque metade delas é posicionamento de valor. Então a tabela compara contra
+ * os dois — pares aspirativos (onde estamos ABAIXO, o gap de −16% do KPI) e
+ * mercado inteiro (onde estamos ACIMA, a pressão das marcas de valor).
+ */
+export const MARCAS_PARES = MARCAS_COM_PRECO.filter((c) => c.tipo !== 'valor')
+export const MARCAS_VALOR = MARCAS_COM_PRECO.filter((c) => c.tipo === 'valor')
+
+/** Arredonda para o padrão de etiqueta da praça (sempre ,99). */
+function preco99(v: number): number {
+  return Math.max(9.99, Math.round(v - 0.99) + 0.99)
+}
+
+export type ItemComparavel = {
+  id: string
+  peca: string
+  /** referência real quando o item comparável é um dos heróis */
+  cod?: string
+  /** preço REAL praticado pela C&A (do snapshot) */
+  precoCA: number
+  /** true = preço promocional na coleta (marcado com * na tabela) */
+  promocional?: boolean
+  nota?: string
+  precos: Record<string, number>
+  /** média das 3 marcas aspirativas/diretas — a comparação que decide preço */
+  mediaPares: number
+  deltaParesPct: number
+  /** média das 6 marcas com preço no snapshot, os dois blocos juntos */
+  mediaMercado: number
+  deltaPct: number
+}
+
+/**
+ * Preço médio por peça comparável.
+ *
+ * A coluna C&A traz preço REAL do snapshot (os seis da spec: 29,99 · 99,99 ·
+ * 159,99 · 189,99 · 159,99* · 59,99). As colunas de concorrente são estimadas —
+ * o snapshot só traz o preço médio da marca, não a etiqueta peça a peça — pelo
+ * índice de posicionamento (preço médio da marca ÷ ticket C&A), com ruído
+ * seedado de 6% e arredondamento para ,99. Mesma seed ⇒ mesma tabela sempre.
+ */
+function montarComparaveis(): ItemComparavel[] {
+  const rand = mulberry32(SEED + 511)
+  const base: { id: string; peca: string; cod?: string; precoCA: number; promocional?: boolean; nota?: string }[] = [
+    {
+      id: 'C1',
+      peca: 'Camiseta básica algodão MC',
+      cod: '1049412',
+      precoCA: 29.99,
+      nota: 'Piso de preço do NOS masculino, 22 cores.',
+    },
+    {
+      id: 'C2',
+      peca: 'Vestido midi algodão básico',
+      precoCA: 99.99,
+      nota: 'Entrada da pirâmide de vestidos (P1).',
+    },
+    {
+      id: 'C3',
+      peca: 'Vestido midi com linho',
+      cod: '1075684',
+      precoCA: 159.99,
+      nota: 'Dorsal de verão em 6 cores.',
+    },
+    {
+      id: 'C4',
+      peca: 'Vestido midi chemise viscose',
+      precoCA: 189.99,
+      nota: 'Programa repeat em 3 cores (P3).',
+    },
+    {
+      id: 'C5',
+      peca: 'Vestido midi de renda floral',
+      precoCA: 159.99,
+      promocional: true,
+      nota: 'Etiqueta de coleta promocional — comparação exige ressalva.',
+    },
+    {
+      id: 'C6',
+      peca: 'Sutiã renda sem bojo',
+      cod: '7413962',
+      precoCA: 59.99,
+      nota: 'NOS de moda íntima, programa 6 cores.',
+    },
+  ]
+
+  return base.map((item) => {
+    const precos: Record<string, number> = {}
+    for (const m of MARCAS_COM_PRECO) {
+      const indice = m.precoMedio / BENCHMARK.ticketCA
+      precos[m.marca] = preco99(item.precoCA * indice * jitter(rand, 0.06))
+    }
+    const mediaMercado = arredondar(soma(Object.values(precos)) / MARCAS_COM_PRECO.length, 2)
+    const mediaPares = arredondar(
+      soma(MARCAS_PARES.map((m) => precos[m.marca])) / MARCAS_PARES.length,
+      2,
+    )
+    return {
+      ...item,
+      precos,
+      mediaPares,
+      deltaParesPct: arredondar((item.precoCA / mediaPares - 1) * 100, 1),
+      mediaMercado,
+      deltaPct: arredondar((item.precoCA / mediaMercado - 1) * 100, 1),
+    }
+  })
+}
+
+export const ITENS_COMPARAVEIS: ItemComparavel[] = montarComparaveis()
+
+/** Posição média da C&A nas 6 peças comparáveis, contra cada bloco. */
+export const GAP_MEDIO_COMPARAVEL = arredondar(
+  soma(ITENS_COMPARAVEIS.map((i) => i.deltaPct)) / ITENS_COMPARAVEIS.length,
+  1,
+)
+
+export const GAP_MEDIO_PARES = arredondar(
+  soma(ITENS_COMPARAVEIS.map((i) => i.deltaParesPct)) / ITENS_COMPARAVEIS.length,
+  1,
+)
+
+/** Texto do banner SERVE PARA / NÃO CONFUNDIR desta tela. */
+export const ESCOPO_BENCHMARK = {
+  servePara:
+    'Ler o mercado antes de decidir preço e mix: onde estamos caros, onde estamos baratos e qual movimento a coleta sustenta.',
+  naoConfundir:
+    'Não é acompanhamento de venda do dia. Preço realizado, ruptura e markdown ativo ficam no Sortimento Vivo.',
+} as const
+
+/* ================================ 32. PLM (Fase 8) ======================= */
+
+/** As 8 fases do ciclo — 1 a 3 acontecem antes da peça chegar à loja. */
+export type FasePLM = {
+  n: number
+  nome: string
+  descricao: string
+  /** true = a peça já está em loja nesta fase */
+  emLoja: boolean
+}
+
+export const FASES_PLM: FasePLM[] = [
+  { n: 1, nome: 'Briefing', descricao: 'Need, faixa de preço e papel na coleção definidos.', emLoja: false },
+  { n: 2, nome: 'Desenvolvimento', descricao: 'Ficha técnica, prova de modelagem e cor aprovada.', emLoja: false },
+  { n: 3, nome: 'Aprovação', descricao: 'Preço fechado com o fornecedor e OC emitida.', emLoja: false },
+  { n: 4, nome: 'Introdução', descricao: 'Primeiras 4 semanas em loja — leitura de velocidade.', emLoja: true },
+  { n: 5, nome: 'Crescimento', descricao: 'Velocidade acelerando; reposição e ampliação de cor.', emLoja: true },
+  { n: 6, nome: 'Maturidade', descricao: 'Patamar estável; foco em grade e cobertura.', emLoja: true },
+  { n: 7, nome: 'Declínio', descricao: 'Velocidade caindo; decisão de markdown se aproxima.', emLoja: true },
+  { n: 8, nome: 'Liquidação', descricao: 'Markdown ativo para zerar pulmão antes da virada.', emLoja: true },
+]
+
+/**
+ * Os 5 estágios que a tela resume em cards — são as fases 4 a 8, as que
+ * acontecem com a peça em loja. As contagens (38/61/84/29/11) vêm da spec e
+ * somam 223 SKUs.
+ *
+ * Reconciliação com o âncora de 262 SKUs ativos: os 39 restantes têm menos de 4
+ * semanas em loja e ainda não fecham leitura de velocidade, então ficam fora da
+ * classificação — a tela mostra esse resto explicitamente, no rodapé dos cards.
+ */
+export type EstagioPLM = {
+  fase: number
+  nome: string
+  skus: number
+  estrategia: string
+  tom: 'info' | 'ok' | 'warn' | 'crit'
+}
+
+export const ESTAGIOS_PLM: EstagioPLM[] = [
+  {
+    fase: 4,
+    nome: 'Introdução',
+    skus: 38,
+    estrategia: 'Não repor antes da 4ª semana. Ler velocidade e conversão por cor.',
+    tom: 'info',
+  },
+  {
+    fase: 5,
+    nome: 'Crescimento',
+    skus: 61,
+    estrategia: 'Repor no ritmo da venda e ampliar cor onde a curva de tamanho fecha.',
+    tom: 'ok',
+  },
+  {
+    fase: 6,
+    nome: 'Maturidade',
+    skus: 84,
+    estrategia: 'Defender grade e cobertura. Preço firme, sem promoção tática.',
+    tom: 'ok',
+  },
+  {
+    fase: 7,
+    nome: 'Declínio',
+    skus: 29,
+    estrategia: 'Preparar markdown escalonado antes que o pulmão vire risco de virada.',
+    tom: 'warn',
+  },
+  {
+    fase: 8,
+    nome: 'Liquidação',
+    skus: 11,
+    estrategia: 'Zerar pulmão na janela. Profundidade de desconto conforme cobertura.',
+    tom: 'crit',
+  },
+]
+
+export const TOTAL_CLASSIFICADO_PLM = soma(ESTAGIOS_PLM.map((e) => e.skus))
+/** SKUs ativos ainda sem 4 semanas em loja — o resto de 262 − 223. */
+export const SKUS_SEM_LEITURA_PLM = COLECAO.skusAtivos - TOTAL_CLASSIFICADO_PLM
+
+export type FichaPLM = {
+  cod: string
+  nome: string
+  categoria: string
+  cor: string
+  fase: number
+  /** semanas desde a entrada em loja */
+  idadeSemanas: number
+  precoDe?: number
+  precoPor: number
+  markdownPct?: number
+  /** velocidade antes e depois do último movimento, em % vs semana anterior */
+  velocidadeAntes: number
+  velocidadeDepois: number
+  gmroi: number
+  /** peças em estoque que ainda precisam sair */
+  pulmao: number
+  sellOut: number
+  aprendizado: string
+  /** true = jornada encerrada com sucesso (aparece com selo verde) */
+  bemSucedida?: boolean
+}
+
+/**
+ * Fichas de ciclo de vida dos heróis. Os números de velocidade, GMROI, pulmão e
+ * sell-out do 1083993 são os da spec (idade 14 sem · −12% → +64% · GMROI 2,86 ·
+ * pulmão 0 · sell-out 100%); os demais heróis seguem a mesma escala, coerentes
+ * com a fase em que estão.
+ */
+export const FICHAS_PLM: FichaPLM[] = [
+  {
+    cod: '1083993',
+    nome: 'Vestido midi de tricot canelado',
+    categoria: 'Vestidos',
+    cor: 'Grafite',
+    fase: 8,
+    idadeSemanas: 14,
+    precoDe: 199.99,
+    precoPor: 89.99,
+    markdownPct: -55,
+    velocidadeAntes: -12,
+    velocidadeDepois: 64,
+    gmroi: 2.86,
+    pulmao: 0,
+    sellOut: 100,
+    bemSucedida: true,
+    aprendizado:
+      'Tricot canelado em cápsula de verão nasce com janela curta: o markdown de −55% na 11ª semana zerou o pulmão sem contaminar o preço do dorsal. Repetir o calendário, não a profundidade — entrar com 30% menos peça na próxima.',
+  },
+  {
+    cod: '1099133',
+    nome: 'Calça super wide leg patchwork bicolor',
+    categoria: 'Calças Femininas',
+    cor: 'Azul bicolor',
+    fase: 4,
+    idadeSemanas: 2,
+    precoPor: 229.99,
+    velocidadeAntes: 0,
+    velocidadeDepois: 18,
+    gmroi: 1.42,
+    pulmao: 4_100,
+    sellOut: 11,
+    aprendizado:
+      'Produto novo sem histórico: a leitura só fecha na 4ª semana. Até lá vale conversão por loja de cluster A, não venda absoluta.',
+  },
+  {
+    cod: '1049412',
+    nome: 'Camiseta básica de algodão manga curta',
+    categoria: 'Camisetas e Regatas',
+    cor: 'Preto +22',
+    fase: 6,
+    idadeSemanas: 52,
+    precoDe: 39.99,
+    precoPor: 29.99,
+    velocidadeAntes: 4,
+    velocidadeDepois: 6,
+    gmroi: 4.18,
+    pulmao: 96_400,
+    sellOut: 71,
+    aprendizado:
+      'NOS não tem declínio: tem ruptura. O ciclo de vida aqui é a grade — reposição tamanho a tamanho, sem promoção tática que derrube o piso de R$ 29,99.',
+  },
+  {
+    cod: '1075684',
+    nome: 'Vestido midi com linho decote quadrado',
+    categoria: 'Vestidos',
+    cor: 'Natural/Bege',
+    fase: 5,
+    idadeSemanas: 6,
+    precoPor: 159.99,
+    velocidadeAntes: 21,
+    velocidadeDepois: 38,
+    gmroi: 3.11,
+    pulmao: 18_700,
+    sellOut: 43,
+    aprendizado:
+      'Dorsal de verão em aceleração: as 6 cores vendem em ritmos diferentes, e é a cor — não a referência — que decide reposição.',
+  },
+  {
+    cod: '1033472',
+    nome: 'Calça wide leg jeans cintura alta',
+    categoria: 'Calças Femininas',
+    cor: 'Azul claro',
+    fase: 6,
+    idadeSemanas: 31,
+    precoPor: 199.99,
+    velocidadeAntes: 9,
+    velocidadeDepois: 3,
+    gmroi: 2.94,
+    pulmao: 27_300,
+    sellOut: 68,
+    aprendizado:
+      'Core do programa wide leg em patamar: manter cobertura sem ampliar cor. O risco não é venda, é o fit sair de tendência antes do estoque acabar.',
+  },
+  {
+    cod: '1086292',
+    nome: 'Vestido midi halterneck linho bordado floral',
+    categoria: 'Vestidos',
+    cor: 'Bege/Amarelo',
+    fase: 7,
+    idadeSemanas: 11,
+    precoPor: 259.99,
+    velocidadeAntes: 14,
+    velocidadeDepois: -9,
+    gmroi: 1.87,
+    pulmao: 6_900,
+    sellOut: 54,
+    aprendizado:
+      'Peça de vitrine desacelera junto com o evento que a sustenta. Markdown escalonado de −28% agora vale mais que −53% em janeiro.',
+  },
+  {
+    cod: '7413962',
+    nome: 'Sutiã meia taça canelado com renda',
+    categoria: 'Moda Íntima/Sutiãs',
+    cor: 'Preto',
+    fase: 6,
+    idadeSemanas: 44,
+    precoPor: 59.99,
+    velocidadeAntes: 5,
+    velocidadeDepois: 5,
+    gmroi: 3.64,
+    pulmao: 41_200,
+    sellOut: 74,
+    aprendizado:
+      'Grade crítica: a venda cai por falta de tamanho, não por falta de interesse. Reposição por tamanho é o indicador que manda aqui.',
+  },
+]
+
+export const FICHA_DESTAQUE_PLM = FICHAS_PLM[0].cod
+
+export function fichaPorCod(cod: string): FichaPLM {
+  return FICHAS_PLM.find((f) => f.cod === cod) ?? FICHAS_PLM[0]
+}
+
+export type RiscoPLM = 'verde' | 'amarelo' | 'vermelho'
+
+export type ItemPipeline = {
+  cod?: string
+  produto: string
+  fase: number
+  semanas: number
+  /** cobertura em semanas de venda ao ritmo atual */
+  cobertura: number
+  sellOut: number
+  velocidade: number
+  risco: RiscoPLM
+  acao: string
+}
+
+/**
+ * Pipeline de atenção: as peças cuja fase e cobertura pedem decisão nesta semana.
+ * O risco é regra, não rótulo solto — `riscoPorCobertura` abaixo é o mesmo
+ * critério que os gatilhos automáticos usam.
+ */
+export function riscoPorCobertura(cobertura: number, velocidade: number): RiscoPLM {
+  if (cobertura >= 20 || velocidade <= -15) return 'vermelho'
+  if (cobertura >= 12 || velocidade < 0) return 'amarelo'
+  return 'verde'
+}
+
+const PIPELINE_BASE: Omit<ItemPipeline, 'risco'>[] = [
+  {
+    produto: 'Vestido midi alça fina — Preto',
+    fase: 8,
+    semanas: 16,
+    cobertura: 24,
+    sellOut: 47,
+    velocidade: -22,
+    acao: 'Markdown de −63% já ativo; acompanhar saída semanal até zerar o pulmão.',
+  },
+  {
+    cod: '1086292',
+    produto: 'Vestido midi halterneck linho bordado floral',
+    fase: 7,
+    semanas: 11,
+    cobertura: 14,
+    sellOut: 54,
+    velocidade: -9,
+    acao: 'Abrir markdown escalonado de −28% na próxima semana.',
+  },
+  {
+    produto: 'Vestido midi franzido com fenda — Preto',
+    fase: 7,
+    semanas: 13,
+    cobertura: 18,
+    sellOut: 51,
+    velocidade: -16,
+    acao: 'Segunda dose de markdown (−47%) autorizada pela verba de remarcação.',
+  },
+  {
+    cod: '7413962',
+    produto: 'Sutiã meia taça canelado com renda',
+    fase: 6,
+    semanas: 44,
+    cobertura: 9,
+    sellOut: 74,
+    velocidade: 5,
+    acao: 'Repor por tamanho: grade quebrada em 34 lojas do cluster C.',
+  },
+  {
+    cod: '1099133',
+    produto: 'Calça super wide leg patchwork bicolor',
+    fase: 4,
+    semanas: 2,
+    cobertura: 13,
+    sellOut: 11,
+    velocidade: 18,
+    acao: 'Aguardar a 4ª semana antes de repor — leitura ainda não fecha.',
+  },
+  {
+    cod: '1033472',
+    produto: 'Calça wide leg jeans cintura alta',
+    fase: 6,
+    semanas: 31,
+    cobertura: 11,
+    sellOut: 68,
+    velocidade: 3,
+    acao: 'Manter cobertura, sem ampliar cor. Fit em observação de tendência.',
+  },
+]
+
+export const PIPELINE_ATENCAO: ItemPipeline[] = PIPELINE_BASE.map((i) => ({
+  ...i,
+  risco: riscoPorCobertura(i.cobertura, i.velocidade),
+}))
+
+export const RESUMO_RISCO_PIPELINE = {
+  vermelho: PIPELINE_ATENCAO.filter((i) => i.risco === 'vermelho').length,
+  amarelo: PIPELINE_ATENCAO.filter((i) => i.risco === 'amarelo').length,
+  verde: PIPELINE_ATENCAO.filter((i) => i.risco === 'verde').length,
+}
+
+export type GatilhoPLM = {
+  id: string
+  nome: string
+  se: string
+  entao: string
+  /** quantos SKUs a regra pegaria no snapshot de hoje */
+  alcance: number
+  /** estado inicial do toggle */
+  monitorando: boolean
+  nota: string
+}
+
+/** As 3 regras SE/ENTÃO do motor de ciclo de vida. */
+export const GATILHOS_PLM: GatilhoPLM[] = [
+  {
+    id: 'G1',
+    nome: 'Declínio com pulmão alto',
+    se: 'velocidade < 0 por 2 semanas E cobertura >= 12 semanas',
+    entao: 'sugerir markdown escalonado e mover para fase 7 (Declínio)',
+    alcance: PIPELINE_ATENCAO.filter((i) => i.velocidade < 0 && i.cobertura >= 12).length,
+    monitorando: true,
+    nota: 'É a regra que abriu o markdown do tricot canelado na 11ª semana.',
+  },
+  {
+    id: 'G2',
+    nome: 'Aceleração sem reposição',
+    se: 'velocidade >= +25% E cobertura < 6 semanas',
+    entao: 'abrir sugestão de reposição e ampliar cor no dorsal',
+    alcance: FICHAS_PLM.filter((f) => f.velocidadeDepois >= 25 && f.sellOut < 60).length,
+    monitorando: true,
+    nota: 'Pega o dorsal de linho antes de a cor campeã romper.',
+  },
+  {
+    id: 'G3',
+    nome: 'Grade quebrada no NOS',
+    se: 'ruptura de tamanho > 15% em SKU de fase 6 (Maturidade)',
+    entao: 'gerar ordem de reposição tamanho a tamanho, sem aprovação manual',
+    alcance: PIPELINE_ATENCAO.filter((i) => i.fase === 6).length,
+    monitorando: false,
+    nota: 'Pausado desde a virada do ERP — reposição automática exige grade conferida.',
+  },
+]
+
+/** Texto do banner SERVE PARA / NÃO CONFUNDIR do PLM. */
+export const ESCOPO_PLM = {
+  servePara:
+    'Saber em que fase da vida cada peça está e o que fazer nela: repor, defender preço, remarcar ou liquidar.',
+  naoConfundir:
+    'Não é a tela de markdown. Aqui sai a sugestão; a remarcação em si é executada no Pricing.',
+} as const

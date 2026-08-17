@@ -5,6 +5,7 @@
  * (clusters, regiões) fecham exatamente.
  */
 import { produtoPorCod } from '../src/lib/cea'
+import { formatDelta } from '../src/lib/format'
 import {
   AGREGADOS_FROTA,
   ALERTAS_CRITICOS,
@@ -95,6 +96,26 @@ import {
   multiploDoPack,
   templateDaLinha,
   TEMPLATE_POR_CATEGORIA,
+  BENCHMARK,
+  CONCORRENTES_MONITORADOS,
+  ESTAGIOS_PLM,
+  FASES_PLM,
+  FICHAS_PLM,
+  FICHA_DESTAQUE_PLM,
+  GAP_MEDIO_COMPARAVEL,
+  GAP_MEDIO_PARES,
+  GATILHOS_PLM,
+  ITENS_COMPARAVEIS,
+  MARCAS_COM_PRECO,
+  MARCAS_PARES,
+  MARCAS_VALOR,
+  MOVIMENTOS_IA,
+  PIPELINE_ATENCAO,
+  PRECO_BASICO_NOS,
+  SKUS_SEM_LEITURA_PLM,
+  TOTAL_CLASSIFICADO_PLM,
+  riscoPorCobertura,
+  MARKDOWNS_REAIS,
 } from '../src/data/derived'
 import { VIVO } from '../src/data/derived'
 
@@ -714,6 +735,140 @@ const lojasFrias = LOJAS_DISTRIBUICAO.filter(
   (l) => l.clima === 'Fria' || l.clima === 'Híbrida Fria',
 ).length
 checar('lojas de clima frio no recorte', lojasFrias, DISTRIBUICAO.lacunas, 0)
+
+console.log('\n— BENCHMARK —')
+checar('ticket médio C&A', BENCHMARK.ticketCA, 108, 0)
+checar('gap vs Renner (%)', BENCHMARK.gapVsRenner, -16, 0)
+checar('coleta do snapshot · SKUs', BENCHMARK.coletaSnapshot.skus, 641, 0)
+checar('coleta do snapshot · piso', BENCHMARK.coletaSnapshot.min, 39, 0)
+checar('coleta do snapshot · teto', BENCHMARK.coletaSnapshot.max, 440, 0)
+checar('concorrentes monitorados', CONCORRENTES_MONITORADOS.length, 7, 0)
+checar('marcas com preço no snapshot', MARCAS_COM_PRECO.length, 6, 0)
+checar('blocos: pares + valor = marcas com preço', MARCAS_PARES.length + MARCAS_VALOR.length, MARCAS_COM_PRECO.length, 0)
+const rennerNoSnapshot = MARCAS_COM_PRECO.reduce((a, m) => Math.max(a, m.precoMedio), 0)
+checar('preço médio do líder (Renner)', rennerNoSnapshot, 129, 0)
+checar(
+  'gap vs Renner fecha com o preço do snapshot',
+  ((BENCHMARK.ticketCA - rennerNoSnapshot) / rennerNoSnapshot) * 100,
+  BENCHMARK.gapVsRenner,
+  0.02,
+)
+checar('movimentos da IA', MOVIMENTOS_IA.length, 5, 0)
+const movimentoSemBase = MOVIMENTOS_IA.filter((m) => !m.base || !m.impacto)
+falhas += movimentoSemBase.length
+console.log(
+  `${movimentoSemBase.length === 0 ? '✓' : '✗'} todo movimento declara a base do número e o impacto`,
+)
+checar('peças comparáveis', ITENS_COMPARAVEIS.length, 6, 0)
+const PRECOS_CA_ANCORA = [29.99, 99.99, 159.99, 189.99, 159.99, 59.99]
+const precoCAErrado = ITENS_COMPARAVEIS.filter((i, idx) => i.precoCA !== PRECOS_CA_ANCORA[idx])
+falhas += precoCAErrado.length
+console.log(
+  `${precoCAErrado.length === 0 ? '✓' : '✗'} coluna C&A usa os 6 preços reais da spec (${PRECOS_CA_ANCORA.map((p) => p.toFixed(2).replace('.', ',')).join(' · ')})`,
+)
+checar('preço real do hero NOS 1049412', PRECO_BASICO_NOS, 29.99, 0)
+const semTodasAsMarcas = ITENS_COMPARAVEIS.filter(
+  (i) => Object.keys(i.precos).length !== MARCAS_COM_PRECO.length,
+)
+falhas += semTodasAsMarcas.length
+console.log(
+  `${semTodasAsMarcas.length === 0 ? '✓' : '✗'} toda peça comparável tem preço nas ${MARCAS_COM_PRECO.length} marcas`,
+)
+const mediaErrada = ITENS_COMPARAVEIS.filter((i) => {
+  const mercado = Object.values(i.precos).reduce((a, v) => a + v, 0) / MARCAS_COM_PRECO.length
+  const pares = MARCAS_PARES.reduce((a, m) => a + i.precos[m.marca], 0) / MARCAS_PARES.length
+  return Math.abs(mercado - i.mediaMercado) > 0.01 || Math.abs(pares - i.mediaPares) > 0.01
+})
+falhas += mediaErrada.length
+console.log(`${mediaErrada.length === 0 ? '✓' : '✗'} as duas médias conferem com as colunas`)
+const paresSempreAcima = ITENS_COMPARAVEIS.every((i) => i.deltaParesPct < 0)
+const mercadoSempreAbaixo = ITENS_COMPARAVEIS.every((i) => i.deltaPct > 0)
+if (!paresSempreAcima || !mercadoSempreAbaixo) falhas++
+console.log(
+  `${paresSempreAcima && mercadoSempreAbaixo ? '✓' : '✗'} posicionamento entre os dois blocos: ${formatDelta(GAP_MEDIO_PARES)} vs pares · ${formatDelta(GAP_MEDIO_COMPARAVEL)} vs mercado`,
+)
+
+console.log('\n— PLM —')
+checar('fases do ciclo', FASES_PLM.length, 8, 0)
+checar('fases em loja', FASES_PLM.filter((f) => f.emLoja).length, ESTAGIOS_PLM.length, 0)
+checar('estágios em loja', ESTAGIOS_PLM.length, 5, 0)
+const CONTAGENS_ANCORA = [38, 61, 84, 29, 11]
+const contagemErrada = ESTAGIOS_PLM.filter((e, i) => e.skus !== CONTAGENS_ANCORA[i])
+falhas += contagemErrada.length
+console.log(
+  `${contagemErrada.length === 0 ? '✓' : '✗'} contagens dos estágios = ${CONTAGENS_ANCORA.join('/')}`,
+)
+checar('SKUs classificados', TOTAL_CLASSIFICADO_PLM, 223, 0)
+checar(
+  'classificados + sem leitura = SKUs ativos',
+  TOTAL_CLASSIFICADO_PLM + SKUS_SEM_LEITURA_PLM,
+  COLECAO.skusAtivos,
+  0,
+)
+const estagioForaDaFase = ESTAGIOS_PLM.filter((e) => FASES_PLM[e.fase - 1]?.nome !== e.nome)
+falhas += estagioForaDaFase.length
+console.log(
+  `${estagioForaDaFase.length === 0 ? '✓' : '✗'} cada estágio corresponde à fase de mesmo número`,
+)
+
+const destaque = FICHAS_PLM.find((f) => f.cod === FICHA_DESTAQUE_PLM)!
+checar('ficha destaque · fase', destaque.fase, 8, 0)
+checar('ficha destaque · idade (semanas)', destaque.idadeSemanas, 14, 0)
+checar('ficha destaque · velocidade antes', destaque.velocidadeAntes, -12, 0)
+checar('ficha destaque · velocidade depois', destaque.velocidadeDepois, 64, 0)
+checar('ficha destaque · GMROI', destaque.gmroi, 2.86, 0)
+checar('ficha destaque · pulmão', destaque.pulmao, 0, 0)
+checar('ficha destaque · sell-out (%)', destaque.sellOut, 100, 0)
+checar('ficha destaque · markdown (%)', destaque.markdownPct ?? 0, -55, 0)
+const md1083993 = produtoPorCod('1083993')
+const markdownFechaComOCatalogo =
+  md1083993?.precoDe === destaque.precoDe && md1083993?.precoPor === destaque.precoPor
+if (!markdownFechaComOCatalogo) falhas++
+console.log(
+  `${markdownFechaComOCatalogo ? '✓' : '✗'} preços do destaque batem com o catálogo real (199,99 → 89,99)`,
+)
+const markdownNosAncoras = MARKDOWNS_REAIS.includes(
+  (destaque.markdownPct ?? 0) as (typeof MARKDOWNS_REAIS)[number],
+)
+if (!markdownNosAncoras) falhas++
+console.log(`${markdownNosAncoras ? '✓' : '✗'} o markdown do destaque é um dos 6 reais do CLAUDE.md`)
+
+const fichaForaDoCatalogo = FICHAS_PLM.filter((f) => !produtoPorCod(f.cod))
+falhas += fichaForaDoCatalogo.length
+console.log(
+  `${fichaForaDoCatalogo.length === 0 ? '✓' : '✗'} toda ficha aponta para uma referência real do catálogo`,
+)
+const fichaComFaseInvalida = FICHAS_PLM.filter((f) => f.fase < 1 || f.fase > FASES_PLM.length)
+falhas += fichaComFaseInvalida.length
+console.log(
+  `${fichaComFaseInvalida.length === 0 ? '✓' : '✗'} toda ficha está numa fase existente (1 a ${FASES_PLM.length})`,
+)
+const fichaSemAprendizado = FICHAS_PLM.filter((f) => f.aprendizado.length < 40)
+falhas += fichaSemAprendizado.length
+console.log(
+  `${fichaSemAprendizado.length === 0 ? '✓' : '✗'} toda ficha traz sugestão de aprendizado`,
+)
+const heroisNasFichas = HEROIS_CODS.filter((c) => FICHAS_PLM.some((f) => f.cod === c)).length
+console.log(`  → ${heroisNasFichas} dos ${HEROIS_CODS.length} heróis têm ficha no seletor`)
+
+const riscoForaDaRegra = PIPELINE_ATENCAO.filter(
+  (i) => i.risco !== riscoPorCobertura(i.cobertura, i.velocidade),
+)
+falhas += riscoForaDaRegra.length
+console.log(
+  `${riscoForaDaRegra.length === 0 ? '✓' : '✗'} o risco de cada item do pipeline vem da regra, não de rótulo solto`,
+)
+const pipelineSemAcao = PIPELINE_ATENCAO.filter((i) => !i.acao)
+falhas += pipelineSemAcao.length
+console.log(`${pipelineSemAcao.length === 0 ? '✓' : '✗'} todo item do pipeline traz ação sugerida`)
+checar('gatilhos automáticos', GATILHOS_PLM.length, 3, 0)
+const gatilhoIncompleto = GATILHOS_PLM.filter((g) => !g.se || !g.entao || !g.nota)
+falhas += gatilhoIncompleto.length
+console.log(
+  `${gatilhoIncompleto.length === 0 ? '✓' : '✗'} todo gatilho tem SE, ENTÃO e nota de contexto`,
+)
+const pausados = GATILHOS_PLM.filter((g) => !g.monitorando).length
+checar('gatilhos pausados no estado inicial', pausados, 1, 0)
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)
