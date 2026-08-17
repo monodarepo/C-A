@@ -8,7 +8,9 @@ import {
   type ReactNode,
 } from 'react'
 import {
+  LINHAS_LINE,
   LINHAS_PLANO,
+  OCS_DO_LINE,
   PLANNER,
   PLANO,
   posicaoNaBanda,
@@ -67,6 +69,14 @@ type Ctx = {
   banda: PosicaoBanda
   historico: RegistroHistorico[]
   decisoes: Decisao[]
+  /** porteira da cadeia de compras: grade, emissão e distribuição dependem dela */
+  lineCarregado: boolean
+  carregarLine: () => void
+  /** decisão por item do line: Aceitar ou Renegociar */
+  decisoesLine: Record<string, 'Aceitar' | 'Renegociar'>
+  decidirLine: (id: string, decisao: 'Aceitar' | 'Renegociar') => void
+  ocsEmitidas: boolean
+  emitirOCs: () => void
   aprovados: string[]
   alterarQtd: (id: string, qtd: number, nota?: string) => void
   incluirLinha: (linha: LinhaPlano) => void
@@ -87,6 +97,9 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
   const [versao, setVersao] = useState<VersaoAtiva>('qualificado')
   const [historico, setHistorico] = useState<RegistroHistorico[]>([])
   const [decisoes, setDecisoes] = useState<Decisao[]>([])
+  const [lineCarregado, setLineCarregado] = useState(false)
+  const [decisoesLine, setDecisoesLine] = useState<Record<string, 'Aceitar' | 'Renegociar'>>({})
+  const [ocsEmitidas, setOcsEmitidas] = useState(false)
   const [aprovados, setAprovados] = useState<string[]>([])
 
   /**
@@ -177,6 +190,9 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
     setHistorico([])
     setDecisoes([])
     setAprovados([])
+    setLineCarregado(false)
+    setDecisoesLine({})
+    setOcsEmitidas(false)
     proximoId.current = 1
   }, [])
 
@@ -202,6 +218,45 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
     return { antes, depois }
   }, [linhas, registrar])
 
+  const carregarLine = useCallback(() => {
+    setLineCarregado(true)
+    setDecisoesLine(
+      Object.fromEntries(LINHAS_LINE.map((l) => [l.id, l.decisao])) as Record<
+        string,
+        'Aceitar' | 'Renegociar'
+      >,
+    )
+    decidir({
+      tipo: 'evento',
+      titulo: 'Line devolvido carregado',
+      detalhe: `${LINHAS_LINE.length} itens com preço negociado e quantidade confirmada pelos fornecedores.`,
+    })
+  }, [decidir])
+
+  const decidirLine = useCallback(
+    (id: string, decisao: 'Aceitar' | 'Renegociar') => {
+      setDecisoesLine((atual) => ({ ...atual, [id]: decisao }))
+      const item = LINHAS_LINE.find((l) => l.id === id)
+      if (item) {
+        decidir({
+          tipo: 'evento',
+          titulo: `${item.ref} · ${decisao}`,
+          detalhe: `${item.produto} · ${item.fornecedor} · desvio de preço ${item.deltaPct > 0 ? '+' : ''}${item.deltaPct}%.`,
+        })
+      }
+    },
+    [decidir],
+  )
+
+  const emitirOCs = useCallback(() => {
+    setOcsEmitidas(true)
+    decidir({
+      tipo: 'evento',
+      titulo: `${OCS_DO_LINE.length} ordens de compra emitidas`,
+      detalhe: `Integradas ao ERP · ${OCS_DO_LINE.reduce((a, o) => a + o.pecas, 0).toLocaleString('pt-BR')} peças.`,
+    })
+  }, [decidir])
+
   const aprovar = useCallback((chave: string) => {
     setAprovados((atual) => (atual.includes(chave) ? atual : [...atual, chave]))
   }, [])
@@ -224,6 +279,12 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
       banda: posicaoNaBanda(totais.investimento),
       historico,
       decisoes,
+      lineCarregado,
+      carregarLine,
+      decisoesLine,
+      decidirLine,
+      ocsEmitidas,
+      emitirOCs,
       aprovados,
       alterarQtd,
       incluirLinha,
@@ -240,6 +301,12 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
     versao,
     historico,
     decisoes,
+    lineCarregado,
+    carregarLine,
+    decisoesLine,
+    decidirLine,
+    ocsEmitidas,
+    emitirOCs,
     aprovados,
     alterarQtd,
     incluirLinha,

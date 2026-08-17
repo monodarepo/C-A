@@ -3027,3 +3027,374 @@ export function valorDoCandidato(c: CandidatoCompensacao): number {
   const linha = LINHAS_PLANO.find((l) => l.id === c.linhaId)
   return linha ? Math.round(c.pecas * linha.pc) : 0
 }
+
+/* ===================== 29. LINE · GRADE · EMISSÃO (Fase 7) ================ */
+
+export type DecisaoLine = 'Aceitar' | 'Renegociar'
+
+export type LinhaLine = {
+  id: string
+  ref: string
+  produto: string
+  fornecedor: string
+  qtdPedida: number
+  qtdRetornada: number
+  pcPedido: number
+  pcNegociado: number
+  /** variação do preço negociado sobre o pedido, em % */
+  deltaPct: number
+  /** variação da quantidade retornada sobre a pedida, em % */
+  deltaQtdPct: number
+  decisao: DecisaoLine
+}
+
+/** Acima deste desvio de preço a linha entra como Renegociar por padrão. */
+export const LIMITE_ACEITE_LINE = 2
+
+/**
+ * O line devolvido pelos fornecedores: cada linha do plano volta com preço
+ * negociado e quantidade confirmada. As variações são seedadas, e a decisão
+ * padrão é REGRA — desvio de preço até 2% entra como Aceitar.
+ */
+function gerarLine(): LinhaLine[] {
+  const rand = mulberry32(SEED + 707)
+  return LINHAS_PLANO.map((l, i) => {
+    // fornecedor determinístico por linha, dos fictícios do snapshot
+    const fornecedor = fornecedores[i % fornecedores.length]
+    const fatorPreco = jitter(rand, 0.04)
+    const fatorQtd = i % 4 === 0 ? jitter(rand, 0.03) : 1
+    const pcNegociado = Number((l.pc * fatorPreco).toFixed(2))
+    const qtdRetornada = Math.round(l.qtd * fatorQtd)
+    const deltaPct = Number(((pcNegociado / l.pc - 1) * 100).toFixed(1))
+    return {
+      id: `LN${String(i + 1).padStart(2, '0')}`,
+      ref: l.ref,
+      produto: l.produto,
+      fornecedor,
+      qtdPedida: l.qtd,
+      qtdRetornada,
+      pcPedido: l.pc,
+      pcNegociado,
+      deltaPct,
+      deltaQtdPct: Number(((qtdRetornada / l.qtd - 1) * 100).toFixed(1)),
+      decisao: Math.abs(deltaPct) <= LIMITE_ACEITE_LINE ? 'Aceitar' : 'Renegociar',
+    }
+  })
+}
+
+export const LINHAS_LINE: LinhaLine[] = gerarLine()
+
+/* ------------------------------------------------- grade de tamanhos ----- */
+
+export type TemplateGrade = {
+  id: string
+  nome: string
+  sessao: string
+  tamanhos: string[]
+  /** curva de distribuição por tamanho, em % (soma 100) */
+  curva: number[]
+  /** peças por pack — é o múltiplo que a distribuição respeita */
+  pecasPorPack: number
+}
+
+/** Os 4 templates de grade padrão, um por sessão. */
+export const TEMPLATES_GRADE: TemplateGrade[] = [
+  {
+    id: 'G1',
+    nome: 'Malha 6 tamanhos',
+    sessao: 'Camisetas e infantil',
+    tamanhos: ['PP', 'P', 'M', 'G', 'GG', 'EG'],
+    curva: [10, 20, 28, 22, 13, 7],
+    pecasPorPack: 6,
+  },
+  {
+    id: 'G2',
+    nome: 'Vestido 4 tamanhos',
+    sessao: 'Vestidos',
+    tamanhos: ['P', 'M', 'G', 'GG'],
+    curva: [22, 30, 28, 20],
+    pecasPorPack: 4,
+  },
+  {
+    id: 'G3',
+    nome: 'Jeans 6 tamanhos',
+    sessao: 'Jeans',
+    tamanhos: ['36', '38', '40', '42', '44', '46'],
+    curva: [12, 22, 26, 20, 13, 7],
+    pecasPorPack: 6,
+  },
+  {
+    id: 'G4',
+    nome: 'Íntimo 4 tamanhos',
+    sessao: 'Moda Íntima',
+    tamanhos: ['P', 'M', 'G', 'GG'],
+    curva: [24, 32, 26, 18],
+    pecasPorPack: 4,
+  },
+]
+
+/** Template de cada categoria do plano. */
+export const TEMPLATE_POR_CATEGORIA: Record<string, string> = {
+  Camisetas: 'G1',
+  Vestidos: 'G2',
+  Jeans: 'G3',
+  'Moda Íntima': 'G4',
+  'Infantil & Esportivo': 'G1',
+}
+
+export function templateDaLinha(categoria: string): TemplateGrade {
+  const id = TEMPLATE_POR_CATEGORIA[categoria] ?? 'G1'
+  return TEMPLATES_GRADE.find((t) => t.id === id) ?? TEMPLATES_GRADE[0]
+}
+
+/** Distribui uma quantidade pela curva do template, fechando o total exato. */
+export function distribuirPelaCurva(qtd: number, t: TemplateGrade): number[] {
+  const bruto = t.curva.map((c) => Math.round((qtd * c) / 100))
+  const diferenca = qtd - soma(bruto)
+  if (diferenca !== 0) {
+    // sobra vai para o tamanho de maior curva (o miolo da grade)
+    const miolo = t.curva.indexOf(Math.max(...t.curva))
+    bruto[miolo] += diferenca
+  }
+  return bruto
+}
+
+/** Quantidade é múltipla do pack? A distribuição exige que seja. */
+export function multiploDoPack(qtd: number, t: TemplateGrade): boolean {
+  return qtd % t.pecasPorPack === 0
+}
+
+/** Arredonda para o múltiplo de pack mais próximo (para cima). */
+export function ajustarAoPack(qtd: number, t: TemplateGrade): number {
+  return Math.ceil(qtd / t.pecasPorPack) * t.pecasPorPack
+}
+
+/* ----------------------------------------------- emissão de pedidos ----- */
+
+export type OrdemCompra = {
+  numero: string
+  fornecedor: string
+  refs: string[]
+  pecas: number
+  valor: number
+  /** dias entre a emissão e a entrega no CD */
+  prazoDias: number
+  cd: string
+}
+
+export const PRAZO_NACIONAL_DIAS = 45
+export const PRAZO_IMPORTADO_DIAS = 90
+
+/**
+ * As ordens de compra saem do line agrupadas por fornecedor.
+ * O prazo é o lead time da premissa do calendário: 90 dias no importado
+ * (Global Sourcing Ásia) e 45 dias no nacional.
+ */
+export function gerarOCs(line: LinhaLine[]): OrdemCompra[] {
+  const porFornecedor = new Map<string, LinhaLine[]>()
+  for (const l of line) {
+    porFornecedor.set(l.fornecedor, [...(porFornecedor.get(l.fornecedor) ?? []), l])
+  }
+  return [...porFornecedor.entries()]
+    .map(([fornecedor, linhas], i) => ({
+      numero: `OC-2026-${String(4180 + i * 7).padStart(4, '0')}`,
+      fornecedor,
+      refs: linhas.map((l) => l.ref),
+      pecas: soma(linhas.map((l) => l.qtdRetornada)),
+      valor: Math.round(soma(linhas.map((l) => l.qtdRetornada * l.pcNegociado))),
+      prazoDias: fornecedor.includes('Ásia') ? PRAZO_IMPORTADO_DIAS : PRAZO_NACIONAL_DIAS,
+      cd: i % 3 === 2 ? REDE.cds[1] : REDE.cds[0],
+    }))
+    .sort((a, b) => b.valor - a.valor)
+}
+
+export const OCS_DO_LINE = gerarOCs(LINHAS_LINE)
+
+/* ========================== 30. DISTRIBUIÇÃO (Fase 7) ==================== */
+
+export const DISTRIBUICAO = {
+  lojas: 16,
+  skus: 14,
+  pecas: 38_640,
+  packs: 7_912,
+  aderenciaIA: 100,
+  lacunas: 10,
+} as const
+
+/** Clima que um SKU exige. 'Quente' não vai para loja de clima frio. */
+export type ClimaSku = 'Quente' | 'Fria' | 'Indiferente'
+
+/**
+ * Sensibilidade de clima por linha do plano.
+ *
+ * REGRA: SKU de clima "Quente" não é distribuído em loja de clima "Fria" nem
+ * "Híbrida Fria" — a célula fica como lacuna com ⚠ BLOQUEIO CLIMA.
+ *
+ * Só o vestido peplum de laise (1096942) é marcado como Quente no recorte, e
+ * isso é o que produz exatamente as 10 lacunas do âncora: são as 10 lojas de
+ * clima frio entre as 16 do recorte. Os outros dois SKUs sensíveis citados na
+ * spec — o vestido de tule floral e a camiseta UV infantil — aparecem na aba
+ * COERÊNCIA como casos conhecidos da regra que estão fora deste recorte.
+ */
+export const CLIMA_POR_LINHA: Record<string, ClimaSku> = {
+  L07: 'Quente', // 1096942 · vestido peplum de laise sem manga
+}
+
+export function climaDaLinha(id: string): ClimaSku {
+  return CLIMA_POR_LINHA[id] ?? 'Indiferente'
+}
+
+const CLIMAS_FRIOS: Clima[] = ['Fria', 'Híbrida Fria']
+
+export function bloqueadoPorClima(idLinha: string, loja: Loja): boolean {
+  return climaDaLinha(idLinha) === 'Quente' && CLIMAS_FRIOS.includes(loja.clima)
+}
+
+/** As 16 lojas do recorte de distribuição (as maiores da rede). */
+export const LOJAS_DISTRIBUICAO: Loja[] = LOJAS.slice(0, DISTRIBUICAO.lojas)
+
+export type CelulaDistribuicao = {
+  lojaId: string
+  linhaId: string
+  ref: string
+  produto: string
+  categoria: string
+  cor: string
+  climaSku: ClimaSku
+  templateId: string
+  packs: number
+  pecas: number
+  bloqueado: boolean
+}
+
+/**
+ * Snapshot da alocação: 16 lojas × 14 SKUs.
+ * Os packs são alocados para fechar 7.912 packs E 38.640 peças ao mesmo tempo
+ * (a média de 4,88 peças por pack sai da mistura de packs de 4 e de 6), e as
+ * células bloqueadas por clima ficam com zero — são as 10 lacunas.
+ */
+function gerarDistribuicao(): CelulaDistribuicao[] {
+  const rand = mulberry32(SEED + 808)
+  const celulas: (Omit<CelulaDistribuicao, 'packs' | 'pecas'> & { peso: number; pack: number })[] =
+    []
+
+  for (const loja of LOJAS_DISTRIBUICAO) {
+    for (const linha of LINHAS_PLANO) {
+      const template = templateDaLinha(linha.categoria)
+      const bloqueado = bloqueadoPorClima(linha.id, loja)
+      celulas.push({
+        lojaId: loja.id,
+        linhaId: linha.id,
+        ref: linha.ref,
+        produto: linha.produto,
+        categoria: linha.categoria,
+        cor: linha.cor,
+        climaSku: climaDaLinha(linha.id),
+        templateId: template.id,
+        bloqueado,
+        pack: template.pecasPorPack,
+        // porte da loja e profundidade da linha mandam no peso
+        peso: bloqueado
+          ? 0
+          : (loja.porte === 'GG' ? 1.5 : loja.porte === 'G' ? 1.25 : loja.porte === 'M' ? 1 : 0.8) *
+            (linha.qtd / PLANO.pecas) *
+            100 *
+            jitter(rand, 0.15),
+      })
+    }
+  }
+
+  const ativas = celulas.filter((c) => !c.bloqueado)
+  const packs = alocarComMedia(
+    ativas.map((c) => ({ peso: c.peso, valor: c.pack })),
+    DISTRIBUICAO.packs,
+    DISTRIBUICAO.pecas / DISTRIBUICAO.packs,
+  )
+
+  /* A alocação fecha os packs exatos, mas as peças caem alguns múltiplos de 2
+     fora do âncora — é a mistura de packs de 4 e de 6 arredondando. Mover um
+     pack de uma célula de 6 para uma de 4 mantém o total de packs e muda as
+     peças em 2, então a diferença é zerada sem mexer no outro âncora. */
+  const indicesPorPack = (tamanho: number) =>
+    ativas.map((c, idx) => ({ c, idx })).filter((x) => x.c.pack === tamanho)
+  const seis = indicesPorPack(6)
+  const quatro = indicesPorPack(4)
+  let diferenca = soma(ativas.map((c, idx) => packs[idx] * c.pack)) - DISTRIBUICAO.pecas
+  let cursor = 0
+  while (diferenca !== 0 && seis.length && quatro.length && cursor < 500) {
+    const de = diferenca > 0 ? seis[cursor % seis.length] : quatro[cursor % quatro.length]
+    const para = diferenca > 0 ? quatro[cursor % quatro.length] : seis[cursor % seis.length]
+    if (packs[de.idx] > 1) {
+      packs[de.idx] -= 1
+      packs[para.idx] += 1
+      diferenca += diferenca > 0 ? -2 : 2
+    }
+    cursor++
+  }
+
+  let i = 0
+  return celulas.map((c) => {
+    const { peso: _peso, pack, ...resto } = c
+    void _peso
+    if (c.bloqueado) return { ...resto, packs: 0, pecas: 0 }
+    const p = packs[i++]
+    return { ...resto, packs: p, pecas: p * pack }
+  })
+}
+
+export const DISTRIBUICAO_CELULAS: CelulaDistribuicao[] = gerarDistribuicao()
+
+export type TotaisDistribuicao = {
+  lojas: number
+  skus: number
+  packs: number
+  pecas: number
+  lacunas: number
+  aderenciaIA: number
+}
+
+export function totaisDistribuicao(celulas: CelulaDistribuicao[]): TotaisDistribuicao {
+  return {
+    lojas: new Set(celulas.map((c) => c.lojaId)).size,
+    skus: new Set(celulas.map((c) => c.linhaId)).size,
+    packs: soma(celulas.map((c) => c.packs)),
+    pecas: soma(celulas.map((c) => c.pecas)),
+    lacunas: celulas.filter((c) => c.packs === 0).length,
+    aderenciaIA: DISTRIBUICAO.aderenciaIA,
+  }
+}
+
+export const TOTAIS_DISTRIBUICAO = totaisDistribuicao(DISTRIBUICAO_CELULAS)
+
+/** Casos conhecidos da regra de clima que estão fora do recorte de 14 SKUs. */
+export const CASOS_CLIMA_FORA_DO_RECORTE = [
+  {
+    produto: 'Vestido midi sem alça tule franzido poá — Mindse7',
+    clima: 'Quente' as ClimaSku,
+    nota: 'Tule sem alça: fora de clima frio na virada de estação.',
+  },
+  {
+    produto: 'Camiseta infantil ML proteção UV coqueiro',
+    clima: 'Quente' as ClimaSku,
+    nota: 'Moda praia infantil: só nas lojas de clima quente e litoral.',
+  },
+]
+
+/** Resumo das abas que a tela mostra sem tabela própria. */
+export const RESUMO_ABAS_DISTRIBUICAO = [
+  {
+    aba: 'Coerência',
+    texto:
+      'Cruza o clima exigido pelo SKU com o clima da loja. Hoje a única regra ativa bloqueia peça de verão em loja de clima frio.',
+  },
+  {
+    aba: 'Quentes × Frias',
+    texto:
+      'Compara profundidade média entre lojas de clima quente e frio na mesma categoria, para achar excesso sazonal.',
+  },
+  {
+    aba: 'Lacunas',
+    texto:
+      'Lista as células sem alocação. Toda lacuna precisa de justificativa antes do envio para as lojas.',
+  },
+]

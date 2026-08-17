@@ -78,6 +78,23 @@ import {
   lojaPorNome,
   margemMediaPonderada,
   precoMedioPonderado,
+  CLIMA_POR_LINHA,
+  DISTRIBUICAO,
+  DISTRIBUICAO_CELULAS,
+  LIMITE_ACEITE_LINE,
+  LINHAS_LINE,
+  LOJAS_DISTRIBUICAO,
+  OCS_DO_LINE,
+  PRAZO_IMPORTADO_DIAS,
+  PRAZO_NACIONAL_DIAS,
+  TEMPLATES_GRADE,
+  TOTAIS_DISTRIBUICAO,
+  ajustarAoPack,
+  bloqueadoPorClima,
+  distribuirPelaCurva,
+  multiploDoPack,
+  templateDaLinha,
+  TEMPLATE_POR_CATEGORIA,
 } from '../src/data/derived'
 import { VIVO } from '../src/data/derived'
 
@@ -548,6 +565,155 @@ falhas += candidatoSemLinha.length
 console.log(
   `${candidatoSemLinha.length === 0 ? '✓' : '✗'} todo candidato aponta para uma linha do plano`,
 )
+
+console.log('\n— LINE DEVOLVIDO —')
+checar('itens no line', LINHAS_LINE.length, LINHAS_PLANO.length, 0)
+const lineSemPlano = LINHAS_LINE.filter((l) => !LINHAS_PLANO.some((p) => p.ref === l.ref))
+falhas += lineSemPlano.length
+console.log(
+  `${lineSemPlano.length === 0 ? '✓' : '✗'} toda linha do line aponta para uma referência do plano`,
+)
+checar('fornecedores distintos no line', new Set(LINHAS_LINE.map((l) => l.fornecedor)).size, 7, 0)
+const decisaoForaDaRegra = LINHAS_LINE.filter(
+  (l) =>
+    l.decisao !== (Math.abs(l.deltaPct) <= LIMITE_ACEITE_LINE ? 'Aceitar' : 'Renegociar'),
+)
+falhas += decisaoForaDaRegra.length
+console.log(
+  `${decisaoForaDaRegra.length === 0 ? '✓' : '✗'} decisão padrão segue a regra dos ${LIMITE_ACEITE_LINE}% de desvio de preço`,
+)
+const deltaQtdErrado = LINHAS_LINE.filter((l) => {
+  const plano = LINHAS_PLANO.find((p) => p.ref === l.ref)!
+  return Math.abs((l.qtdRetornada / plano.qtd - 1) * 100 - l.deltaQtdPct) > 0.06
+})
+falhas += deltaQtdErrado.length
+console.log(
+  `${deltaQtdErrado.length === 0 ? '✓' : '✗'} Δ de quantidade confere com pedido × retorno`,
+)
+console.log(
+  `  → ${LINHAS_LINE.filter((l) => l.decisao === 'Aceitar').length} aceitar · ${LINHAS_LINE.filter((l) => l.decisao === 'Renegociar').length} renegociar`,
+)
+
+console.log('\n— GRADE DE TAMANHOS —')
+checar('templates de grade', TEMPLATES_GRADE.length, 4, 0)
+for (const t of TEMPLATES_GRADE) {
+  checar(
+    `${t.id} · curva soma 100%`,
+    t.curva.reduce((a, c) => a + c, 0),
+    100,
+    0,
+  )
+  checar(`${t.id} · um % por tamanho`, t.curva.length, t.tamanhos.length, 0)
+}
+const categoriaSemTemplate = [...new Set(LINHAS_PLANO.map((l) => l.categoria))].filter(
+  (c) => !TEMPLATE_POR_CATEGORIA[c],
+)
+falhas += categoriaSemTemplate.length
+console.log(
+  `${categoriaSemTemplate.length === 0 ? '✓' : '✗'} toda categoria do plano tem template mapeado${categoriaSemTemplate.length ? ` (${categoriaSemTemplate.join(', ')})` : ''}`,
+)
+const curvaNaoFecha = LINHAS_LINE.filter((l) => {
+  const t = templateDaLinha(LINHAS_PLANO.find((p) => p.ref === l.ref)!.categoria)
+  return distribuirPelaCurva(l.qtdRetornada, t).reduce((a, n) => a + n, 0) !== l.qtdRetornada
+})
+falhas += curvaNaoFecha.length
+console.log(
+  `${curvaNaoFecha.length === 0 ? '✓' : '✗'} a curva fecha o total exato nos ${LINHAS_LINE.length} itens do line`,
+)
+const packMalAjustado = LINHAS_LINE.filter((l) => {
+  const t = templateDaLinha(LINHAS_PLANO.find((p) => p.ref === l.ref)!.categoria)
+  const ajustado = ajustarAoPack(l.qtdRetornada, t)
+  return !multiploDoPack(ajustado, t) || ajustado < l.qtdRetornada
+})
+falhas += packMalAjustado.length
+console.log(
+  `${packMalAjustado.length === 0 ? '✓' : '✗'} ajustarAoPack sempre devolve múltiplo de pack para cima`,
+)
+
+console.log('\n— EMISSÃO DE PEDIDOS —')
+checar('ordens de compra', OCS_DO_LINE.length, 7, 0)
+checar(
+  'uma OC por fornecedor',
+  new Set(OCS_DO_LINE.map((o) => o.fornecedor)).size,
+  OCS_DO_LINE.length,
+  0,
+)
+checar(
+  'peças emitidas = retorno do line',
+  OCS_DO_LINE.reduce((a, o) => a + o.pecas, 0),
+  LINHAS_LINE.reduce((a, l) => a + l.qtdRetornada, 0),
+  0,
+)
+checar(
+  'valor emitido = qtd × PC negociado',
+  OCS_DO_LINE.reduce((a, o) => a + o.valor, 0),
+  LINHAS_LINE.reduce((a, l) => a + l.qtdRetornada * l.pcNegociado, 0),
+  0.0001,
+)
+checar(
+  'referências cobertas pelas OCs',
+  new Set(OCS_DO_LINE.flatMap((o) => o.refs)).size,
+  LINHAS_LINE.length,
+  0,
+)
+const prazoErrado = OCS_DO_LINE.filter(
+  (o) =>
+    o.prazoDias !== (o.fornecedor.includes('Ásia') ? PRAZO_IMPORTADO_DIAS : PRAZO_NACIONAL_DIAS),
+)
+falhas += prazoErrado.length
+console.log(
+  `${prazoErrado.length === 0 ? '✓' : '✗'} D-${PRAZO_IMPORTADO_DIAS} só no importado, D-${PRAZO_NACIONAL_DIAS} no nacional`,
+)
+const cdsDaRede: readonly string[] = REDE.cds
+const semCD = OCS_DO_LINE.filter((o) => !cdsDaRede.includes(o.cd))
+falhas += semCD.length
+console.log(`${semCD.length === 0 ? '✓' : '✗'} todo destino é um CD real da rede`)
+
+console.log('\n— DISTRIBUIÇÃO —')
+checar('lojas no recorte', TOTAIS_DISTRIBUICAO.lojas, DISTRIBUICAO.lojas, 0)
+checar('SKUs no recorte', TOTAIS_DISTRIBUICAO.skus, DISTRIBUICAO.skus, 0)
+checar(
+  'células da matriz',
+  DISTRIBUICAO_CELULAS.length,
+  DISTRIBUICAO.lojas * DISTRIBUICAO.skus,
+  0,
+)
+checar('packs alocados', TOTAIS_DISTRIBUICAO.packs, DISTRIBUICAO.packs, 0)
+checar('peças alocadas', TOTAIS_DISTRIBUICAO.pecas, DISTRIBUICAO.pecas, 0)
+checar('lacunas', TOTAIS_DISTRIBUICAO.lacunas, DISTRIBUICAO.lacunas, 0)
+checar('aderência à sugestão IA (%)', TOTAIS_DISTRIBUICAO.aderenciaIA, DISTRIBUICAO.aderenciaIA, 0)
+checar(
+  'peças por pack na média',
+  DISTRIBUICAO.pecas / DISTRIBUICAO.packs,
+  TOTAIS_DISTRIBUICAO.pecas / TOTAIS_DISTRIBUICAO.packs,
+  0.0001,
+)
+checar('SKUs sensíveis a clima no recorte', Object.keys(CLIMA_POR_LINHA).length, 1, 0)
+const pecasForaDoPack = DISTRIBUICAO_CELULAS.filter((c) => {
+  const t = TEMPLATES_GRADE.find((x) => x.id === c.templateId)!
+  return c.pecas !== c.packs * t.pecasPorPack
+})
+falhas += pecasForaDoPack.length
+console.log(
+  `${pecasForaDoPack.length === 0 ? '✓' : '✗'} em toda célula peças = packs × peças do pack`,
+)
+const lacunaSemBloqueio = DISTRIBUICAO_CELULAS.filter((c) => c.packs === 0 && !c.bloqueado)
+const bloqueioComPacks = DISTRIBUICAO_CELULAS.filter((c) => c.bloqueado && c.packs > 0)
+falhas += lacunaSemBloqueio.length + bloqueioComPacks.length
+console.log(
+  `${lacunaSemBloqueio.length + bloqueioComPacks.length === 0 ? '✓' : '✗'} toda lacuna é bloqueio de clima e todo bloqueio fica em zero`,
+)
+const bloqueioForaDaRegra = DISTRIBUICAO_CELULAS.filter(
+  (c) => c.bloqueado !== bloqueadoPorClima(c.linhaId, LOJAS_DISTRIBUICAO.find((l) => l.id === c.lojaId)!),
+)
+falhas += bloqueioForaDaRegra.length
+console.log(
+  `${bloqueioForaDaRegra.length === 0 ? '✓' : '✗'} o bloqueio de cada célula segue a regra clima SKU × clima loja`,
+)
+const lojasFrias = LOJAS_DISTRIBUICAO.filter(
+  (l) => l.clima === 'Fria' || l.clima === 'Híbrida Fria',
+).length
+checar('lojas de clima frio no recorte', lojasFrias, DISTRIBUICAO.lacunas, 0)
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)
