@@ -30,6 +30,7 @@ import {
   type RankingSku,
 } from '@/data/derived'
 import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, formatPP } from '@/lib/format'
+import { exportarArquivo } from '@/lib/exportar'
 
 const ABAS = [
   { id: 'agregada', rotulo: 'Visão agregada' },
@@ -163,7 +164,7 @@ export default function HistoricoPage() {
 
   const filtrosAtivos = contarFiltros(filtro)
 
-  function exportarCsv() {
+  async function exportarCsv() {
     const cabecalho = [
       'ref',
       'produto',
@@ -196,17 +197,27 @@ export default function HistoricoPage() {
       )
     // BOM para o Excel abrir o CSV em UTF-8 sem quebrar acento
     const csv = `\uFEFF${[cabecalho.join(';'), ...linhas].join('\n')}`
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `historico-${colecao.rotulo.toLowerCase().replace(/\s/g, '-')}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-    push(
-      'CSV exportado',
-      'ok',
-      `${formatNum(dados.ranking.length)} SKUs com os filtros atuais, separado por ponto e vírgula.`,
-    )
+    /* sem acento e sem espaço no nome do arquivo: o visualizador sanitiza o
+       nome antes de confirmar, e o resultado fica mais previsível assim */
+    const rotulo = colecao.rotulo
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '-')
+    const nome = `historico-${rotulo}.csv`
+
+    const r = await exportarArquivo(nome, csv)
+    if (r.estado === 'salvo') {
+      push(
+        'CSV exportado',
+        'ok',
+        `${formatNum(dados.ranking.length)} SKUs com os filtros atuais, separado por ponto e vírgula.`,
+      )
+    } else if (r.estado === 'recusado') {
+      push('Exportação cancelada', 'info', 'Nada foi salvo. O botão continua aqui quando quiser.')
+    } else {
+      push('Não deu para exportar', 'warn', `O download foi bloqueado (${r.motivo}).`)
+    }
   }
 
   return (

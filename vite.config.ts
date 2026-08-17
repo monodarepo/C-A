@@ -2,8 +2,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  /* modo "pagina": tudo num bundle só, para o build de arquivo único */
+  build:
+    mode === 'pagina'
+      ? { rollupOptions: { output: { inlineDynamicImports: true } }, assetsInlineLimit: 1024 * 1024 }
+      : {},
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -18,4 +23,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))
