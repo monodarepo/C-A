@@ -1,14 +1,22 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, type ComponentType } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
+import { ErroDeRota } from '@/app/ErroDeRota'
 import { ROTAS } from '@/app/routes'
 
 /**
- * As 21 telas entram por code-splitting (import dinâmico pelo slug da rota),
- * então o bundle inicial carrega só o shell.
+ * As 21 telas entram por code-splitting, então o bundle inicial carrega só o
+ * shell. O mapa vem de import.meta.glob (resolvido pelo Vite em build-time) —
+ * mais previsível que um import() com template literal.
  */
+const MODULOS = import.meta.glob<{ default: ComponentType }>('./app/*/index.tsx')
+
 const TELAS = Object.fromEntries(
-  ROTAS.map((r) => [r.path, lazy(() => import(`./app/${r.slug}/index.tsx`))]),
+  ROTAS.map((r) => {
+    const carregar = MODULOS[`./app/${r.slug}/index.tsx`]
+    if (!carregar) throw new Error(`Tela não encontrada para a rota ${r.path} (slug "${r.slug}")`)
+    return [r.path, lazy(carregar)]
+  }),
 )
 
 const NotFound = lazy(() => import('@/app/NotFound'))
@@ -39,9 +47,11 @@ export default function App() {
               key={r.path}
               path={r.path}
               element={
-                <Suspense fallback={<Carregando />}>
-                  <Tela />
-                </Suspense>
+                <ErroDeRota rota={r.path}>
+                  <Suspense fallback={<Carregando />}>
+                    <Tela />
+                  </Suspense>
+                </ErroDeRota>
               }
             />
           )
@@ -49,9 +59,11 @@ export default function App() {
         <Route
           path="*"
           element={
-            <Suspense fallback={<Carregando />}>
-              <NotFound />
-            </Suspense>
+            <ErroDeRota rota="404">
+              <Suspense fallback={<Carregando />}>
+                <NotFound />
+              </Suspense>
+            </ErroDeRota>
           }
         />
       </Route>
