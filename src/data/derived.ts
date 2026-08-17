@@ -150,7 +150,15 @@ export const OTB = {
 export const PLANO = {
   linhas: 14,
   pecas: 1_208_400,
-  investimento: 46_400_000,
+  /**
+   * R$ 46,42 mi — e não 46,40. O CLAUDE.md traz três âncoras que só fecham
+   * entre si com esse valor exato: o plano exibido como "R$ 46,4M", o estouro
+   * de "+R$ 1,62 mi" e os "+3,6%" sobre o OTB de 44,8.
+   *   46,42 − 44,80 = 1,62 ✓   46,42 ÷ 44,80 − 1 = +3,6% ✓   exibe 46,4 ✓
+   * Com 46,40 exato, o estouro cairia para 1,60 e contradiria o âncora.
+   * O autoteste (npm run verificar) prova que os três continuam reconciliados.
+   */
+  investimento: 46_420_000,
   otbRecorte: 44_800_000,
   bandaPct: 3,
   /** ±3% sobre o alvo de 44,8 mi (arredondado como no CLAUDE.md). */
@@ -2107,4 +2115,371 @@ export function validarExemploPadronagem(): string[] {
   return EXEMPLO_PADRONAGEM.filter((p) => !cartela.includes(p.padronagem)).map(
     (p) => `padronagem "${p.padronagem}" não está em atributosReais.padronagens`,
   )
+}
+
+/* ============================== 25. PLANO DE SORTIMENTO (Fase 5) ========== */
+
+export type OrigemPlano =
+  | 'OTB'
+  | 'Habilitadores'
+  | 'Atributos'
+  | 'Histórico'
+  | 'Best/Slow'
+  | 'Estratégia'
+  | 'Benchmark'
+  | 'Eventos/Ciclos'
+
+export const ORIGENS_PLANO: OrigemPlano[] = [
+  'OTB',
+  'Habilitadores',
+  'Atributos',
+  'Histórico',
+  'Best/Slow',
+  'Estratégia',
+  'Benchmark',
+  'Eventos/Ciclos',
+]
+
+export type StatusLinha = 'Dorsal' | 'Repeat' | 'Novo' | 'Evento'
+
+export type LinhaPlano = {
+  id: string
+  ref: string
+  produto: string
+  categoria: string
+  sessao: string
+  papel: string
+  cor: string
+  faixa: FaixaPreco['id']
+  clusterFoco: Cluster
+  origem: OrigemPlano
+  /** preço de venda planejado */
+  pv: number
+  margem: number
+  /** preço de custo — derivado de pv × (1 − margem) */
+  pc: number
+  qtd: number
+  /** quantidade do Plano Original (baseline imutável) */
+  qtdOriginal: number
+  status: StatusLinha
+  heroi: boolean
+  /** de onde veio o PV, quando o snapshot não traz preço */
+  fontePreco: string
+}
+
+/**
+ * As 5 categorias do plano — é o nível em que o /versoes aprova
+ * ("X de 5 aprovados").
+ */
+export const CATEGORIAS_PLANO = [
+  'Vestidos',
+  'Jeans',
+  'Camisetas',
+  'Moda Íntima',
+  'Infantil & Esportivo',
+] as const
+
+const faixaDoPreco = (pv: number): FaixaPreco['id'] =>
+  PIRAMIDE_PRECO.find((f) => pv >= f.min && pv <= f.max)?.id ??
+  (pv < PIRAMIDE_PRECO[0].min ? 'P1' : 'P5')
+
+/**
+ * Semente das 14 linhas: 8 heróis reais + 6 do catálogo.
+ * `pv` vem do preço REAL quando o snapshot tem; quando o produto é
+ * `hidratar: true` (sem preço no snapshot), usa o preço de referência da faixa
+ * da pirâmide, e `fontePreco` registra a escolha.
+ */
+type SementeLinha = Omit<LinhaPlano, 'pc' | 'qtd' | 'qtdOriginal' | 'faixa'> & { peso: number }
+
+const precoDaFaixa = (id: FaixaPreco['id']) => PIRAMIDE_PRECO.find((f) => f.id === id)!.precoRef
+
+const SEMENTES: SementeLinha[] = [
+  // ---------------------------------------------------------- 8 heróis ----
+  {
+    id: 'L01', ref: '1049412', produto: 'Camiseta básica de algodão manga curta',
+    categoria: 'Camisetas', sessao: 'Masculino', papel: 'NOS / Dorsal', cor: 'Preto +22 cores',
+    clusterFoco: 'B', origem: 'Histórico', pv: 29.99, margem: 62, status: 'Dorsal',
+    heroi: true, fontePreco: 'preço real do site', peso: 26,
+  },
+  {
+    id: 'L02', ref: '1046556', produto: 'Camiseta algodão peruano bold manga curta',
+    categoria: 'Camisetas', sessao: 'Masculino', papel: 'Premium básico (trade-up)',
+    cor: 'Branco', clusterFoco: 'A', origem: 'Benchmark', pv: 55.99, margem: 58,
+    status: 'Repeat', heroi: true, fontePreco: 'preço real do site', peso: 7,
+  },
+  {
+    id: 'L03', ref: '1033472', produto: 'Calça wide leg jeans cintura alta',
+    categoria: 'Jeans', sessao: 'Jeans', papel: 'Core do programa wide leg', cor: 'Azul claro',
+    clusterFoco: 'B', origem: 'Best/Slow', pv: precoDaFaixa('P2'), margem: 61,
+    status: 'Repeat', heroi: true, fontePreco: 'sem preço no snapshot — faixa P2 da pirâmide',
+    peso: 11,
+  },
+  {
+    id: 'L04', ref: '1099133', produto: 'Calça super wide leg com recortes bicolor patchwork',
+    categoria: 'Jeans', sessao: 'Jeans', papel: 'Novo sem histórico', cor: 'Azul bicolor',
+    clusterFoco: 'A', origem: 'Atributos', pv: precoDaFaixa('P3'), margem: 59,
+    status: 'Novo', heroi: true, fontePreco: 'sem preço no snapshot — faixa P3 da pirâmide',
+    peso: 4,
+  },
+  {
+    id: 'L05', ref: '1075684', produto: 'Vestido midi com linho decote quadrado',
+    categoria: 'Vestidos', sessao: 'Feminino', papel: 'Dorsal verão — 6 cores',
+    cor: 'Natural/Bege +5', clusterFoco: 'B', origem: 'Habilitadores', pv: 159.99, margem: 60,
+    status: 'Dorsal', heroi: true, fontePreco: 'preço real do site', peso: 9,
+  },
+  {
+    id: 'L06', ref: '1086292', produto: 'Vestido midi halterneck linho bordado floral',
+    categoria: 'Vestidos', sessao: 'Feminino', papel: 'Vitrine / festa', cor: 'Bege/Amarelo',
+    clusterFoco: 'A', origem: 'Estratégia', pv: precoDaFaixa('P4'), margem: 64,
+    status: 'Novo', heroi: true, fontePreco: 'sem preço no snapshot — faixa P4 da pirâmide',
+    peso: 3,
+  },
+  {
+    id: 'L07', ref: '1096942', produto: 'Vestido midi peplum de laise com recorte',
+    categoria: 'Vestidos', sessao: 'Feminino', papel: 'Evento — Dia dos Namorados',
+    cor: 'Vermelho', clusterFoco: 'A', origem: 'Eventos/Ciclos', pv: precoDaFaixa('P3'),
+    margem: 62, status: 'Evento', heroi: true,
+    fontePreco: 'sem preço no snapshot — faixa P3 da pirâmide', peso: 3,
+  },
+  {
+    id: 'L08', ref: '7413962', produto: 'Sutiã meia taça canelado com renda',
+    categoria: 'Moda Íntima', sessao: 'Feminino', papel: 'NOS íntimo — grade crítica',
+    cor: 'Preto', clusterFoco: 'C', origem: 'Histórico', pv: 69.99, margem: 64,
+    status: 'Dorsal', heroi: true, fontePreco: 'coração da faixa de sutiãs do snapshot',
+    peso: 12,
+  },
+  // ------------------------------------------ 6 linhas do catálogo --------
+  {
+    id: 'L09', ref: 'CAT-01', produto: 'Vestido midi algodão decote quadrado básico',
+    categoria: 'Vestidos', sessao: 'Feminino', papel: 'P1 entrada / básico dorsal',
+    cor: 'Verde +4', clusterFoco: 'C', origem: 'OTB', pv: 99.99, margem: 56,
+    status: 'Dorsal', heroi: false, fontePreco: 'preço real do site', peso: 8,
+  },
+  {
+    id: 'L10', ref: 'CAT-02', produto: 'Sutiã renda sem bojo', categoria: 'Moda Íntima',
+    sessao: 'Feminino', papel: 'Programa 6 cores', cor: 'Preto +6', clusterFoco: 'C',
+    origem: 'Habilitadores', pv: 59.99, margem: 63, status: 'Repeat', heroi: false,
+    fontePreco: 'preço real do site', peso: 9,
+  },
+  {
+    id: 'L11', ref: 'CAT-03', produto: 'Camiseta infantil capivara com glitter',
+    categoria: 'Infantil & Esportivo', sessao: 'Infantil', papel: 'Best seller lúdico',
+    cor: 'Off white', clusterFoco: 'C', origem: 'Best/Slow', pv: 59.99, margem: 57,
+    status: 'Repeat', heroi: false, fontePreco: 'preço real do site', peso: 7,
+  },
+  {
+    id: 'L12', ref: 'CAT-04', produto: 'Vestido midi sem alça tule franzido poá — Mindse7',
+    categoria: 'Vestidos', sessao: 'Feminino', papel: 'Cápsula jovem', cor: 'Off white',
+    clusterFoco: 'A', origem: 'Atributos', pv: 199.99, margem: 61, status: 'Novo',
+    heroi: false, fontePreco: 'preço real do site', peso: 2,
+  },
+  {
+    id: 'L13', ref: 'CAT-05', produto: 'Legging ACE poliamida cintura alta',
+    categoria: 'Infantil & Esportivo', sessao: 'Esportivo', papel: 'Marca própria esportiva',
+    cor: 'Preto', clusterFoco: 'A', origem: 'Estratégia',
+    pv: (precoDaFaixa('P1') + precoDaFaixa('P2')) / 2, margem: 58, status: 'Novo',
+    heroi: false, fontePreco: 'sem preço no snapshot — média das faixas P1 e P2', peso: 4,
+  },
+  {
+    id: 'L14', ref: '1114492', produto: 'Calça wide leg jeans com brilhos cintura alta',
+    categoria: 'Jeans', sessao: 'Jeans', papel: 'Ciclo de tendência', cor: 'Preto',
+    clusterFoco: 'B', origem: 'Benchmark', pv: precoDaFaixa('P3'), margem: 60,
+    status: 'Novo', heroi: false, fontePreco: 'sem preço no snapshot — faixa P3 da pirâmide',
+    peso: 3,
+  },
+]
+
+/**
+ * Distribui `total` unidades entre os itens de modo que a média ponderada de
+ * `valor` caia em `mediaAlvo`. Separa os itens abaixo e acima da média e
+ * resolve a fatia de cada grupo — é o que permite fechar dois âncoras ao mesmo
+ * tempo (soma de peças E investimento).
+ */
+function alocarComMedia(
+  itens: { peso: number; valor: number }[],
+  total: number,
+  mediaAlvo: number,
+): number[] {
+  const baratos = itens.map((it, i) => ({ ...it, i })).filter((it) => it.valor <= mediaAlvo)
+  const caros = itens.map((it, i) => ({ ...it, i })).filter((it) => it.valor > mediaAlvo)
+  if (!baratos.length || !caros.length) {
+    // todos do mesmo lado da média: rateio simples pelo peso
+    const somaPesos = soma(itens.map((i) => i.peso))
+    return itens.map((it) => Math.round((total * it.peso) / somaPesos))
+  }
+
+  const media = (grupo: typeof baratos) =>
+    soma(grupo.map((g) => g.peso * g.valor)) / soma(grupo.map((g) => g.peso))
+  const mBaratos = media(baratos)
+  const mCaros = media(caros)
+  // fração das unidades que vai para o grupo caro
+  const f = Math.min(1, Math.max(0, (mediaAlvo - mBaratos) / (mCaros - mBaratos)))
+
+  const qtds = new Array(itens.length).fill(0)
+  const distribuir = (grupo: typeof baratos, unidades: number) => {
+    const somaPesos = soma(grupo.map((g) => g.peso))
+    grupo.forEach((g) => {
+      qtds[g.i] = Math.round((unidades * g.peso) / somaPesos)
+    })
+  }
+  distribuir(caros, total * f)
+  distribuir(baratos, total * (1 - f))
+
+  // sobra do arredondamento vai para a maior linha
+  const diferenca = total - soma(qtds)
+  if (diferenca !== 0) {
+    const maior = qtds.indexOf(Math.max(...qtds))
+    qtds[maior] += diferenca
+  }
+  return qtds
+}
+
+/**
+ * As 14 linhas do Plano Qualificado.
+ *
+ * Como os âncoras se amarram: margem ponderada de 59,2% implica que
+ * investimento = receita × (1 − 0,592). Com investimento em R$ 46,4 mi e
+ * 1.208.400 peças, o PV médio do plano fica em R$ 94,11 — perto do preço médio
+ * por peça do histórico (R$ 95,22), o que mantém as telas coerentes.
+ * Então: as quantidades são alocadas para fechar as peças E o PV médio; as
+ * margens recebem um deslocamento uniforme para a média ponderada bater 59,2%;
+ * e o PC sai de pv × (1 − margem) — o investimento cai no âncora por
+ * construção.
+ */
+function gerarLinhasPlano(): LinhaPlano[] {
+  const pvMedioAlvo = PLANO.investimento / (1 - PLANO.margem / 100) / PLANO.pecas
+
+  const qtds = alocarComMedia(
+    SEMENTES.map((s) => ({ peso: s.peso, valor: s.pv })),
+    PLANO.pecas,
+    pvMedioAlvo,
+  )
+
+  // margem ponderada pela receita precisa fechar no âncora do plano
+  const receita = soma(SEMENTES.map((s, i) => s.pv * qtds[i]))
+  const margemPonderada = soma(SEMENTES.map((s, i) => s.margem * s.pv * qtds[i])) / receita
+  const ajuste = PLANO.margem - margemPonderada
+
+  const linhas = SEMENTES.map((s, i) => {
+    const margem = Number((s.margem + ajuste).toFixed(2))
+    const resto = { ...s, peso: undefined } as Omit<SementeLinha, 'peso'> & { peso?: number }
+    delete resto.peso
+    return {
+      ...resto,
+      margem,
+      faixa: faixaDoPreco(s.pv),
+      pc: Number((s.pv * (1 - margem / 100)).toFixed(2)),
+      qtd: qtds[i],
+      qtdOriginal: qtds[i], // ajustado abaixo pelas qualificações
+    } satisfies LinhaPlano
+  })
+
+  // ------------------------------------------------------ qualificações ---
+  // O Plano Original é o baseline: 1.156.000 peças e R$ 44,7 mi. A diferença
+  // até o Qualificado são as 7 qualificações abaixo, alocadas para fechar
+  // exatamente as duas pontas (peças e investimento).
+  const deltaPecas = PLANO.pecas - PLANO.original.pecas
+  const deltaInvestimento = PLANO.investimento - PLANO.original.investimento
+  const pcMedioDelta = deltaInvestimento / deltaPecas
+
+  const idsQualificados = ['L01', 'L03', 'L05', 'L07', 'L09', 'L11', 'L12']
+  const alvos = idsQualificados.map((id) => linhas.find((l) => l.id === id)!)
+  const deltas = alocarComMedia(
+    alvos.map((l) => ({ peso: Math.max(1, l.qtd / 1000), valor: l.pc })),
+    deltaPecas,
+    pcMedioDelta,
+  )
+
+  alvos.forEach((l, i) => {
+    l.qtdOriginal = l.qtd - deltas[i]
+  })
+
+  return linhas
+}
+
+export const LINHAS_PLANO: LinhaPlano[] = gerarLinhasPlano()
+
+/** Motivo de cada qualificação, para a tabela "Alterações vs Original". */
+export const MOTIVOS_QUALIFICACAO: Record<string, string> = {
+  L01: 'Ruptura recorrente no dorsal de 22 cores — profundidade elevada por tamanho.',
+  L03: 'Sell-through acima da meta no wide leg 100% algodão: recompra aprovada.',
+  L05: 'Programa de 6 cores confirmado pela cartela de verão (viscose com linho).',
+  L07: 'Vinculado ao Dia dos Namorados — verba estratégica de evento.',
+  L09: 'Entrada P1 reforçada para sustentar o ticket dos clusters C e D.',
+  L11: 'Best seller lúdico do infantil repetido com glitter na mesma curva.',
+  L12: 'Cápsula Mindse7 incluída na leitura de atributo (tule + poá).',
+}
+
+/** Totais do plano — sempre calculados das linhas. */
+export type TotaisPlano = {
+  linhas: number
+  pecas: number
+  investimento: number
+  receita: number
+  margem: number
+  pcMedio: number
+  pvMedio: number
+}
+
+export function totaisPlano(
+  linhas: LinhaPlano[],
+  usar: 'qtd' | 'qtdOriginal' = 'qtd',
+): TotaisPlano {
+  const pecas = soma(linhas.map((l) => l[usar]))
+  const investimento = soma(linhas.map((l) => l[usar] * l.pc))
+  const receita = soma(linhas.map((l) => l[usar] * l.pv))
+  return {
+    linhas: linhas.length,
+    pecas,
+    investimento,
+    receita,
+    margem: receita ? (1 - investimento / receita) * 100 : 0,
+    pcMedio: pecas ? investimento / pecas : 0,
+    pvMedio: pecas ? receita / pecas : 0,
+  }
+}
+
+export const TOTAIS_PLANO_QUALIFICADO = totaisPlano(LINHAS_PLANO)
+export const TOTAIS_PLANO_ORIGINAL = totaisPlano(LINHAS_PLANO, 'qtdOriginal')
+
+/** Onde o investimento cai dentro da banda de OTB (piso · alvo · teto). */
+export type PosicaoBanda = {
+  investimento: number
+  piso: number
+  alvo: number
+  teto: number
+  /** diferença contra o ALVO (o OTB do recorte) */
+  desvio: number
+  desvioPct: number
+  estourou: boolean
+  /** posição 0–100 na régua, para desenhar o marcador */
+  posicaoPct: number
+}
+
+export function posicaoNaBanda(investimento: number): PosicaoBanda {
+  const { piso, teto, otbRecorte } = PLANO
+  // a régua tem 8% de folga visual de cada lado da banda
+  const folga = (teto - piso) * 0.35
+  const min = piso - folga
+  const max = teto + folga
+  return {
+    investimento,
+    piso,
+    alvo: otbRecorte,
+    teto,
+    desvio: investimento - otbRecorte,
+    desvioPct: (investimento / otbRecorte - 1) * 100,
+    estourou: investimento > teto,
+    posicaoPct: Math.max(0, Math.min(100, ((investimento - min) / (max - min)) * 100)),
+  }
+}
+
+/** Recortes do /versoes: por qual dimensão agrupar a aprovação. */
+export const RECORTES_VERSAO = ['Categoria', 'Sessão', 'Cluster', 'Faixa'] as const
+
+export function chaveDoRecorte(l: LinhaPlano, recorte: (typeof RECORTES_VERSAO)[number]): string {
+  if (recorte === 'Categoria') return l.categoria
+  if (recorte === 'Sessão') return l.sessao
+  if (recorte === 'Cluster') return `Cluster ${l.clusterFoco}`
+  return `${l.faixa} · ${PIRAMIDE_PRECO.find((f) => f.id === l.faixa)?.rotulo ?? ''}`
 }

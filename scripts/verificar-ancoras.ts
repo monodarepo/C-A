@@ -37,6 +37,13 @@ import {
   distribuirPadronagem,
   pecasPorSku,
   validarExemploPadronagem,
+  HEROIS_CODS,
+  HISTORICO,
+  LINHAS_PLANO,
+  MOTIVOS_QUALIFICACAO,
+  TOTAIS_PLANO_ORIGINAL,
+  TOTAIS_PLANO_QUALIFICADO,
+  posicaoNaBanda,
   DASHBOARD,
   FOLLOWUP_FORNECEDORES,
   PECAS_VENDIDAS_COLECAO,
@@ -393,6 +400,59 @@ console.log(
 )
 const janelasRecomendadas = JANELAS_OTIMIZACAO.filter((j) => j.recomendada).length
 checar('janelas recomendadas', janelasRecomendadas, 1, 0)
+
+console.log('\n— PLANO DE SORTIMENTO (Fase 5) —')
+const q = TOTAIS_PLANO_QUALIFICADO
+const o = TOTAIS_PLANO_ORIGINAL
+checar('linhas do plano', q.linhas, PLANO.linhas, 0)
+checar('peças (qualificado)', q.pecas, PLANO.pecas, 0)
+checar('investimento (qualificado)', q.investimento, PLANO.investimento, 0.0005)
+checar('margem do plano (%)', q.margem, PLANO.margem, 0.0002)
+checar('peças (original)', o.pecas, PLANO.original.pecas, 0)
+checar('investimento (original)', o.investimento, PLANO.original.investimento, 0.0005)
+
+// os três âncoras do estouro só fecham juntos se o investimento for 46,42
+const banda = posicaoNaBanda(q.investimento)
+checar('estouro em R$ (âncora 1,62 mi)', banda.desvio, PLANO.estouroValor, 0.005)
+checar('estouro em % (âncora 3,6)', banda.desvioPct, PLANO.estouroPct, 0.01)
+const estourouMesmo = banda.estourou && q.investimento > PLANO.teto
+if (!estourouMesmo) falhas++
+console.log(
+  `${estourouMesmo ? '✓' : '✗'} o plano estoura o teto da banda (${(q.investimento / 1e6).toFixed(2)} > ${(PLANO.teto / 1e6).toFixed(1)})`,
+)
+
+// PC precisa ser derivado do PV e da margem em toda linha
+const pcErrado = LINHAS_PLANO.filter(
+  (l) => Math.abs(l.pc - l.pv * (1 - l.margem / 100)) > 0.011,
+)
+falhas += pcErrado.length
+console.log(
+  `${pcErrado.length === 0 ? '✓' : '✗'} PC derivado de PV × (1 − margem) em todas as ${LINHAS_PLANO.length} linhas`,
+)
+
+// as 8 referências reais da spec precisam estar no plano
+const refsHeroisNoPlano = HEROIS_CODS.filter((c) => LINHAS_PLANO.some((l) => l.ref === c))
+checar('heróis reais no plano', refsHeroisNoPlano.length, HEROIS_CODS.length, 0)
+checar('linhas marcadas como herói', LINHAS_PLANO.filter((l) => l.heroi).length, 8, 0)
+checar('categorias do plano', new Set(LINHAS_PLANO.map((l) => l.categoria)).size, 5, 0)
+
+const comQualificacao = LINHAS_PLANO.filter((l) => l.qtd !== l.qtdOriginal)
+checar('qualificações vs Original', comQualificacao.length, 7, 0)
+const semMotivo = comQualificacao.filter((l) => !MOTIVOS_QUALIFICACAO[l.id])
+falhas += semMotivo.length
+console.log(
+  `${semMotivo.length === 0 ? '✓' : '✗'} toda qualificação tem motivo declarado`,
+)
+checar('Δ peças Original → Qualificado', q.pecas - o.pecas, 52_400, 0)
+checar(
+  'Δ investimento Original → Qualificado',
+  q.investimento - o.investimento,
+  PLANO.investimento - PLANO.original.investimento,
+  0.005,
+)
+console.log(
+  `  PV médio do plano R$ ${q.pvMedio.toFixed(2)} · preço médio por peça do histórico R$ ${HISTORICO.ticket.toFixed(2)} (coerentes)`,
+)
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)
