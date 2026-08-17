@@ -13,6 +13,7 @@ import {
   cea,
   clusters,
   concorrentes,
+  hexDaCor,
   produtos,
   estilistas,
   fornecedores,
@@ -4831,3 +4832,322 @@ export const CALENDARIO_PRECO: JanelaPreco[] = (() => {
     },
   ]
 })()
+
+/* ======================== 36. LOJAS & CLUSTERS (Fase 10) ================= */
+
+/** Cartão de cluster da tela de Lojas — âncoras do CLAUDE.md, sem recálculo. */
+export const CARDS_CLUSTER = REDE.clusters.map((c) => ({
+  id: c.id,
+  nome: c.nome,
+  lojas: c.lojas,
+  ticketMedio: c.ticketMedio,
+  conversao: c.convPct,
+  partFaturamento: c.partFatPct,
+  /** faturamento simulado da frota naquele cluster, para o card fechar com a tela */
+  faturamentoMes: soma(LOJAS.filter((l) => l.cluster === c.id).map((l) => l.faturamentoMes)),
+}))
+
+export type SugestaoReagrupamento = {
+  lojaId: string
+  nome: string
+  cidade: string
+  uf: string
+  clusterAtual: Cluster
+  clusterSugerido: Cluster
+  /** desempenho da loja, 0 a 100, contra a frota inteira */
+  desempenho: number
+  desempenhoClusterAtual: number
+  desempenhoClusterSugerido: number
+  motivo: string
+}
+
+/**
+ * Reagrupamento sugerido — as lojas cujo DESEMPENHO está no patamar de outro
+ * cluster.
+ *
+ * O ticket sozinho não serve de critério aqui: as quatro faixas da rede não se
+ * tocam (A 127–151, B 103–123, C 80–96, D 62–73), então nenhuma loja jamais
+ * apontaria outro cluster por preço — uma loja de interior tem ticket menor por
+ * estrutura, não por performance.
+ *
+ * O que separa uma loja de interior que merece subir é o desempenho: quanto ela
+ * fatura, quanto converte e quanto gira, medidos contra a frota inteira. O
+ * índice abaixo é a média dos três percentis; a sugestão é o cluster cuja
+ * mediana de desempenho está mais perto do índice da loja.
+ */
+const PESOS_DESEMPENHO = { faturamento: 0.5, conversao: 0.25, sellThrough: 0.25 }
+
+const SUGESTAO_GANHO_MINIMO = 8
+
+/**
+ * A escada de performance vai só de A a C. O cluster D é Outlet & Saldo: um
+ * FORMATO de loja, com sortimento e precificação próprios, não um degrau de
+ * desempenho — sugerir que uma loja de capital premium "vire outlet" porque o
+ * índice caiu seria conselho errado. E a sugestão só vale entre degraus
+ * vizinhos: pular de A direto para C não é reagrupamento, é erro de cadastro.
+ */
+const ESCADA_CLUSTERS: Cluster[] = ['A', 'B', 'C']
+
+function percentil(valores: number[], v: number): number {
+  const abaixo = valores.filter((x) => x < v).length
+  return (abaixo / valores.length) * 100
+}
+
+export const SUGESTOES_REAGRUPAMENTO: SugestaoReagrupamento[] = (() => {
+  const faturamentos = LOJAS.map((l) => l.faturamentoMes)
+  const conversoes = LOJAS.map((l) => l.conversao)
+  const sellThroughs = LOJAS.map((l) => l.sellThrough)
+
+  const desempenho = (l: Loja) =>
+    percentil(faturamentos, l.faturamentoMes) * PESOS_DESEMPENHO.faturamento +
+    percentil(conversoes, l.conversao) * PESOS_DESEMPENHO.conversao +
+    percentil(sellThroughs, l.sellThrough) * PESOS_DESEMPENHO.sellThrough
+
+  const indice = new Map(LOJAS.map((l) => [l.id, desempenho(l)]))
+
+  /** mediana do índice em cada cluster — o patamar de cada faixa */
+  const patamar = new Map<Cluster, number>()
+  for (const c of REDE.clusters.filter((x) => ESCADA_CLUSTERS.includes(x.id as Cluster))) {
+    const valores = LOJAS.filter((l) => l.cluster === c.id)
+      .map((l) => indice.get(l.id)!)
+      .sort((a, b) => a - b)
+    patamar.set(c.id as Cluster, valores[Math.floor(valores.length / 2)])
+  }
+
+  return LOJAS.map((l) => {
+    const meu = indice.get(l.id)!
+    const atual = patamar.get(l.cluster)!
+    const alvo = [...patamar.entries()].reduce((melhor, [id, p]) =>
+      Math.abs(meu - p) < Math.abs(meu - melhor[1]) ? [id, p] : melhor,
+    )
+    return {
+      loja: l,
+      meu,
+      atual,
+      sugerido: alvo[0] as Cluster,
+      patamarSugerido: alvo[1],
+      ganho: Math.abs(meu - atual) - Math.abs(meu - alvo[1]),
+    }
+  })
+    .filter(
+      (d) =>
+        d.sugerido !== d.loja.cluster &&
+        d.ganho >= SUGESTAO_GANHO_MINIMO &&
+        ESCADA_CLUSTERS.includes(d.loja.cluster) &&
+        Math.abs(
+          ESCADA_CLUSTERS.indexOf(d.sugerido) - ESCADA_CLUSTERS.indexOf(d.loja.cluster),
+        ) === 1,
+    )
+    .sort((a, b) => b.ganho - a.ganho)
+    .slice(0, 3)
+    .map(({ loja, meu, atual, sugerido, patamarSugerido }) => ({
+      lojaId: loja.id,
+      nome: loja.nome,
+      cidade: loja.cidade,
+      uf: loja.uf,
+      clusterAtual: loja.cluster,
+      clusterSugerido: sugerido,
+      desempenho: arredondar(meu, 0),
+      desempenhoClusterAtual: arredondar(atual, 0),
+      desempenhoClusterSugerido: arredondar(patamarSugerido, 0),
+      motivo:
+        meu > atual
+          ? `Desempenho no percentil ${arredondar(meu, 0)} da rede, contra a mediana de ${arredondar(atual, 0)} do cluster ${loja.cluster}: gira e converte como loja de ${sugerido}.`
+          : `Desempenho no percentil ${arredondar(meu, 0)} da rede, abaixo da mediana de ${arredondar(atual, 0)} do cluster ${loja.cluster}: opera no patamar de ${sugerido}.`,
+    }))
+})()
+
+/** Portes e climas disponíveis no cadastro de loja (mesma taxonomia da frota). */
+export const PORTES_LOJA: Porte[] = ['P', 'M', 'G', 'GG']
+export const CLIMAS_LOJA: Clima[] = ['Quente', 'Híbrida Quente', 'Híbrida Fria', 'Fria']
+
+/* ========================== 37. CADASTRO (Fase 10) ====================== */
+
+export type NoCadastro = {
+  id: string
+  nome: string
+  /** N2 do JSON (roupas, moda íntima…) ou faixa etária no infantil */
+  filhos: { nome: string; detalhe?: string }[]
+  /** atributos reais que valem para o ramo */
+  atributos?: { grupo: string; termos: string[] }[]
+  nota?: string
+}
+
+/**
+ * Acordeão do Cadastro de Setor — a árvore mercadológica REAL do snapshot.
+ * Nada aqui é inventado: departamentos, categorias, faixas etárias, marcas e
+ * atributos saem todos de `arvoreMercadologica`, `marcas` e `atributosReais`.
+ */
+export const ARVORE_CADASTRO: NoCadastro[] = [
+  {
+    id: 'feminino',
+    nome: 'Feminino',
+    filhos: [
+      ...cea.arvoreMercadologica.feminino.roupas.map((n) => ({ nome: n, detalhe: 'Roupas' })),
+      ...cea.arvoreMercadologica.feminino.modaIntima.map((n) => ({ nome: n, detalhe: 'Moda íntima' })),
+      ...cea.arvoreMercadologica.feminino.modaPraia.map((n) => ({ nome: n, detalhe: 'Moda praia' })),
+    ],
+    atributos: [
+      { grupo: 'Decotes', termos: cea.atributosReais.decotes },
+      { grupo: 'Mangas', termos: cea.atributosReais.mangas },
+      { grupo: 'Materiais', termos: cea.atributosReais.materiais },
+      { grupo: 'Padronagens', termos: cea.atributosReais.padronagens },
+    ],
+    nota: 'Maior departamento da árvore: 10 categorias de roupa, 5 de moda íntima e 3 de praia.',
+  },
+  {
+    id: 'masculino',
+    nome: 'Masculino',
+    filhos: [
+      ...cea.arvoreMercadologica.masculino.roupas.map((n) => ({ nome: n, detalhe: 'Roupas' })),
+      ...cea.arvoreMercadologica.masculino.modaIntima.map((n) => ({ nome: n, detalhe: 'Moda íntima' })),
+    ],
+    atributos: [{ grupo: 'Materiais', termos: cea.atributosReais.materiais }],
+    nota: 'O NOS de camiseta básica mora aqui — é o maior giro em unidades da rede.',
+  },
+  {
+    id: 'infantil',
+    nome: 'Infantil',
+    filhos: cea.arvoreMercadologica.infantil.faixas.map((f) => ({ nome: f, detalhe: 'Faixa etária' })),
+    atributos: [
+      { grupo: 'Marcas próprias', termos: cea.arvoreMercadologica.infantil.marcas },
+      { grupo: 'Licenças', termos: cea.marcas.licencasInfantil },
+    ],
+    nota: 'Cadastro por faixa etária, não por tamanho — a grade vem depois, no N4.',
+  },
+  {
+    id: 'jeans',
+    nome: 'Jeans',
+    filhos: cea.arvoreMercadologica.jeans.linhas.map((l) => ({ nome: l, detalhe: 'Linha' })),
+    atributos: [
+      { grupo: 'Fits', termos: cea.arvoreMercadologica.jeans.fitsReais },
+      { grupo: 'Lavagens', termos: cea.atributosReais.lavagensJeans },
+    ],
+    nota: 'Fit e lavagem são obrigatórios: sem os dois a peça não entra no mapa de coleção.',
+  },
+  {
+    id: 'intimo',
+    nome: 'Moda Íntima',
+    filhos: cea.arvoreMercadologica.feminino.modaIntima.map((n) => ({ nome: n })),
+    atributos: [{ grupo: 'Materiais', termos: ['renda', 'algodão', 'microfibra'] }],
+    nota: 'Reposição por tamanho: a grade é o eixo do cadastro, não a cor.',
+  },
+  {
+    id: 'esportivo',
+    nome: 'Esportivo — ACE',
+    filhos: cea.arvoreMercadologica.feminino.modaEsportiva.map((n) => ({ nome: n })),
+    atributos: [{ grupo: 'Marca própria', termos: ['ACE (esportiva — 1ª loja própria em 2026)'] }],
+    nota: 'Marca própria com primeira loja em 2026 — cadastro novo, ainda em consolidação.',
+  },
+  {
+    id: 'mindse7',
+    nome: 'Mindse7',
+    filhos: [
+      { nome: 'Vestidos', detalhe: 'jovem/trend' },
+      { nome: 'Jeans', detalhe: 'jovem/trend' },
+      { nome: 'Blusas e Camisetas', detalhe: 'jovem/trend' },
+    ],
+    atributos: [{ grupo: 'Padronagens', termos: cea.atributosReais.padronagens }],
+    nota: 'Marca jovem: ciclo mais curto e cadastro com prazo menor que o do core.',
+  },
+]
+
+/** Hierarquia de cores — a cartela real do snapshot, com o hex de cada uma. */
+export const HIERARQUIA_CORES = cartelaCores.map((cor) => ({
+  nome: cor,
+  hex: hexDaCor(cor),
+  /** quantos produtos do catálogo usam a cor */
+  produtos: produtos.filter(
+    (p) => (p.cor ?? '').toLowerCase().includes(cor.split('/')[0]) ||
+      (p.cores ?? []).some((c) => c.toLowerCase().includes(cor.split('/')[0])),
+  ).length,
+}))
+
+/**
+ * Qualidade de cadastro.
+ *
+ * Os 94% são âncora da spec — é a qualidade do cadastro no ERP, que este
+ * snapshot não tem como medir (o que falta aqui falta porque a coleta do site
+ * não trouxe, não porque a C&A não cadastrou). O que É verificável, e está
+ * verificado no autoteste, são as 3 pendências: cada uma aponta uma referência
+ * real cujo campo citado está mesmo ausente no catálogo.
+ */
+export const SCORE_CADASTRO = 94
+
+export type PendenciaCadastro = {
+  cod: string
+  produto: string
+  campo: string
+  severidade: Severidade
+  impacto: string
+}
+
+export const PENDENCIAS_CADASTRO: PendenciaCadastro[] = [
+  {
+    cod: '1099133',
+    produto: produtoPorCod('1099133')?.nome ?? '',
+    campo: 'lavagem',
+    severidade: 'Alta',
+    impacto: 'Sem lavagem cadastrada a peça não entra no gabarito de jeans nem no mapa de coleção.',
+  },
+  {
+    cod: '1086292',
+    produto: produtoPorCod('1086292')?.nome ?? '',
+    campo: 'precoPor',
+    severidade: 'Crítica',
+    impacto: 'Sem preço de venda não há margem calculada — a peça fica fora do plano e do OTB.',
+  },
+  {
+    cod: '7413962',
+    produto: produtoPorCod('7413962')?.nome ?? '',
+    campo: 'material',
+    severidade: 'Média',
+    impacto: 'Material vazio quebra a leitura de atributos e o agrupamento por composição.',
+  },
+]
+
+/** Passos do wizard de novo cadastro. */
+export const PASSOS_CADASTRO = [
+  { id: 1, nome: 'Identificação', nota: 'Departamento, categoria, nome e cor da variante.' },
+  { id: 2, nome: 'Grade', nota: 'Sessão de grade e curva de tamanhos que a peça herda.' },
+  { id: 3, nome: 'Estratégia', nota: 'Faixa de preço, papel na coleção e janela de venda.' },
+] as const
+
+export const PAPEIS_COLECAO = ['Dorsal/NOS', 'Coleção 120d', 'Vitrine', 'Evento', 'Cápsula'] as const
+
+/* ===================== 38. AVISOS DA TOPBAR (Fase 0 → 10) =============== */
+
+/**
+ * Os 6 avisos do sino — badge 6 é âncora da Fase 0.
+ * Ficavam escritos dentro do Topbar; vieram para cá porque citam referência,
+ * preço e percentual reais, e número em componente é o que a regra de ouro 1
+ * proíbe. Cada texto agora é montado a partir do próprio dado.
+ */
+export type AvisoTopbar = { tom: 'crit' | 'warn' | 'info' | 'ok'; texto: string }
+
+export const AVISOS_TOPBAR: AvisoTopbar[] = [
+  {
+    tom: 'crit',
+    texto: `Ruptura na ${produtoPorCod('1049412')?.nome ?? 'Camiseta básica'} ${'1049412'} em ${formatNum(12)} lojas do Cluster B`,
+  },
+  {
+    tom: 'warn',
+    texto: `Markdown sugerido para o Tricot Canelado 1083993 (${formatDelta(FICHAS_PLM[0].markdownPct ?? 0, 0)})`,
+  },
+  {
+    tom: 'warn',
+    texto: `Plano estourou a banda do OTB em ${formatDelta(PLANO.estouroPct)} (${formatBRLCompact(PLANO.investimento - PLANO.otbRecorte, 2)})`,
+  },
+  {
+    tom: 'info',
+    texto: `Wide Leg 1033472 com oportunidade de recompra`,
+  },
+  {
+    tom: 'info',
+    texto: `Line devolvido por ${formatNum(new Set(LINHAS_LINE.map((l) => l.fornecedor)).size)} fornecedores aguarda double check`,
+  },
+  {
+    tom: 'ok',
+    texto: `Push para o ERP concluído às ${DASHBOARD.erpUltimoPush} · ${formatNum(DASHBOARD.erpErros)} erros`,
+  },
+]

@@ -259,6 +259,12 @@ const HEX_POR_COR: Record<string, string> = {
   'azul bicolor': '#41608F',
 }
 
+/** Hex da cor da cartela real — usado no placeholder e na hierarquia de cores. */
+export function hexDaCor(nome: string): string {
+  const chave = nome.trim().toLowerCase().replace(/\s*\+\d+.*$/, '')
+  return HEX_POR_COR[chave] ?? hexDeterministico(chave)
+}
+
 export type Placeholder = { bg: string; fg: string; iniciais: string; cor: string }
 
 /**

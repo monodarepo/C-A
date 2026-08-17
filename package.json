@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "verificar": "tsx scripts/verificar-ancoras.ts"
+    "verificar": "tsx scripts/verificar-ancoras.ts",
+    "qa": "tsx scripts/qa.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

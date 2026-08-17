@@ -22,7 +22,30 @@ npm run dev      # Vite em :5173 + conector Express em :3001 (proxy /api)
 | `npm run build`       | build de produção do front                                        |
 | `npm run typecheck`   | `tsc --noEmit` — obrigatório antes de cada commit                 |
 | `npm run lint`        | ESLint — obrigatório antes de cada commit                         |
-| `npm run verificar`   | autoteste dos números-âncora (frota, clusters, regiões, pirâmide) |
+| `npm run verificar`   | autoteste dos números-âncora — ~293 verificações, sai com erro se algum não fechar |
+| `npm run qa`          | varredura do código atrás do que as regras de ouro proíbem        |
+
+## Telas
+
+| Dashboard Executivo | Plano de Sortimento |
+| --- | --- |
+| ![Dashboard](docs/capturas/dashboard.png) | ![Plano](docs/capturas/plano.png) |
+
+| OTB | Mapa da Coleção |
+| --- | --- |
+| ![OTB](docs/capturas/otb.png) | ![Mapa](docs/capturas/mapa.png) |
+
+| Distribuição por Loja | Sortimento Vivo |
+| --- | --- |
+| ![Distribuição](docs/capturas/distribuicao.png) | ![Sortimento Vivo](docs/capturas/vivo.png) |
+
+| Histórico de Vendas | Lojas & Clusters |
+| --- | --- |
+| ![Histórico](docs/capturas/historico.png) | ![Lojas](docs/capturas/lojas.png) |
+
+As 21 rotas: `/` · `/workflow` · `/otb` · `/habilitadores` · `/atributos` · `/plano` · `/versoes` ·
+`/mapa` · `/retroalimentacao` · `/eventos` · `/line` · `/grade` · `/emissao` · `/distribuicao` ·
+`/benchmark` · `/plm` · `/historico` · `/vivo` · `/pricing` · `/lojas` · `/cadastro`.
 
 ## Stack
 
@@ -66,6 +89,23 @@ O mini-backend em `server/index.ts` faz proxy do catálogo público para evitar 
 
 Timeout de 3s, cache em memória de 1h e `{ fallback: true }` em qualquer erro — **a demo funciona
 perfeitamente offline do conector**, caindo no snapshot local.
+
+## Como os números se sustentam
+
+Nenhum número aparece escrito dentro de um componente. Tudo sai de `cea_data.json` (real) ou de
+`derived.ts` (derivado, com seed fixo 2627), e os dois scripts abaixo são o que impede a demo de
+sair do lugar:
+
+- **`npm run verificar`** — confere os números-âncora do `CLAUDE.md` um a um e ainda testa as
+  identidades entre eles: a frota de 335 lojas fechando por cluster e por região, o plano de
+  R$ 46,4 mi contra o OTB, os 7.912 packs e 38.640 peças da distribuição saindo da mesma alocação,
+  a cadeia inteira do painel do Sortimento Vivo, os 102 dias até a Black Friday. Falhou um, o
+  script sai com erro.
+- **`npm run qa`** — varre o código atrás de lorem ipsum, do rosa da concorrência e de número de
+  negócio digitado à mão dentro de tela.
+
+Quando um âncora do `CLAUDE.md` não fechava com outro, a decisão está comentada no ponto exato do
+`derived.ts` — procure por "âncora" no arquivo.
 
 ## Identidade
 

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { rotaPorPath } from '@/app/routes'
-import { COLECAO, PLANNER } from '@/data/derived'
+import { AVISOS_TOPBAR, COLECAO, PLANNER } from '@/data/derived'
 import { cea, iniciaisPessoa } from '@/lib/cea'
 import { useToast } from '@/components/ui/Toast'
 import { StatusChip } from '@/components/ui/StatusChip'
@@ -10,15 +10,8 @@ import { StatusChip } from '@/components/ui/StatusChip'
 const SEASONS = cea.calendarioComercial_2026_27.find((e) => e.seasons)?.seasons ?? []
 const OPCOES_COLECAO = [COLECAO.rotulo, ...SEASONS.filter((s) => s !== COLECAO.nome)]
 
-/** Avisos do sino — badge 6 (âncora da Fase 0). */
-const AVISOS = [
-  { tom: 'crit' as const, texto: 'Ruptura na Camiseta Básica 1049412 em 12 lojas do Cluster B' },
-  { tom: 'warn' as const, texto: 'Markdown sugerido para o Tricot Canelado 1083993 (−55%)' },
-  { tom: 'warn' as const, texto: 'Plano estourou a banda do OTB em +3,6% (R$ 1,62 mi)' },
-  { tom: 'info' as const, texto: 'Wide Leg 1033472 com oportunidade de recompra' },
-  { tom: 'info' as const, texto: 'Line devolvido por 3 fornecedores aguarda double check' },
-  { tom: 'ok' as const, texto: 'Push para o ERP concluído às 14:32 · 0 erros' },
-]
+/** Avisos do sino — badge 6 (âncora da Fase 0). Textos montados em derived.ts. */
+const AVISOS = AVISOS_TOPBAR
 
 export function Topbar({ onAbrirMenu }: { onAbrirMenu: () => void }) {
   const { pathname } = useLocation()

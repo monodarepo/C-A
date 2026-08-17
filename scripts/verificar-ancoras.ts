@@ -4,7 +4,7 @@
  * simulada continua calibrada nos âncoras do CLAUDE.md e se as marginais
  * (clusters, regiões) fecham exatamente.
  */
-import { produtoPorCod, produtos } from '../src/lib/cea'
+import { cea, produtoPorCod, produtos } from '../src/lib/cea'
 import { formatDelta } from '../src/lib/format'
 import {
   AGREGADOS_FROTA,
@@ -137,6 +137,13 @@ import {
   BEST_SELLERS,
   SLOW_SELLERS,
   VIVO as VIVO_ANCORA,
+  ARVORE_CADASTRO,
+  AVISOS_TOPBAR,
+  CARDS_CLUSTER,
+  HIERARQUIA_CORES,
+  PENDENCIAS_CADASTRO,
+  SCORE_CADASTRO,
+  SUGESTOES_REAGRUPAMENTO,
 } from '../src/data/derived'
 import { VIVO } from '../src/data/derived'
 
@@ -1103,6 +1110,105 @@ const variedade = new Set(DRILL_PRECO.filter((l) => l.nivel === 'SKU').map((l) =
 if (variedade.size < 2) falhas++
 console.log(
   `${variedade.size >= 2 ? '✓' : '✗'} o drill-down tem leitura (${variedade.size} recomendações distintas: ${[...variedade].join(', ')})`,
+)
+
+console.log('\n— LOJAS & CLUSTERS —')
+checar('cards de cluster', CARDS_CLUSTER.length, 4, 0)
+const CLUSTERS_ANCORA = [
+  { id: 'A', lojas: 42, nome: 'Premium Capitais' },
+  { id: 'B', lojas: 108, nome: 'Médio Capitais' },
+  { id: 'C', lojas: 158, nome: 'Interior' },
+  { id: 'D', lojas: 27, nome: 'Outlet & Saldo' },
+]
+for (const a of CLUSTERS_ANCORA) {
+  const c = CARDS_CLUSTER.find((x) => x.id === a.id)
+  checar(`cluster ${a.id} · lojas no card`, c?.lojas ?? 0, a.lojas, 0)
+}
+checar(
+  'soma dos cards = rede',
+  CARDS_CLUSTER.reduce((a, c) => a + c.lojas, 0),
+  REDE.totalLojas,
+  0,
+)
+checar('sugestões de reagrupamento', SUGESTOES_REAGRUPAMENTO.length, 3, 0)
+const sugestaoForaDaEscada = SUGESTOES_REAGRUPAMENTO.filter(
+  (s) => s.clusterAtual === 'D' || s.clusterSugerido === 'D',
+)
+falhas += sugestaoForaDaEscada.length
+console.log(
+  `${sugestaoForaDaEscada.length === 0 ? '✓' : '✗'} nenhuma sugestão envolve o cluster D (Outlet & Saldo é formato, não degrau)`,
+)
+const ESCADA = ['A', 'B', 'C']
+const saltoDeDegrau = SUGESTOES_REAGRUPAMENTO.filter(
+  (s) => Math.abs(ESCADA.indexOf(s.clusterSugerido) - ESCADA.indexOf(s.clusterAtual)) !== 1,
+)
+falhas += saltoDeDegrau.length
+console.log(
+  `${saltoDeDegrau.length === 0 ? '✓' : '✗'} toda sugestão é entre degraus vizinhos da escada A→B→C`,
+)
+const sugestaoSemLoja = SUGESTOES_REAGRUPAMENTO.filter(
+  (s) => !LOJAS.some((l) => l.id === s.lojaId),
+)
+falhas += sugestaoSemLoja.length
+console.log(
+  `${sugestaoSemLoja.length === 0 ? '✓' : '✗'} toda sugestão aponta para uma loja real da frota`,
+)
+for (const s of SUGESTOES_REAGRUPAMENTO) {
+  console.log(
+    `  ${s.nome.padEnd(26)} ${s.cidade}/${s.uf} · ${s.clusterAtual} → ${s.clusterSugerido} · desempenho ${s.desempenho} vs ${s.desempenhoClusterAtual}`,
+  )
+}
+
+console.log('\n— CADASTRO —')
+checar('score de qualidade (%)', SCORE_CADASTRO, 94, 0)
+checar('pendências de cadastro', PENDENCIAS_CADASTRO.length, 3, 0)
+/* O teste que importa: cada pendência tem de apontar um campo REALMENTE vazio
+   no catálogo — se alguém "resolver" a pendência no texto sem o dado existir,
+   ou o contrário, isto aqui quebra. */
+const pendenciaFalsa = PENDENCIAS_CADASTRO.filter((p) => {
+  const produto = produtoPorCod(p.cod)
+  if (!produto) return true
+  if (p.campo === 'lavagem') {
+    const lavagens = ['clara', 'média', 'escura', 'black', 'destroyed']
+    return (produto.atributos ?? []).some((a) => lavagens.some((l) => a.includes(l)))
+  }
+  const valor = (produto as unknown as Record<string, unknown>)[p.campo]
+  return Array.isArray(valor) ? valor.length > 0 : valor !== undefined && valor !== ''
+})
+falhas += pendenciaFalsa.length
+console.log(
+  `${pendenciaFalsa.length === 0 ? '✓' : '✗'} as 3 pendências apontam campo de fato vazio no catálogo (${PENDENCIAS_CADASTRO.map((p) => `${p.cod}/${p.campo}`).join(' · ')})`,
+)
+checar('ramos da árvore de cadastro', ARVORE_CADASTRO.length, 7, 0)
+const ramoVazio = ARVORE_CADASTRO.filter((n) => n.filhos.length === 0)
+falhas += ramoVazio.length
+console.log(`${ramoVazio.length === 0 ? '✓' : '✗'} todo ramo da árvore abre em categorias`)
+checar('cores na cartela', HIERARQUIA_CORES.length, 15, 0)
+const corSemHex = HIERARQUIA_CORES.filter((c) => !/^#[0-9a-fA-F]{6}$/.test(c.hex))
+falhas += corSemHex.length
+console.log(`${corSemHex.length === 0 ? '✓' : '✗'} toda cor da cartela tem hex válido`)
+const categoriaForaDoJson = ARVORE_CADASTRO.find((n) => n.id === 'feminino')!.filhos.filter(
+  (f) =>
+    ![
+      ...cea.arvoreMercadologica.feminino.roupas,
+      ...cea.arvoreMercadologica.feminino.modaIntima,
+      ...cea.arvoreMercadologica.feminino.modaPraia,
+    ].includes(f.nome),
+)
+falhas += categoriaForaDoJson.length
+console.log(
+  `${categoriaForaDoJson.length === 0 ? '✓' : '✗'} as categorias do Feminino saem todas da árvore mercadológica do JSON`,
+)
+
+console.log('\n— AVISOS DA TOPBAR —')
+checar('avisos no sino (badge 6)', AVISOS_TOPBAR.length, 6, 0)
+const avisoSemTexto = AVISOS_TOPBAR.filter((a) => a.texto.length < 20)
+falhas += avisoSemTexto.length
+console.log(`${avisoSemTexto.length === 0 ? '✓' : '✗'} todo aviso tem texto`)
+const avisoComEstouro = AVISOS_TOPBAR.some((a) => a.texto.includes('+3,6%'))
+if (!avisoComEstouro) falhas++
+console.log(
+  `${avisoComEstouro ? '✓' : '✗'} o aviso do OTB carrega o estouro real do plano (+3,6%)`,
 )
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
