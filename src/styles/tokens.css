@@ -1,0 +1,39 @@
+/* Design tokens — Plano de Sortimento C&A
+   Identidade: azul institucional C&A + "&" vermelho.
+   A Fase 0 tenta extrair o hex do SVG oficial via /api/cea/logo (ver src/lib/cea.ts);
+   os valores abaixo são o fallback canônico do CLAUDE.md.
+   NUNCA usar rosa (#EC008C é da referência Marisa). */
+:root {
+  --cea-blue: #00287a;
+  --cea-blue-deep: #0b1f5b;
+  --cea-red: #e30613;
+
+  --bg: #f7f8fa;
+  --card: #ffffff;
+  --ok: #10b981;
+  --warn: #f59e0b;
+  --crit: #e30613;
+
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+
+  /* Os mesmos tokens em canais RGB. Existem porque o Tailwind só consegue
+     aplicar opacidade (bg-cea-blue/10, ring-cea-blue/40) sobre cores em canais;
+     um hex dentro de var() não aceita o modificador. Mantenha em sincronia
+     com os hex acima — são a MESMA cor, escrita de duas formas. */
+  --cea-blue-rgb: 0 40 122;
+  --cea-blue-deep-rgb: 11 31 91;
+  --cea-red-rgb: 227 6 19;
+  --ok-rgb: 16 185 129;
+  --warn-rgb: 245 158 11;
+  --crit-rgb: 227 6 19;
+
+  /* derivados de apoio (tons de tinta e bordas) */
+  --ink: #0f172a;
+  --ink-muted: #64748b;
+  --border: #e6e9ef;
+  --cea-blue-soft: #eef2fb;
+  --ok-soft: #e8f8f1;
+  --warn-soft: #fef4e6;
+  --crit-soft: #fdeaec;
+}

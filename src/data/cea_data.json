@@ -1,0 +1,243 @@
+{
+  "meta": {
+    "projeto": "Plano de Sortimento — C&A (mockup)",
+    "dataColeta": "2026-08-17",
+    "fontes": [
+      "cea.com.br (catálogo, navegação, preços, atributos — coletado ao vivo)",
+      "Release resultados 2T26 C&A Modas S.A. (05/08/2026) via ADVFN/InfoMoney",
+      "Resultados 4T25/FY25 via FashionUnited/XP/SeuDinheiro; 1T26 via CNN Brasil; base 2024 (332 lojas) via SindiShopping"
+    ],
+    "avisos": [
+      "Produtos, preços, marcas, árvore mercadológica e indicadores financeiros são REAIS (fonte pública).",
+      "Métricas operacionais por loja/SKU (venda, estoque, sell-through, cobertura) são SIMULADAS de forma coerente com os números reais.",
+      "Estilistas e fornecedores são FICTÍCIOS.",
+      "Campo hidratar=true indica dado a enriquecer em runtime via conector VTEX (preço exato/foto)."
+    ]
+  },
+
+  "identidadeVisual": {
+    "estrategia": "Extrair hex definitivo dos assets oficiais em build-time: logo SVG e CSS de cea.com.br. C&A Brasil mantém o wordmark AZUL-MARINHO (a matriz europeia migrou para vermelho em 2020; o Brasil não).",
+    "paletaAproximada": {
+      "primaria_azul_cea": "#00287A",
+      "azul_profundo_texto": "#0B1F5B",
+      "vermelho_promo": "#E30613",
+      "fundo": "#F7F8FA",
+      "sucesso": "#10B981",
+      "alerta": "#F59E0B",
+      "critico": "#E30613"
+    },
+    "tipografia": { "titulos": "Poppins", "dados": "Inter" },
+    "tomDeVoz": "\"A gente se encontra na C&A ❤\" — jovem, direto, afetivo. Usar em empty states e toasts.",
+    "assinaturasReais": ["A gente se encontra na moda, a gente se encontra na C&A!", "Aposte no Básico!"]
+  },
+
+  "financeiro": {
+    "t2_2026": {
+      "divulgacao": "05/08/2026",
+      "receitaLiquidaConsolidada_R$": 2082000000, "varReceita": "+1,2%",
+      "receitaVestuario_R$": 1895000000, "varVestuario": "+5,6%",
+      "sssVestuario": "+4,1%",
+      "margemBrutaConsolidada": "58,1% (+1,4 p.p.)",
+      "margemBrutaVestuario": "59,1% — 20 trimestres consecutivos de expansão",
+      "lucroAjustado_R$": 130000000, "lucroReportado_R$": 177000000,
+      "ebitdaAjustado_R$": 435000000, "margemEbitda": "20,9%",
+      "digitalVendas_R$": 154300000, "digitalVar": "+33,3%", "digitalShare": "7,7% das vendas de mercadorias",
+      "dividaBruta_R$": 952000000, "caixa_R$": 782000000, "caixaLiquido_R$": 170000000,
+      "capex_R$": 119600000, "capexDestino": "expansão/modernização de lojas, supply chain, transformação digital",
+      "expansao": "2 lojas conceito Energia inauguradas + 1ª loja da marca esportiva ACE",
+      "contexto": "SSS puxado pela coleção de inverno criada com a estratégia de testes; fluxo menor nas lojas durante a Copa do Mundo (jun-jul/26)"
+    },
+    "fy2025": {
+      "receita_R$": 7983000000, "varReceita": "+4,5%",
+      "vestuario_R$": 7100000000, "varVestuario": "+9,2%",
+      "vendaPorM2": "+8,4%", "margemBrutaVestuario": "56,4% (+0,4 p.p.)",
+      "lucroLiquido_R$": 587100000, "varLucro": "+29,7%",
+      "q4": { "receita_R$": 2471600000, "lucro_R$": 313200000, "lucroAjustado_R$": 269800000, "margemLiqAjustada": "10,9%", "lojasReformadas": 26, "conceitoEnergia": 3 }
+    },
+    "seriesTrimestrais_receita_R$": { "3T25": 1840000000, "4T25": 2471600000, "1T26": 1620000000, "2T26": 2082000000 },
+    "seriesTrimestrais_sssVestuario": { "3T25": "+8,1%", "1T26": "+4,8%", "2T26": "+4,1%" },
+    "usoNoApp": {
+      "OTB": "Venda planejada FY27 ≈ R$ 8,4 bi (+5% s/ FY25); margem planejada vestuário 59%; digital alvo 9%",
+      "DashboardExecutivo": "Margem realizada 59,1% (badge '20 tris de expansão'); % digital 7,7%",
+      "Benchmark": "Ticket médio C&A ~R$ 108 (aspiracional) vs Renner R$ 129 / Riachuelo R$ 115 / Marisa R$ 68"
+    }
+  },
+
+  "rede": {
+    "totalLojasBase": "≈ 335 (332 em 2024 + aberturas 2025/26)",
+    "conceitos": ["Tradicional", "Energia (novo conceito, 5+ unidades)", "ACE standalone (1ª loja, 2T26)", "Plus Size dedicadas"],
+    "clustersModelo": [
+      { "id": "A", "nome": "Premium Capitais", "lojas": 42, "ticketMedio": 138, "conv": "19%", "partFaturamento": "31%" },
+      { "id": "B", "nome": "Médio Capitais", "lojas": 108, "ticketMedio": 112, "conv": "16%", "partFaturamento": "38%" },
+      { "id": "C", "nome": "Interior", "lojas": 158, "ticketMedio": 89, "conv": "13%", "partFaturamento": "25%" },
+      { "id": "D", "nome": "Outlet & Saldo", "lojas": 27, "ticketMedio": 68, "conv": "24%", "partFaturamento": "6%" }
+    ],
+    "lojasNomeadas_localizacoesReais_metricasSimuladas": [
+      { "nome": "C&A Shopping Eldorado", "uf": "SP", "cluster": "A" }, { "nome": "C&A Center Norte", "uf": "SP", "cluster": "A" },
+      { "nome": "C&A MorumbiShopping", "uf": "SP", "cluster": "A" }, { "nome": "C&A Shopping Ibirapuera", "uf": "SP", "cluster": "A" },
+      { "nome": "C&A Center 3 — Paulista", "uf": "SP", "cluster": "A" }, { "nome": "C&A Shopping Aricanduva", "uf": "SP", "cluster": "B" },
+      { "nome": "C&A Metrô Tatuapé", "uf": "SP", "cluster": "B" }, { "nome": "C&A Shopping Interlagos", "uf": "SP", "cluster": "B" },
+      { "nome": "C&A NorteShopping", "uf": "RJ", "cluster": "A" }, { "nome": "C&A BarraShopping", "uf": "RJ", "cluster": "A" },
+      { "nome": "C&A Rio Sul", "uf": "RJ", "cluster": "A" }, { "nome": "C&A Madureira Shopping", "uf": "RJ", "cluster": "B" },
+      { "nome": "C&A BH Shopping", "uf": "MG", "cluster": "A" }, { "nome": "C&A Shopping Del Rey", "uf": "MG", "cluster": "B" },
+      { "nome": "C&A Palladium Curitiba", "uf": "PR", "cluster": "B" }, { "nome": "C&A Praia de Belas", "uf": "RS", "cluster": "B" },
+      { "nome": "C&A Salvador Shopping", "uf": "BA", "cluster": "A" }, { "nome": "C&A Shopping da Bahia", "uf": "BA", "cluster": "B" },
+      { "nome": "C&A Shopping Recife", "uf": "PE", "cluster": "A" }, { "nome": "C&A RioMar Recife", "uf": "PE", "cluster": "B" },
+      { "nome": "C&A Iguatemi Bosque", "uf": "CE", "cluster": "B" }, { "nome": "C&A Conjunto Nacional", "uf": "DF", "cluster": "A" },
+      { "nome": "C&A ParkShopping", "uf": "DF", "cluster": "A" }, { "nome": "C&A Manauara Shopping", "uf": "AM", "cluster": "B" }
+    ],
+    "sede": "Alameda Araguaia, 1222 — Alphaville, Barueri/SP (CNPJ 45.242.914/0001-05)",
+    "cds": ["CD Barueri/Alphaville (SP)", "CD Rio de Janeiro (RJ)"]
+  },
+
+  "ecossistema": {
+    "C&A Pay": { "descricao": "Meio de pagamento próprio; parcela em 4x sem juros; 10% off 1ª compra (5+ peças ou > R$400)", "usoNoApp": "KPI 'Participação C&A Pay nas vendas' + coluna de parcelamento no PDP" },
+    "C&A&VC": { "descricao": "Programa de relacionamento/fidelidade", "usoNoApp": "flag de cliente identificado nas vendas" },
+    "omni": { "cliqueERetire": "retirada em até 1 dia útil", "entregaTurbo": "até 4h (pedidos 10h–17h) — R$ 24,99", "entregaRapida": "mesmo dia/dia seguinte — R$ 14,99", "freteGratisSite": "acima de R$ 279", "freteFixo": "R$ 9,99" },
+    "cupomAtivo": "MAISMODA: 25% site / 30% app (capturado em 17/08/2026)",
+    "eventoAtivo": "Especial Dia dos Pais (ago/26)"
+  },
+
+  "arvoreMercadologica": {
+    "departamentos": ["Feminino", "Masculino", "Infantil", "Beleza", "Calçados", "Esportivo", "Jeans", "Mindse7", "Plus Size"],
+    "feminino": { "roupas": ["Blusas e Camisetas", "Básicos", "Calças", "Casacos e Jaquetas", "Jeans", "Macacões", "Saias", "Shorts e Bermudas", "Vestidos", "Alfaiataria"], "modaIntima": ["Calcinhas", "Cintas e Modeladores", "Meias", "Pijamas", "Sutiãs e Tops"], "modaEsportiva": ["Blusas", "Leggings", "Shorts e Bermudas", "Tops", "Acessórios", "Calçados"], "modaPraia": ["Biquínis", "Maiôs", "Saídas de praia"] },
+    "masculino": { "roupas": ["Bermudas", "Camisas", "Calças", "Camisetas e Regatas", "Casacos e Jaquetas", "Jeans", "Polos"], "modaIntima": ["Cuecas", "Meias", "Pijamas"] },
+    "infantil": { "faixas": ["0 a 24 meses", "1 a 5 anos", "4 a 12 anos", "10 a 16 anos"], "marcas": ["Baby Club", "Fifteen", "Miss Fifteen", "Palomino"] },
+    "jeans": { "fitsReais": ["Flare", "Mom", "Reta", "Skinny", "Wide Leg", "Novas modelagens"], "linhas": ["New Jeans", "Texturas", "&jeans"] },
+    "beleza": ["Cabelos", "Corpo", "Rosto", "Maquiagens", "Perfumes"],
+    "hierarquiaN1N7_paraOApp": "N1 Departamento → N2 Público/Linha → N3 Categoria → N4 Subcategoria → N5 Segmento (Coleção 120d | Dorsal/NOS) → N6 Programa → N7 Variante (cor)"
+  },
+
+  "marcas": {
+    "proprias": ["C&A", "Mindse7 (jovem/trend)", "ACE (esportiva — 1ª loja própria em 2026)", "Clock House", "Yessica", "&jeans", "City", "Special Basics"],
+    "parceiras": ["Sawary (jeans)"],
+    "belezaDestaques": ["Beleza C&A", "Boca Rosa", "Bruna Tavares", "Niina Secrets", "Mari Maria", "Vult", "Océane", "Payot"],
+    "licencasInfantil": ["Disney", "Bluey", "Hello Kitty", "Homem-Aranha", "Minecraft", "Naruto", "Patrulha Canina", "Sonic", "Stitch", "Snoopy", "Mario Bros"]
+  },
+
+  "atributosReais": {
+    "fitsCalca": ["skinny", "wide leg", "wide leg slim", "reta", "cargo", "mom", "flare", "pantalona", "oversized"],
+    "lavagensJeans": ["clara", "média", "escura", "black", "destroyed"],
+    "decotes": ["V", "redondo/careca", "quadrado", "canoa", "halterneck", "ombro a ombro", "frente única"],
+    "mangas": ["curta", "longa", "bufante", "sem manga/alça fina", "regata"],
+    "materiais": ["100% algodão", "algodão peruano interlock", "viscose", "viscose+linho", "viscose+poliamida (tricot)", "tule", "laise 100% algodão", "sarja", "crepe", "jeans c/ elastano", "renda"],
+    "padronagens": ["liso", "floral", "floral pequeno", "listrado", "poá", "xadrez", "animal print", "full print", "estampada personagem"],
+    "coresCartela": ["preto", "off white", "azul denim", "azul médio", "azul escuro", "marrom", "mocha", "bege/natural", "verde", "vermelho", "vinho", "laranja", "amarelo", "cinza/grafite", "rosa"]
+  },
+
+  "piramidePrecoObservada": {
+    "vestidosMidi": { "min": 39, "max": 440, "skusNaBusca": 641, "faixas": { "P1_entrada": "69–119", "P2_acessivel": "139–179", "P3_medio": "189–219", "P4_premium": "239–259", "P5_top": "260–440" } },
+    "camisetasMasculinas": { "min": 17.99, "max": 139.99, "coracao": "29,99–55,99" },
+    "sutias": { "min": 19, "max": 170, "coracao": "49,99–89,99", "skus": 294 },
+    "infantilCamisetas": { "min": 8, "max": 150, "coracao": "35,99–59,99" }
+  },
+
+  "produtos": [
+    { "cod": "1083993", "nome": "Vestido midi de tricot canelado", "dept": "Feminino", "cat": "Vestidos", "cor": "Grafite", "material": "65% viscose 35% poliamida", "atributos": ["decote V", "manga longa", "midi"], "precoDe": 199.99, "precoPor": 89.99, "desc": "-55%", "status": "esgotado", "url": "https://www.cea.com.br/vestido-midi-feminino-de-tricot-canelado-cinza-1083993-grafite/p", "papelNoApp": "slow→liquidação (PLM fase 7-8; caso de markdown profundo)" },
+    { "cod": "1075684", "nome": "Vestido midi com linho decote quadrado", "dept": "Feminino", "cat": "Vestidos", "cor": "Natural/Bege", "material": "viscose+linho", "atributos": ["decote quadrado", "lastex", "evasê", "fenda"], "precoPor": 159.99, "hidratar": true, "url": "https://www.cea.com.br/vestido-midi-feminino-com-linho-decote-quadrado-bege-1075684-natural/p", "papelNoApp": "dorsal verão (6 cores)" },
+    { "cod": "1101163", "nome": "Vestido midi de viscose com recortes", "dept": "Feminino", "cat": "Vestidos", "cor": "Bege", "material": "viscose+poliéster", "atributos": ["fit and flare", "alças largas"], "precoPor": 259.99, "url": "https://www.cea.com.br/vestido-midi-feminino-de-viscose-com-recortes-bege-1101163-bege_l/p", "papelNoApp": "P4 premium (3 cores)" },
+    { "cod": "1086292", "nome": "Vestido midi halterneck linho bordado floral", "dept": "Feminino", "cat": "Vestidos", "cor": "Bege/Amarelo", "material": "linho", "atributos": ["halterneck", "bordado", "fenda"], "hidratar": true, "url": "https://www.cea.com.br/vestido-midi-halterneck-feminino-com-linho-bordado-floral-bege-1086292-amarelo_c1/p", "papelNoApp": "vitrine/festa" },
+    { "cod": "1096942", "nome": "Vestido midi peplum de laise com recorte", "dept": "Feminino", "cat": "Vestidos", "cor": "Vermelho", "material": "laise 100% algodão", "atributos": ["peplum", "alças babado"], "hidratar": true, "url": "https://www.cea.com.br/vestido-midi-peplum-feminino-de-laise-com-recorte-vermelho-1096942-verm/p", "papelNoApp": "evento (Dia dos Namorados)" },
+    { "nome": "Vestido midi decote V manga longa", "dept": "Feminino", "cat": "Vestidos", "cor": "Verde", "precoDe": 199.99, "precoPor": 189.99, "hidratar": true },
+    { "nome": "Vestido midi de viscose floral", "dept": "Feminino", "cat": "Vestidos", "cor": "Laranja", "padronagem": "floral", "precoPor": 149.99, "hidratar": true },
+    { "nome": "Vestido midi chemise viscose com cinto listrado", "dept": "Feminino", "cat": "Vestidos", "cor": "Verde", "precoPor": 219.99, "hidratar": true },
+    { "nome": "Vestido midi chemise jeans manga curta com faixa", "dept": "Feminino", "cat": "Vestidos", "cor": "Azul", "material": "jeans", "precoPor": 239.99, "hidratar": true },
+    { "nome": "Vestido midi chemise viscose com lastex", "dept": "Feminino", "cat": "Vestidos", "cores": ["vinho", "preto", "azul"], "precoPor": 189.99, "hidratar": true, "papelNoApp": "programa 3 cores (repeat)" },
+    { "nome": "Vestido midi de renda decote V alça fina floral", "dept": "Feminino", "cat": "Vestidos", "cor": "Preto", "precoPor": 159.99, "hidratar": true },
+    { "nome": "Vestido midi evasê viscose com recortes", "dept": "Feminino", "cat": "Vestidos", "cor": "Azul +4", "precoPor": 189.99, "hidratar": true },
+    { "nome": "Vestido midi alça fina", "dept": "Feminino", "cat": "Vestidos", "cor": "Preto", "precoDe": 189.99, "precoPor": 69.99, "desc": "-63%", "papelNoApp": "liquidação profunda (alerta excesso)" },
+    { "nome": "Vestido midi franzido com fenda", "dept": "Feminino", "cat": "Vestidos", "cor": "Preto", "precoDe": 169.99, "precoPor": 89.99, "desc": "-47%", "papelNoApp": "markdown -47%" },
+    { "nome": "Vestido midi alça fina com babado", "dept": "Feminino", "cat": "Vestidos", "cor": "Marrom +2", "precoDe": 219.99, "precoPor": 149.99, "desc": "-32%" },
+    { "nome": "Vestido midi algodão decote quadrado básico", "dept": "Feminino", "cat": "Vestidos", "cores": ["verde", "marrom", "+3"], "precoPor": 99.99, "papelNoApp": "P1 entrada / básico dorsal" },
+    { "nome": "Vestido midi com linho decote quadrado", "dept": "Feminino", "cat": "Vestidos", "cores": ["marrom", "azul", "amarelo", "+6"], "precoPor": 159.99, "papelNoApp": "programa 6 cores — hero dorsal" },
+    { "nome": "Vestido midi gola alta animal print acetinado", "dept": "Feminino", "cat": "Vestidos", "cor": "Marrom", "padronagem": "animal print", "precoPor": 259.99, "papelNoApp": "ciclo tendência animal print" },
+    { "nome": "Vestido midi sem alça tule franzido poá — Mindse7", "dept": "Mindse7", "cat": "Vestidos", "cor": "Off white", "marca": "Mindse7", "precoPor": 199.99, "papelNoApp": "cápsula jovem" },
+    { "nome": "Vestido algodão gola alta", "dept": "Feminino", "cat": "Vestidos", "cores": ["marrom", "vermelho", "+5"], "precoPor": 119.99 },
+    { "nome": "Vestido midi de algodão", "dept": "Feminino", "cat": "Vestidos", "cores": ["off white", "verde", "+5"], "precoPor": 109.99 },
+    { "nome": "Vestido midi viscose manga curta listrado", "dept": "Feminino", "cat": "Vestidos", "cores": ["azul", "marrom"], "precoPor": 99.99 },
+    { "nome": "Vestido midi alça fina sarja listrado", "dept": "Feminino", "cat": "Vestidos", "cores": ["bege", "marrom"], "precoPor": 239.99 },
+    { "nome": "Vestido midi crepe gola laço poá", "dept": "Feminino", "cat": "Vestidos", "cor": "Vermelho", "precoPor": 239.99 },
+    { "nome": "Vestido midi tule manga longa animal print", "dept": "Feminino", "cat": "Vestidos", "cor": "Marrom", "precoPor": 169.99 },
+
+    { "cod": "1049412", "nome": "Camiseta básica de algodão manga curta", "dept": "Masculino", "cat": "Camisetas e Regatas", "cores": ["preto", "branco", "vermelho", "marrom", "+22 cores"], "material": "100% algodão (cinza: 50/50 poli)", "atributos": ["gola careca canelada", "modelagem reta"], "precoDe": 39.99, "precoPor": 29.99, "url": "https://www.cea.com.br/camiseta-masculina-de-algodao-basica-manga-curta-preta-1049412-preto/p", "papelNoApp": "HERO NOS/Dorsal — 22 cores, reposição SKU tamanho a tamanho" },
+    { "cod": "1046556", "nome": "Camiseta algodão peruano bold manga curta", "dept": "Masculino", "cat": "Camisetas e Regatas", "cor": "Branco", "material": "interlock algodão peruano", "precoPor": 55.99, "hidratar": true, "url": "https://www.cea.com.br/camiseta-de-algodao-peruano-bold-manga-curta-branca-1046556-branco_1/p", "papelNoApp": "premium básico (trade-up)" },
+    { "cod": "9947820", "nome": "Camiseta básica de algodão manga curta", "dept": "Masculino", "cat": "Camisetas e Regatas", "cor": "Cinza", "hidratar": true, "url": "https://www.cea.com.br/camiseta-basica-de-algodao-manga-curta-cinza-9947820-cin-mes-es/p" },
+    { "cod": "8472740", "nome": "Camiseta manga curta básica gola careca", "dept": "Masculino", "cat": "Camisetas e Regatas", "cor": "Branco", "hidratar": true, "url": "https://www.cea.com.br/camiseta-masculina-manga-curta-basica-gola-careca-branca-8472740-branco/p" },
+    { "cod": "1094926", "nome": "Camisa algodão manga curta listrada sutil", "dept": "Masculino", "cat": "Camisas", "cor": "Branco", "material": "100% algodão", "hidratar": true, "url": "https://www.cea.com.br/camisa-masculina-algodao-manga-curta-branca-1094926-branco_1/p" },
+
+    { "cod": "1114492", "nome": "Calça wide leg jeans com brilhos cintura alta", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Preto", "atributos": ["wide leg", "cintura alta", "aplicação brilhos", "5 bolsos"], "hidratar": true, "url": "https://www.cea.com.br/calca-wide-leg-feminina-jeans-com-brilhos-cintura-alta-preta-1114492-jeans_bck/p" },
+    { "cod": "1033472", "nome": "Calça wide leg jeans cintura alta", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Azul claro", "material": "jeans 100% algodão", "hidratar": true, "url": "https://www.cea.com.br/calca-wide-leg-jeans-feminina-cintura-alta-azul-1033472-jeans_cl/p", "papelNoApp": "core do programa wide leg" },
+    { "cod": "1095276", "nome": "Calça wide leg slim jeans cintura alta", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Marrom", "hidratar": true, "url": "https://www.cea.com.br/calca-wide-leg-slim-feminina-jeans-cintura-alta-marrom-1095276-marrom_e2/p" },
+    { "cod": "1072708", "nome": "Calça jeans wide leg slim com brilho cintura super alta", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Azul médio", "hidratar": true, "url": "https://www.cea.com.br/calca-jeans-wide-leg-slim-com-brilho-cintura-super-alta-azul-1072708-jeans-md/p" },
+    { "cod": "1092215", "nome": "Calça wide leg jeans cintura alta pesponto contraste", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Azul", "hidratar": true, "url": "https://www.cea.com.br/calca-wide-leg-feminina-jeans-cintura-alta-azul-1092215-jeans_am/p" },
+    { "cod": "1099133", "nome": "Calça super wide leg com recortes bicolor patchwork", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Azul bicolor", "atributos": ["patchwork", "barra corte a fio"], "hidratar": true, "url": "https://www.cea.com.br/calca-wide-leg-feminina-jeans-cintura-alta-com-recortes-azul-1099133-jeans_cl/p", "papelNoApp": "produto novo sem histórico (leitura rápida)" },
+    { "cod": "1094124", "nome": "Calça wide leg jeans cintura alta", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Azul escuro", "hidratar": true, "url": "https://www.cea.com.br/calca-wide-leg-feminina-jeans-cintura-alta-azul-1094124-jeans_esc/p" },
+    { "cod": "1082771", "nome": "Calça wide leg jeans barra desfiada", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Azul médio", "material": "algodão c/ elastano", "hidratar": true, "url": "https://www.cea.com.br/calca-wide-leg-feminina-jeans-cintura-alta-barra-desfiada-azul-1082771-jeans-md/p" },
+    { "cod": "1071833", "nome": "Calça jeans wide leg cintura super alta", "dept": "Jeans", "cat": "Calças Femininas", "cor": "Preto", "hidratar": true, "url": "https://www.cea.com.br/calca-jeans-wide-leg-cintura-super-alta-preta-1071833-jeans-bck/p" },
+
+    { "nome": "Camiseta infantil algodão MC Snoopy", "dept": "Infantil", "cat": "Blusas", "cor": "Verde", "licenca": "Snoopy", "precoPor": 35.99, "tamanhos": "1-5", "hidratar": true },
+    { "nome": "Camiseta infantil algodão MC Patrulha Canina", "dept": "Infantil", "cat": "Blusas", "licenca": "Patrulha Canina", "precoPor": 39.99, "tamanhos": "1-5", "hidratar": true },
+    { "nome": "Camiseta infantil algodão MC Mario Bros", "dept": "Infantil", "cat": "Blusas", "licenca": "Mario Bros", "precoPor": 39.99, "hidratar": true },
+    { "nome": "Camiseta infantil algodão Athos Minecraft", "dept": "Infantil", "cat": "Blusas", "cor": "Preto", "licenca": "Minecraft", "hidratar": true },
+    { "nome": "Camiseta infantil cerejas com glitter texturizada", "dept": "Infantil", "cat": "Blusas", "precoPor": 39.99, "tamanhos": "4-12" },
+    { "nome": "Camiseta infantil corações com glitter", "dept": "Infantil", "cat": "Blusas", "cor": "Azul", "precoPor": 39.99, "tamanhos": "4-12" },
+    { "nome": "Camiseta infantil capivara com glitter", "dept": "Infantil", "cat": "Blusas", "precoPor": 59.99, "tamanhos": "4-12", "papelNoApp": "best seller lúdico" },
+    { "nome": "Camiseta infantil texturizada listrada", "dept": "Infantil", "cat": "Blusas", "cor": "Azul", "precoPor": 59.99, "tamanhos": "1-5" },
+    { "nome": "Camiseta infantil ML estampada", "dept": "Infantil", "cat": "Blusas", "cor": "Azul", "precoPor": 49.99 },
+    { "nome": "Camiseta infantil ML proteção UV coqueiro", "dept": "Infantil", "cat": "Moda Praia", "precoPor": 69.99 },
+
+    { "cod": "7413962", "nome": "Sutiã meia taça canelado com renda", "dept": "Feminino", "cat": "Moda Íntima/Sutiãs", "cor": "Preto", "hidratar": true, "papelNoApp": "NOS íntimo — reposição por TAMANHO (grade crítica)" },
+    { "nome": "Sutiã renda sem bojo", "dept": "Feminino", "cat": "Moda Íntima/Sutiãs", "cores": ["preto", "+6"], "precoPor": 59.99, "papelNoApp": "programa 6 cores" },
+    { "nome": "Sutiã renda (liquidação)", "dept": "Feminino", "cat": "Moda Íntima/Sutiãs", "precoDe": 69.99, "precoPor": 32.99, "desc": "-53%" },
+    { "nome": "Sutiã renda (promo)", "dept": "Feminino", "cat": "Moda Íntima/Sutiãs", "precoDe": 49.99, "precoPor": 35.99, "desc": "-28%" },
+    { "nome": "Sutiã bralette renda", "dept": "Feminino", "cat": "Moda Íntima/Sutiãs", "precoPor": 79.99, "obs": "categoria bralette: 422 SKUs, R$19,99–99,99" },
+
+    { "nome": "Legging ACE poliamida cintura alta", "dept": "Esportivo", "cat": "Leggings", "marca": "ACE", "hidratar": true, "papelNoApp": "marca própria esportiva — 1ª loja física ACE (2T26)" },
+    { "nome": "Top ACE médio impacto", "dept": "Esportivo", "cat": "Tops", "marca": "ACE", "hidratar": true },
+    { "nome": "Shorts ACE 2 em 1", "dept": "Esportivo", "cat": "Shorts e Bermudas", "marca": "ACE", "hidratar": true }
+  ],
+
+  "benchmark": {
+    "posicionamentoC&A": { "ticketMedioAprox": 108, "tipo": "aspiracional/médio-alto", "forca": "coleções cápsula com estilistas, básicos, digital acelerando" },
+    "concorrentesMonitorados": [
+      { "marca": "Renner", "tipo": "aspiracional", "precoMedio": 129, "obs": "liderança em ticket médio" },
+      { "marca": "Riachuelo", "tipo": "direto", "precoMedio": 115, "obs": "forte em festa e plus" },
+      { "marca": "Hering", "tipo": "aspiracional básicos", "precoMedio": 119, "obs": "premium em algodão" },
+      { "marca": "Marisa", "tipo": "valor", "precoMedio": 68, "obs": "pressão de preço no feminino popular" },
+      { "marca": "Torra", "tipo": "valor", "precoMedio": 72, "obs": "promoção contínua" },
+      { "marca": "Caedu", "tipo": "valor", "precoMedio": 79, "obs": "forte em jeans e malha" },
+      { "marca": "Shein", "tipo": "digital", "obs": "pressão em moda jovem online" }
+    ]
+  },
+
+  "calendarioComercial_2026_27": [
+    { "evento": "Volta às Aulas", "mes": "Jan" }, { "evento": "Carnaval", "mes": "Fev" },
+    { "evento": "Dia das Mães", "data": "10/05/2026" }, { "evento": "Dia dos Namorados", "data": "12/06/2026" },
+    { "evento": "São João", "mes": "Jun" }, { "evento": "Copa do Mundo", "periodo": "Jun–Jul/2026", "obs": "REAL — citada no release 2T26 (fluxo menor em loja)" },
+    { "evento": "Dia dos Pais", "mes": "Ago", "obs": "campanha ativa no site agora" },
+    { "evento": "Black Friday", "data": "27/11/2026" }, { "evento": "Natal", "mes": "Dez" },
+    { "seasons": ["Alto Verão 26-27", "Verão 27", "Inverno 27"] }
+  ],
+
+  "ficticios": {
+    "estilistas": [
+      { "nome": "Helena Prado", "time": "Sr. Feminino Casual" }, { "nome": "Rafael Nunes", "time": "Denim Lab / &jeans" },
+      { "nome": "Júlia Sales", "time": "Festa & Vestidos" }, { "nome": "Théo Lima", "time": "Mindse7 Studio" },
+      { "nome": "Camila Duarte", "time": "ACE Performance" }, { "nome": "Bruno Farias", "time": "Infantil & Licenças" },
+      { "nome": "Letícia Ramos", "time": "Íntimo & Básicos" }
+    ],
+    "fornecedores": ["Têxtil Horizonte", "Malharia Santa Clara", "Denim União", "Confecções Aurora", "Nordeste Malhas", "Renda Fina Ltda", "Global Sourcing Ásia"],
+    "planner": { "nome": "Mariana Alves", "area": "Planejamento" }
+  },
+
+  "conexaoViva": {
+    "estrategia": "Backend Express no Replit como proxy (evita CORS) + fallback automático para este snapshot",
+    "endpoints": {
+      "buscaPorTermo": "GET https://www.cea.com.br/api/catalog_system/pub/products/search/{termo}?_from=0&_to=19",
+      "buscaPorRef": "GET https://www.cea.com.br/api/catalog_system/pub/products/search/?fq=alternateIds_RefId:{cod}",
+      "camposUteis": ["productName", "items[].images[].imageUrl", "items[].sellers[].commertialOffer.Price / ListPrice", "brand", "categories"]
+    },
+    "fotos": "imageUrl retornado pela API (host vtexassets) funciona direto em <img>; se proxy falhar, usar placeholder colorido com nome do produto",
+    "identidade": "No build, baixar o SVG do logo de cea.com.br e extrair fills para os design tokens"
+  }
+}
