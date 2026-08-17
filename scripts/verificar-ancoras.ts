@@ -25,6 +25,18 @@ import {
   recortarPorSegmento,
   totaisOTB,
   validarHierarquiaOTB,
+  CLUSTERIZACAO_DEFAULT,
+  DORSAL_NEED_DEFAULT,
+  EXEMPLO_PADRONAGEM,
+  GABARITO_POR_SESSAO,
+  JANELAS_OTIMIZACAO,
+  PECAS_EXEMPLO_PADRONAGEM,
+  RESUMO_DORSAL_DEFAULT,
+  TAXONOMIA_ATRIBUTOS,
+  VERBA_HABILITADORES,
+  distribuirPadronagem,
+  pecasPorSku,
+  validarExemploPadronagem,
   DASHBOARD,
   FOLLOWUP_FORNECEDORES,
   PECAS_VENDIDAS_COLECAO,
@@ -294,6 +306,93 @@ checar('sucessos (ok)', indicadores.filter((i) => i.tom === 'ok').length, 1, 0)
 const semNumeroOTB = indicadores.filter((i) => !/\d/.test(i.texto)).length
 if (semNumeroOTB > 0) falhas++
 console.log(`  ${semNumeroOTB === 0 ? '✓' : '✗'} todos os indicadores citam números da tabela`)
+
+console.log('\n— HABILITADORES (Fase 4) —')
+checar('verba do recorte', VERBA_HABILITADORES.verba, PLANO.verbaHabilitadores, 0)
+checar(
+  'peças = verba ÷ custo médio',
+  VERBA_HABILITADORES.verba / VERBA_HABILITADORES.custoMedio,
+  VERBA_HABILITADORES.pecas,
+  0.001,
+)
+const gabaritoVestidos = GABARITO_POR_SESSAO.Vestidos
+checar('P1 · peças/SKU (âncora 132)', pecasPorSku(gabaritoVestidos[0].packs), 132, 0)
+const pecasDecrescentes = gabaritoVestidos.every(
+  (l, i) => i === 0 || pecasPorSku(l.packs) < pecasPorSku(gabaritoVestidos[i - 1].packs),
+)
+if (!pecasDecrescentes) falhas++
+console.log(
+  `${pecasDecrescentes ? '✓' : '✗'} profundidade cai da base para o topo da pirâmide: ${gabaritoVestidos.map((l) => pecasPorSku(l.packs)).join(' → ')}`,
+)
+checar(
+  'clusterização soma 100%',
+  CLUSTERIZACAO_DEFAULT.reduce((a, c) => a + c.pct, 0),
+  100,
+  0,
+)
+checar(
+  'e-commerce na clusterização',
+  CLUSTERIZACAO_DEFAULT.find((c) => c.id === 'ecommerce')!.pct,
+  18,
+  0,
+)
+checar('células de verba', CLUSTERIZACAO_DEFAULT.length, 9, 0)
+
+const rd = RESUMO_DORSAL_DEFAULT
+checar('dorsal (R$)', rd.dorsalValor, 30_200_000, 0.005)
+checar('dorsal (%)', rd.dorsalPct, 71, 0.005)
+checar('need (R$)', rd.needValor, 12_300_000, 0.005)
+checar('need (%)', rd.needPct, 29, 0.005)
+checar('meses com folga', rd.mesesComFolga, 6, 0)
+checar('dorsal + need = verba', rd.dorsalValor + rd.needValor, VERBA_HABILITADORES.verba, 0)
+const primeiro = DORSAL_NEED_DEFAULT[0]
+const ultimo = DORSAL_NEED_DEFAULT[DORSAL_NEED_DEFAULT.length - 1]
+const extremosOk =
+  primeiro.dorsalQuente === 92 &&
+  primeiro.dorsalFrio === 88 &&
+  ultimo.dorsalQuente === 55 &&
+  ultimo.dorsalFrio === 50
+if (!extremosOk) falhas++
+console.log(
+  `${extremosOk ? '✓' : '✗'} curva de dorsal vai de ${primeiro.dorsalQuente}/${primeiro.dorsalFrio} (${primeiro.mes}) a ${ultimo.dorsalQuente}/${ultimo.dorsalFrio} (${ultimo.mes})`,
+)
+
+console.log('\n— ATRIBUTOS (Fase 4) —')
+const padronagens = distribuirPadronagem()
+checar('peças do exemplo', PECAS_EXEMPLO_PADRONAGEM, 6200, 0)
+checar(
+  'soma das participações',
+  EXEMPLO_PADRONAGEM.reduce((a, p) => a + p.pct, 0),
+  100,
+  0,
+)
+checar('Liso 46% → peças (âncora 2.852)', padronagens[0].pecas, 2852, 0)
+checar(
+  'Xadrez 7% → peças (âncora 434)',
+  padronagens.find((p) => p.padronagem === 'xadrez')!.pecas,
+  434,
+  0,
+)
+checar(
+  'peças distribuídas = total',
+  padronagens.reduce((a, p) => a + p.pecas, 0),
+  PECAS_EXEMPLO_PADRONAGEM,
+  0,
+)
+const errosPadronagem = validarExemploPadronagem()
+falhas += errosPadronagem.length
+console.log(
+  errosPadronagem.length === 0
+    ? '✓ todas as padronagens do exemplo existem na cartela real'
+    : errosPadronagem.map((e) => `✗ ${e}`).join('\n'),
+)
+const gruposVazios = TAXONOMIA_ATRIBUTOS.filter((g) => g.termos.length === 0)
+falhas += gruposVazios.length
+console.log(
+  `${gruposVazios.length === 0 ? '✓' : '✗'} ${TAXONOMIA_ATRIBUTOS.length} grupos de taxonomia com ${TAXONOMIA_ATRIBUTOS.reduce((a, g) => a + g.termos.length, 0)} termos, todos vindos do snapshot`,
+)
+const janelasRecomendadas = JANELAS_OTIMIZACAO.filter((j) => j.recomendada).length
+checar('janelas recomendadas', janelasRecomendadas, 1, 0)
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)

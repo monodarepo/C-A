@@ -1857,3 +1857,254 @@ export function validarHierarquiaOTB(): string[] {
   }
   return erros
 }
+
+/* ========================= 23. HABILITADORES DE SORTIMENTO (Fase 4) ======= */
+
+/** Recorte da tela: a sessão em que os habilitadores estão sendo parametrizados. */
+export const RECORTE_HABILITADORES = { n1: 'Feminino', n3: 'Vestidos' } as const
+
+/**
+ * Card de verba do recorte. R$ 42,5 mi ÷ R$ 68,90 de custo médio ≈ 616.800 peças
+ * (os três âncoras do CLAUDE.md fecham entre si).
+ */
+export const VERBA_HABILITADORES = {
+  verba: PLANO.verbaHabilitadores,
+  custoMedio: PLANO.custoMedioHabilitadores,
+  pecas: PLANO.pecasHabilitadores,
+  margem: 59,
+} as const
+
+/* ------------------------------------------- ② gabarito de packs por porte - */
+
+export type Porte5 = 'P' | 'M' | 'G' | 'GG' | 'E-comm'
+
+export const PORTES_GABARITO: Porte5[] = ['P', 'M', 'G', 'GG', 'E-comm']
+
+/**
+ * Tamanho do pack. Um pack de loja fecha a curva de 6 tamanhos; o pack de
+ * e-commerce é mais profundo (8 peças), porque o CD atende cauda longa.
+ * Estes dois números são o que faz P1 (2·3·4·5·6 packs) render exatamente as
+ * 132 peças/SKU do âncora: (2+3+4+5)×6 + 6×8 = 132.
+ */
+export const PACK_LOJA = 6
+export const PACK_ECOMM = 8
+
+export type LinhaGabarito = { faixa: FaixaPreco['id']; packs: Record<Porte5, number> }
+
+/**
+ * Gabarito por sessão: quantos packs cada porte de loja recebe, por faixa de
+ * preço. Faixa mais barata entra mais profunda; o topo da pirâmide é raso.
+ */
+export const GABARITO_POR_SESSAO: Record<string, LinhaGabarito[]> = {
+  Vestidos: [
+    { faixa: 'P1', packs: { P: 2, M: 3, G: 4, GG: 5, 'E-comm': 6 } },
+    { faixa: 'P2', packs: { P: 2, M: 3, G: 4, GG: 4, 'E-comm': 5 } },
+    { faixa: 'P3', packs: { P: 1, M: 2, G: 3, GG: 4, 'E-comm': 4 } },
+    { faixa: 'P4', packs: { P: 1, M: 2, G: 2, GG: 3, 'E-comm': 3 } },
+    { faixa: 'P5', packs: { P: 1, M: 1, G: 2, GG: 2, 'E-comm': 2 } },
+  ],
+  'Blusas e Camisetas': [
+    { faixa: 'P1', packs: { P: 3, M: 4, G: 6, GG: 7, 'E-comm': 8 } },
+    { faixa: 'P2', packs: { P: 3, M: 4, G: 5, GG: 6, 'E-comm': 6 } },
+    { faixa: 'P3', packs: { P: 2, M: 3, G: 4, GG: 4, 'E-comm': 5 } },
+    { faixa: 'P4', packs: { P: 1, M: 2, G: 2, GG: 3, 'E-comm': 3 } },
+    { faixa: 'P5', packs: { P: 1, M: 1, G: 1, GG: 2, 'E-comm': 2 } },
+  ],
+  Alfaiataria: [
+    { faixa: 'P1', packs: { P: 1, M: 2, G: 2, GG: 3, 'E-comm': 4 } },
+    { faixa: 'P2', packs: { P: 1, M: 2, G: 3, GG: 3, 'E-comm': 4 } },
+    { faixa: 'P3', packs: { P: 1, M: 2, G: 3, GG: 3, 'E-comm': 3 } },
+    { faixa: 'P4', packs: { P: 1, M: 1, G: 2, GG: 2, 'E-comm': 3 } },
+    { faixa: 'P5', packs: { P: 1, M: 1, G: 1, GG: 2, 'E-comm': 2 } },
+  ],
+}
+
+export const SESSOES_GABARITO = Object.keys(GABARITO_POR_SESSAO)
+
+/** Peças por SKU: packs de loja × 6 + packs de e-commerce × 8. */
+export function pecasPorSku(packs: Record<Porte5, number>): number {
+  const deLoja = (['P', 'M', 'G', 'GG'] as Porte5[]).reduce((a, p) => a + packs[p], 0)
+  return deLoja * PACK_LOJA + packs['E-comm'] * PACK_ECOMM
+}
+
+/* ----------------------------------------- ③ clusterização de verba -------- */
+
+export type CelulaVerba = {
+  id: string
+  porte: 'P' | 'M' | 'G' | 'GG' | 'E-commerce'
+  clima: 'Quente' | 'Fria' | '—'
+  pct: number
+}
+
+/**
+ * Distribuição default da verba: 8 células porte × clima + e-commerce.
+ * Soma 100% (82% físico + 18% e-commerce, âncora da spec).
+ */
+export const CLUSTERIZACAO_DEFAULT: CelulaVerba[] = [
+  { id: 'GG-quente', porte: 'GG', clima: 'Quente', pct: 14 },
+  { id: 'GG-fria', porte: 'GG', clima: 'Fria', pct: 10 },
+  { id: 'G-quente', porte: 'G', clima: 'Quente', pct: 13 },
+  { id: 'G-fria', porte: 'G', clima: 'Fria', pct: 9 },
+  { id: 'M-quente', porte: 'M', clima: 'Quente', pct: 12 },
+  { id: 'M-fria', porte: 'M', clima: 'Fria', pct: 8 },
+  { id: 'P-quente', porte: 'P', clima: 'Quente', pct: 10 },
+  { id: 'P-fria', porte: 'P', clima: 'Fria', pct: 6 },
+  { id: 'ecommerce', porte: 'E-commerce', clima: '—', pct: 18 },
+]
+
+/* ------------------------------------------- ④ Dorsal × Need/NID ---------- */
+
+export type MesDorsal = {
+  mes: string
+  /** % do sortimento que é dorsal em loja de clima quente */
+  dorsalQuente: number
+  /** idem, clima frio */
+  dorsalFrio: number
+}
+
+/**
+ * Curva de dorsal de setembro a fevereiro. Começa em 92/88 (entrada de verão,
+ * quase tudo dorsal) e termina em 55/50 (virada de estação, espaço para Need) —
+ * os dois extremos são âncoras da spec.
+ * A média das 12 células (71,1%) é o que produz DORSAL R$ 30,2 mi (71%) e
+ * NEED R$ 12,3 mi (29%) sobre a verba de R$ 42,5 mi.
+ */
+export const DORSAL_NEED_DEFAULT: MesDorsal[] = [
+  { mes: 'Set', dorsalQuente: 92, dorsalFrio: 88 },
+  { mes: 'Out', dorsalQuente: 84, dorsalFrio: 80 },
+  { mes: 'Nov', dorsalQuente: 77, dorsalFrio: 72 },
+  { mes: 'Dez', dorsalQuente: 70, dorsalFrio: 66 },
+  { mes: 'Jan', dorsalQuente: 62, dorsalFrio: 57 },
+  { mes: 'Fev', dorsalQuente: 55, dorsalFrio: 50 },
+]
+
+export type ResumoDorsal = {
+  dorsalPct: number
+  dorsalValor: number
+  needPct: number
+  needValor: number
+  mesesComFolga: number
+  totalMeses: number
+}
+
+/**
+ * Um mês tem "folga" quando ainda sobra espaço para reagir: precisa ter Need
+ * maior que zero e dorsal em no máximo 95% (acima disso o mês está travado).
+ */
+export function resumoDorsalNeed(meses: MesDorsal[]): ResumoDorsal {
+  const celulas = meses.flatMap((m) => [m.dorsalQuente, m.dorsalFrio])
+  const dorsalPct = celulas.length ? soma(celulas) / celulas.length : 0
+  const verba = VERBA_HABILITADORES.verba
+  const dorsalValor = (verba * dorsalPct) / 100
+  return {
+    dorsalPct,
+    dorsalValor,
+    needPct: 100 - dorsalPct,
+    needValor: verba - dorsalValor,
+    mesesComFolga: meses.filter(
+      (m) => m.dorsalQuente <= 95 && m.dorsalFrio <= 95 && m.dorsalQuente < 100,
+    ).length,
+    totalMeses: meses.length,
+  }
+}
+
+export const RESUMO_DORSAL_DEFAULT = resumoDorsalNeed(DORSAL_NEED_DEFAULT)
+
+/** Boxes explicativos do bloco ④. */
+export const EXPLICACAO_DORSAL_NEED = [
+  {
+    titulo: 'Dorsal',
+    texto:
+      'A espinha do sortimento: o que precisa estar em loja todo dia da temporada, em toda loja que vende a categoria. Entra cedo, é reposto e não depende de evento.',
+  },
+  {
+    titulo: 'Need / NID',
+    texto:
+      'O que entra para atender uma necessidade específica — evento, cápsula, ciclo de tendência ou virada de estação. Need é planejado; NID (Need It Down) é a reação dentro da temporada.',
+  },
+] as const
+
+/* ==================================== 24. ATRIBUTOS DE PRODUTO (Fase 4) === */
+
+/** Os dois conceitos que a tela existe para separar. */
+export const HABILITADORES_VS_ATRIBUTOS = [
+  {
+    titulo: 'Habilitadores',
+    subtitulo: 'Quanto e como comprar',
+    texto:
+      'Parâmetros de verba e profundidade: pirâmide de preço, gabarito de packs, clusterização e a divisão Dorsal × Need. Respondem "quanto investir e em que profundidade".',
+    chips: ['Pirâmide de preço', 'Gabarito de packs', 'Clusterização de verba', 'Dorsal × Need'],
+    rota: '/habilitadores',
+  },
+  {
+    titulo: 'Atributos',
+    subtitulo: 'O que o produto é',
+    texto:
+      'Características do produto em si, nos níveis N3 a N7: fit, tecido, padronagem, cor, decote, manga, licença. Respondem "qual produto comprar", não quanto.',
+    chips: ['Fit', 'Tecido', 'Padronagem', 'Cor', 'Licença'],
+    rota: '/atributos',
+  },
+] as const
+
+/** Taxonomia em 3 colunas, toda vinda da cartela REAL do snapshot. */
+export const TAXONOMIA_ATRIBUTOS: { grupo: string; nivel: string; termos: string[] }[] = [
+  { grupo: 'Fits de calça', nivel: 'N4', termos: cea.atributosReais.fitsCalca },
+  { grupo: 'Lavagens de jeans', nivel: 'N6', termos: cea.atributosReais.lavagensJeans },
+  { grupo: 'Decotes', nivel: 'N6', termos: cea.atributosReais.decotes },
+  { grupo: 'Mangas', nivel: 'N6', termos: cea.atributosReais.mangas },
+  { grupo: 'Materiais', nivel: 'N5', termos: cea.atributosReais.materiais },
+  { grupo: 'Padronagens', nivel: 'N6', termos: cea.atributosReais.padronagens },
+  { grupo: 'Cartela de cores', nivel: 'N7', termos: cea.atributosReais.coresCartela },
+  { grupo: 'Fits reais de jeans', nivel: 'N4', termos: cea.arvoreMercadologica.jeans.fitsReais },
+  { grupo: 'Licenças infantis', nivel: 'N6', termos: cea.marcas.licencasInfantil },
+]
+
+/** Janelas de otimização — onde faz sentido otimizar atributo. */
+export const JANELAS_OTIMIZACAO = [
+  {
+    janela: 'Coleção 120d',
+    recomendada: true,
+    texto: 'Atributo muda a cada coleção: é aqui que otimizar padronagem e cor vira margem.',
+  },
+  {
+    janela: 'Dorsal / NOS',
+    recomendada: false,
+    texto: 'Dorsal é estável por definição. Mexer em atributo aqui quebra a reposição.',
+  },
+  {
+    janela: 'Evento / cápsula',
+    recomendada: false,
+    texto: 'A janela é curta e o atributo já vem definido pelo tema do evento.',
+  },
+] as const
+
+/** Exemplo de otimização de padronagem (âncoras: 6.200 pç · Liso 46% → 2.852). */
+export const PECAS_EXEMPLO_PADRONAGEM = 6200
+
+export const EXEMPLO_PADRONAGEM: { padronagem: string; pct: number }[] = [
+  { padronagem: 'liso', pct: 46 },
+  { padronagem: 'floral pequeno', pct: 18 },
+  { padronagem: 'listrado', pct: 11 },
+  { padronagem: 'poá', pct: 9 },
+  { padronagem: 'animal print', pct: 9 },
+  { padronagem: 'xadrez', pct: 7 },
+]
+
+/** Distribui as peças do exemplo pelas padronagens, com sobra no maior item. */
+export function distribuirPadronagem(pecas = PECAS_EXEMPLO_PADRONAGEM) {
+  const linhas = EXEMPLO_PADRONAGEM.map((p) => ({
+    ...p,
+    pecas: Math.round((pecas * p.pct) / 100),
+  }))
+  const diferenca = pecas - soma(linhas.map((l) => l.pecas))
+  if (diferenca !== 0) linhas[0].pecas += diferenca
+  return linhas
+}
+
+/** Autoteste: as padronagens do exemplo existem na cartela real. */
+export function validarExemploPadronagem(): string[] {
+  const cartela = cea.atributosReais.padronagens
+  return EXEMPLO_PADRONAGEM.filter((p) => !cartela.includes(p.padronagem)).map(
+    (p) => `padronagem "${p.padronagem}" não está em atributosReais.padronagens`,
+  )
+}
