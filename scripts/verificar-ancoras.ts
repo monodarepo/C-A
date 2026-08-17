@@ -44,6 +44,21 @@ import {
   TOTAIS_PLANO_ORIGINAL,
   TOTAIS_PLANO_QUALIFICADO,
   posicaoNaBanda,
+  CANDIDATOS_COMPENSACAO,
+  CAPSULAS_MAPA,
+  CARTELA_PAREDE,
+  COMPENSACAO_NECESSARIA,
+  EVENTOS_CICLOS,
+  INCLUSAO_MAPA,
+  ITENS_NEED,
+  MAPA,
+  RESUMO_EVENTOS,
+  SKUS_MAPA,
+  TOTAIS_MAPA,
+  VINCULOS_EVENTO,
+  ZONAS,
+  piramideDaParede,
+  valorDoCandidato,
   DASHBOARD,
   FOLLOWUP_FORNECEDORES,
   PECAS_VENDIDAS_COLECAO,
@@ -452,6 +467,86 @@ checar(
 )
 console.log(
   `  PV médio do plano R$ ${q.pvMedio.toFixed(2)} · preço médio por peça do histórico R$ ${HISTORICO.ticket.toFixed(2)} (coerentes)`,
+)
+
+console.log('\n— MAPA DA COLEÇÃO (Fase 6) —')
+checar('SKUs na parede', TOTAIS_MAPA.skus, MAPA.skus, 0)
+checar('unidades da parede', TOTAIS_MAPA.unidades, MAPA.unidades, 0)
+checar('valor de venda da parede', TOTAIS_MAPA.valorVenda, MAPA.valorVenda, 0.0005)
+checar('fornecedores distintos', TOTAIS_MAPA.fornecedores, MAPA.fornecedores, 0)
+checar('% aprovado', TOTAIS_MAPA.aprovadosPct, MAPA.aprovadosPct, 0.01)
+for (const c of CAPSULAS_MAPA) {
+  checar(`cápsula ${c.nome}`, SKUS_MAPA.filter((s) => s.capsula === c.nome).length, c.skus, 0)
+}
+const semUnidade = SKUS_MAPA.filter((s) => s.unidades <= 0)
+falhas += semUnidade.length
+console.log(`${semUnidade.length === 0 ? '✓' : '✗'} nenhum SKU da parede com zero unidades`)
+// cada cápsula precisa ter as três zonas povoadas, senão o board fica torto
+const capsulaTorta = CAPSULAS_MAPA.filter((c) =>
+  ZONAS.some((z) => SKUS_MAPA.filter((s) => s.capsula === c.nome && s.zona === z).length === 0),
+)
+falhas += capsulaTorta.length
+console.log(
+  capsulaTorta.length === 0
+    ? `✓ as 3 zonas estão povoadas em todas as cápsulas (${ZONAS.map((z) => `${z} ${SKUS_MAPA.filter((s) => s.zona === z).length}`).join(' · ')})`
+    : `✗ cápsula com zona vazia: ${capsulaTorta.map((c) => c.nome).join(', ')}`,
+)
+const piramideParede = piramideDaParede(SKUS_MAPA)
+checar(
+  'pirâmide da parede soma 100%',
+  piramideParede.reduce((a, p) => a + p.pct, 0),
+  100,
+  0.0001,
+)
+checar('cores na cartela da parede', CARTELA_PAREDE.length, 15, 0)
+
+console.log('\n— EVENTOS & CICLOS —')
+checar('verba estratégica', RESUMO_EVENTOS.verbaEstrategica, 460_000, 0)
+checar('eventos ativos', RESUMO_EVENTOS.ativos, 6, 0)
+checar('eventos no total', RESUMO_EVENTOS.total, 7, 0)
+checar('eventos em vitrine', RESUMO_EVENTOS.emVitrine, 2, 0)
+const needSemEvento = ITENS_NEED.filter((n) => !EVENTOS_CICLOS.some((e) => e.id === n.eventoId))
+falhas += needSemEvento.length
+console.log(
+  `${needSemEvento.length === 0 ? '✓' : '✗'} os ${ITENS_NEED.length} itens Need apontam para eventos existentes`,
+)
+const refsEventos = [...EVENTOS_CICLOS, ...ITENS_NEED]
+  .map((x) => ('ref' in x ? x.ref : undefined))
+  .filter((r): r is string => Boolean(r))
+const refsEventosInvalidas = refsEventos.filter((r) => !produtoPorCod(r))
+falhas += refsEventosInvalidas.length
+console.log(
+  `${refsEventosInvalidas.length === 0 ? '✓' : '✗'} as ${refsEventos.length} refs citadas em eventos existem no catálogo`,
+)
+
+console.log('\n— RETROALIMENTAÇÃO —')
+checar('inclusão do Mapa (R$)', INCLUSAO_MAPA.valor, 460_000, 0)
+checar(
+  'inclusão: peças × PC = valor',
+  INCLUSAO_MAPA.pecas * INCLUSAO_MAPA.pc,
+  INCLUSAO_MAPA.valor,
+  0.001,
+)
+checar('inclusão cabe na verba estratégica', INCLUSAO_MAPA.valor, RESUMO_EVENTOS.verbaEstrategica, 0)
+checar('vínculos de evento', VINCULOS_EVENTO.length, 4, 0)
+checar('falta compensar (âncora 0,31 mi)', COMPENSACAO_NECESSARIA, 310_000, 0)
+const vinculoSemEvento = VINCULOS_EVENTO.filter(
+  (v) => !EVENTOS_CICLOS.some((e) => e.id === v.eventoId),
+)
+falhas += vinculoSemEvento.length
+console.log(`${vinculoSemEvento.length === 0 ? '✓' : '✗'} todo vínculo aponta para um evento real`)
+const totalCandidatos = CANDIDATOS_COMPENSACAO.reduce((a, c) => a + valorDoCandidato(c), 0)
+const cobre = totalCandidatos >= COMPENSACAO_NECESSARIA
+if (!cobre) falhas++
+console.log(
+  `${cobre ? '✓' : '✗'} os ${CANDIDATOS_COMPENSACAO.length} candidatos liberam R$ ${(totalCandidatos / 1000).toFixed(0)} mil — cobrem os R$ ${(COMPENSACAO_NECESSARIA / 1000).toFixed(0)} mil necessários`,
+)
+const candidatoSemLinha = CANDIDATOS_COMPENSACAO.filter(
+  (c) => !LINHAS_PLANO.some((l) => l.id === c.linhaId),
+)
+falhas += candidatoSemLinha.length
+console.log(
+  `${candidatoSemLinha.length === 0 ? '✓' : '✗'} todo candidato aponta para uma linha do plano`,
 )
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')

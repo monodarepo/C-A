@@ -27,6 +27,22 @@ import {
 
 export type VersaoAtiva = 'original' | 'qualificado'
 
+/**
+ * Decisões que não são mudança de quantidade: mover card de zona no Mapa,
+ * transformar Need em Dorsal, compensar verba. Vivem no mesmo provider porque
+ * a Retroalimentação mostra as três coisas juntas.
+ */
+export type Decisao = {
+  id: string
+  tipo: 'mapa' | 'evento' | 'compensacao'
+  titulo: string
+  detalhe: string
+  autor: string
+  quando: Date
+  /** evento vinculado, quando houver */
+  eventoId?: string
+}
+
 export type RegistroHistorico = {
   id: string
   linhaId: string
@@ -50,6 +66,7 @@ type Ctx = {
   totaisOriginal: TotaisPlano
   banda: PosicaoBanda
   historico: RegistroHistorico[]
+  decisoes: Decisao[]
   aprovados: string[]
   alterarQtd: (id: string, qtd: number, nota?: string) => void
   incluirLinha: (linha: LinhaPlano) => void
@@ -60,6 +77,7 @@ type Ctx = {
   aprovar: (chave: string) => void
   aprovarTodos: (chaves: string[]) => void
   registrar: (r: Omit<RegistroHistorico, 'id' | 'autor' | 'quando'>) => void
+  decidir: (d: Omit<Decisao, 'id' | 'autor' | 'quando'>) => void
 }
 
 const PlanoCtx = createContext<Ctx | null>(null)
@@ -68,6 +86,7 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
   const [linhas, setLinhas] = useState<LinhaPlano[]>(LINHAS_PLANO)
   const [versao, setVersao] = useState<VersaoAtiva>('qualificado')
   const [historico, setHistorico] = useState<RegistroHistorico[]>([])
+  const [decisoes, setDecisoes] = useState<Decisao[]>([])
   const [aprovados, setAprovados] = useState<string[]>([])
 
   /**
@@ -84,6 +103,16 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
       quando: new Date(),
     }
     setHistorico((atual) => [registro, ...atual])
+  }, [])
+
+  const decidir = useCallback((d: Omit<Decisao, 'id' | 'autor' | 'quando'>) => {
+    const decisao: Decisao = {
+      ...d,
+      id: `D${proximoId.current++}`,
+      autor: PLANNER.nome,
+      quando: new Date(),
+    }
+    setDecisoes((atual) => [decisao, ...atual])
   }, [])
 
   /* Os três mutadores abaixo leem `linhas` do escopo e só então chamam
@@ -146,6 +175,7 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
   const restaurar = useCallback(() => {
     setLinhas(LINHAS_PLANO)
     setHistorico([])
+    setDecisoes([])
     setAprovados([])
     proximoId.current = 1
   }, [])
@@ -193,6 +223,7 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
       totaisOriginal,
       banda: posicaoNaBanda(totais.investimento),
       historico,
+      decisoes,
       aprovados,
       alterarQtd,
       incluirLinha,
@@ -202,11 +233,13 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
       aprovar,
       aprovarTodos,
       registrar,
+      decidir,
     }
   }, [
     linhas,
     versao,
     historico,
+    decisoes,
     aprovados,
     alterarQtd,
     incluirLinha,
@@ -216,6 +249,7 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
     aprovar,
     aprovarTodos,
     registrar,
+    decidir,
   ])
 
   return <PlanoCtx.Provider value={valor}>{children}</PlanoCtx.Provider>

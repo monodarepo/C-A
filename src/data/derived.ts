@@ -14,8 +14,10 @@ import {
   estilistas,
   fornecedores,
   lojasNomeadas,
+  placeholderFor,
   produtoPorCod,
   type LojaNomeada,
+  type Produto,
 } from '@/lib/cea'
 import {
   dataDoSnapshot,
@@ -2482,4 +2484,546 @@ export function chaveDoRecorte(l: LinhaPlano, recorte: (typeof RECORTES_VERSAO)[
   if (recorte === 'Sessão') return l.sessao
   if (recorte === 'Cluster') return `Cluster ${l.clusterFoco}`
   return `${l.faixa} · ${PIRAMIDE_PRECO.find((f) => f.id === l.faixa)?.rotulo ?? ''}`
+}
+
+/* ================================ 26. MAPA DA COLEÇÃO (Fase 6) ============ */
+
+export type Zona = 'Vitrine' | 'Dorsal' | 'Need'
+
+export const ZONAS: Zona[] = ['Vitrine', 'Dorsal', 'Need']
+
+export type BadgeMapa = 'destaque' | 'novo' | 'repeat' | 'evento'
+
+export type SkuMapa = {
+  id: string
+  /** código real quando o produto do snapshot tem um */
+  cod?: string
+  produto: string
+  capsula: string
+  zona: Zona
+  cor: string
+  fornecedor: string
+  badges: BadgeMapa[]
+  /** preço de venda planejado */
+  pv: number
+  unidades: number
+  /** unidades × pv — a parede é avaliada a preço de VENDA, não a custo */
+  valorVenda: number
+  aprovado: boolean
+}
+
+/** As 3 cápsulas da parede e quantos SKUs cada uma tem (âncora 18/21/19 = 58). */
+export const CAPSULAS_MAPA = [
+  { nome: 'Tropicália', skus: 18 },
+  { nome: 'Essenciais', skus: 21 },
+  { nome: 'Denim', skus: 19 },
+] as const
+
+export const MAPA = {
+  estilista: estilistas[0].nome, // Helena Prado
+  parede: 'Setembro',
+  skus: 58,
+  unidades: 1_421_600,
+  valorVenda: 186_400_000,
+  fornecedores: 8,
+  aprovadosPct: 66,
+} as const
+
+/**
+ * Os 8 fornecedores da parede: os 7 fictícios do snapshot + a Sawary, que é
+ * parceira REAL de jeans (marcas.parceiras). Fecha o âncora de 8.
+ */
+export const FORNECEDORES_MAPA = [
+  ...fornecedores,
+  cea.marcas.parceiras[0].split(' (')[0], // "Sawary"
+]
+
+/** Produtos do snapshot que servem de base para cada cápsula. */
+function produtosDaCapsula(nome: string): Produto[] {
+  if (nome === 'Tropicália') {
+    return cea.produtos.filter((p) => p.cat === 'Vestidos' || p.marca === 'Mindse7')
+  }
+  if (nome === 'Denim') {
+    return cea.produtos.filter((p) => p.dept === 'Jeans')
+  }
+  // Essenciais: básicos, íntimo, infantil e esportivo
+  return cea.produtos.filter(
+    (p) =>
+      p.dept === 'Masculino' ||
+      p.dept === 'Infantil' ||
+      p.cat?.startsWith('Moda Íntima') ||
+      p.dept === 'Esportivo',
+  )
+}
+
+/** Preço do produto: real quando existe no snapshot, senão a faixa da pirâmide. */
+function pvDoProduto(p: Produto): number {
+  if (p.precoPor) return p.precoPor
+  if (p.dept === 'Jeans') return precoDaFaixa('P2')
+  if (p.cat === 'Vestidos') return precoDaFaixa('P3')
+  if (p.cat?.startsWith('Moda Íntima')) return 69.99
+  if (p.dept === 'Infantil') return 49.99
+  if (p.dept === 'Esportivo') return (precoDaFaixa('P1') + precoDaFaixa('P2')) / 2
+  return 55.99
+}
+
+/**
+ * Zona do SKU pelo papel que ele cumpre — não é sorteio:
+ * vitrine = peça de vitrine/festa/novo premium · dorsal = NOS e básico de
+ * reposição · need = evento, cápsula licenciada e ciclo de tendência.
+ */
+function zonaDoProduto(p: Produto, indice: number): Zona {
+  const papel = (p.papelNoApp ?? '').toLowerCase()
+  if (papel.includes('vitrine') || papel.includes('festa') || papel.includes('premium')) {
+    return 'Vitrine'
+  }
+  if (papel.includes('evento') || papel.includes('cápsula') || papel.includes('ciclo')) {
+    return 'Need'
+  }
+  if (papel.includes('dorsal') || papel.includes('nos') || papel.includes('core')) {
+    return 'Dorsal'
+  }
+  if (p.desc || p.status === 'esgotado') return 'Need' // remarcado entra como need
+  // sem papel declarado: preço alto vai para vitrine, o resto alterna dorsal/need
+  if (pvDoProduto(p) >= precoDaFaixa('P4')) return 'Vitrine'
+  return indice % 3 === 0 ? 'Need' : 'Dorsal'
+}
+
+function badgesDoProduto(p: Produto, zona: Zona): BadgeMapa[] {
+  const badges: BadgeMapa[] = []
+  const papel = (p.papelNoApp ?? '').toLowerCase()
+  if (zona === 'Vitrine' || papel.includes('hero')) badges.push('destaque')
+  if (papel.includes('novo') || papel.includes('nova')) badges.push('novo')
+  if (papel.includes('repeat') || papel.includes('programa') || papel.includes('dorsal')) {
+    badges.push('repeat')
+  }
+  if (papel.includes('evento') || papel.includes('namorados')) badges.push('evento')
+  return badges.length ? badges : ['repeat']
+}
+
+/**
+ * Gera os 58 SKUs da parede.
+ * SKU = produto × variante de cor: quando a cápsula tem menos produtos que a
+ * meta, expande pelas cores do próprio produto ou pela cartela real (lavagens
+ * de jeans, cores da cartela). Todos os nomes vêm do catálogo.
+ * As unidades são alocadas para fechar 1.421.600 un E o PV médio da parede
+ * (R$ 186,4 mi ÷ 1.421.600 = R$ 131,12), então o valor de venda cai no âncora.
+ */
+function gerarMapa(): SkuMapa[] {
+  const rand = mulberry32(SEED + 606)
+  const base: (Omit<SkuMapa, 'unidades' | 'valorVenda' | 'aprovado'> & { peso: number })[] = []
+
+  for (const capsula of CAPSULAS_MAPA) {
+    const produtos = produtosDaCapsula(capsula.nome)
+    for (let i = 0; i < capsula.skus; i++) {
+      const p = produtos[i % produtos.length]
+      const voltas = Math.floor(i / produtos.length)
+      const variantes =
+        p.cores ??
+        (p.dept === 'Jeans' ? cea.atributosReais.lavagensJeans : cea.atributosReais.coresCartela)
+      const cor = voltas === 0 ? (p.cor ?? variantes[0]) : variantes[voltas % variantes.length]
+      const zona = zonaDoProduto(p, i)
+      const pv = pvDoProduto(p)
+      base.push({
+        id: `M${String(base.length + 1).padStart(2, '0')}`,
+        cod: p.cod,
+        produto: p.nome,
+        capsula: capsula.nome,
+        zona,
+        cor: String(cor),
+        fornecedor: FORNECEDORES_MAPA[base.length % FORNECEDORES_MAPA.length],
+        badges: badgesDoProduto(p, zona),
+        pv,
+        // vitrine é rasa, dorsal é profunda — é o que dá o PV médio da parede
+        peso: (zona === 'Dorsal' ? 3 : zona === 'Need' ? 1.6 : 1) * jitter(rand, 0.2),
+      })
+    }
+  }
+
+  /* A vitrine é a fatia curada de cima: além das peças cujo papel já é de
+     vitrine, promove as de maior preço até a vitrine ocupar ~20% da parede.
+     A promoção é feita DENTRO DE CADA CÁPSULA — promovendo globalmente, os
+     vestidos (mais caros) levavam toda a vitrine e a cápsula Tropicália
+     ficava com 1 card no dorsal. Cada cápsula tem sua própria vitrine. */
+  for (const capsula of CAPSULAS_MAPA) {
+    const daCapsula = base
+      .map((b, i) => ({ i, ...b }))
+      .filter((b) => b.capsula === capsula.nome)
+    const alvo = Math.round(capsula.skus * 0.2)
+    let promovidas = daCapsula.filter((b) => b.zona === 'Vitrine').length
+    const candidatas = daCapsula
+      .filter((b) => b.zona === 'Dorsal')
+      .sort((a, b) => b.pv - a.pv || a.i - b.i)
+    for (const c of candidatas) {
+      if (promovidas >= alvo) break
+      base[c.i].zona = 'Vitrine'
+      if (!base[c.i].badges.includes('destaque')) base[c.i].badges.push('destaque')
+      promovidas++
+    }
+  }
+
+  const pvMedioAlvo = MAPA.valorVenda / MAPA.unidades
+  const unidades = alocarComMedia(
+    base.map((b) => ({ peso: b.peso, valor: b.pv })),
+    MAPA.unidades,
+    pvMedioAlvo,
+  )
+
+  // 66% de 58 = 38 aprovados; escolhe deterministicamente pelos mais avançados
+  const aprovadosAlvo = Math.round((MAPA.skus * MAPA.aprovadosPct) / 100)
+  const ordemAprovacao = base
+    .map((b, i) => ({ i, chave: (b.zona === 'Dorsal' ? 0 : b.zona === 'Vitrine' ? 1 : 2) + rand() }))
+    .sort((a, b) => a.chave - b.chave)
+    .slice(0, aprovadosAlvo)
+    .map((x) => x.i)
+  const aprovados = new Set(ordemAprovacao)
+
+  return base.map((b, i) => {
+    const { peso: _p, ...resto } = b
+    void _p
+    return {
+      ...resto,
+      unidades: unidades[i],
+      valorVenda: Math.round(unidades[i] * b.pv),
+      aprovado: aprovados.has(i),
+    }
+  })
+}
+
+export const SKUS_MAPA: SkuMapa[] = gerarMapa()
+
+export type TotaisMapa = {
+  skus: number
+  unidades: number
+  valorVenda: number
+  fornecedores: number
+  aprovados: number
+  aprovadosPct: number
+  pvMedio: number
+}
+
+export function totaisMapa(skus: SkuMapa[]): TotaisMapa {
+  const unidades = soma(skus.map((s) => s.unidades))
+  const valorVenda = soma(skus.map((s) => s.valorVenda))
+  const aprovados = skus.filter((s) => s.aprovado).length
+  return {
+    skus: skus.length,
+    unidades,
+    valorVenda,
+    fornecedores: new Set(skus.map((s) => s.fornecedor)).size,
+    aprovados,
+    aprovadosPct: skus.length ? (aprovados / skus.length) * 100 : 0,
+    pvMedio: unidades ? valorVenda / unidades : 0,
+  }
+}
+
+export const TOTAIS_MAPA = totaisMapa(SKUS_MAPA)
+
+/**
+ * Pirâmide da parede: participação de SKUs por faixa, contra o alvo.
+ * Usa faixaDoPreco (com clamp nas pontas) e NÃO o intervalo estrito: as faixas
+ * foram observadas em vestidos (R$ 69–440), então uma camiseta de R$ 29,99
+ * ficaria fora de todas e a soma não fecharia 100%.
+ */
+export function piramideDaParede(skus: SkuMapa[]) {
+  return PIRAMIDE_PRECO.map((f) => {
+    const naFaixa = skus.filter((s) => faixaDoPreco(s.pv) === f.id)
+    return {
+      faixa: f.id,
+      rotulo: f.rotulo,
+      alvo: f.participacao,
+      skus: naFaixa.length,
+      pct: skus.length ? (naFaixa.length / skus.length) * 100 : 0,
+    }
+  })
+}
+
+/** Cartela Pantone da parede — cores reais do snapshot com o hex do placeholder. */
+export const CARTELA_PAREDE = cea.atributosReais.coresCartela.map((cor) => ({
+  cor,
+  hex: placeholderFor({ nome: cor, cor }).bg,
+}))
+
+/* ============================= 27. EVENTOS & CICLOS (Fase 6) ============== */
+
+export type TipoEvento = 'EVENTO' | 'COMERCIAL' | 'CÁPSULA' | 'CICLO' | 'VITRINE'
+
+export type EventoCiclo = {
+  id: string
+  nome: string
+  tipo: TipoEvento
+  ativo: boolean
+  /** verba estratégica alocada, em R$ */
+  verba: number
+  janela: string
+  /** true = a peça do evento vai para a vitrine */
+  emVitrine: boolean
+  nota: string
+  /** referência real ligada ao evento, quando houver */
+  ref?: string
+}
+
+/**
+ * Os 7 eventos do âncora (6 ativos, 2 em vitrine). Copa do Mundo e Dia dos Pais
+ * são REAIS (citados no release 2T26 e na campanha do site); Stitch é licença
+ * real do snapshot; os demais são ciclos de sortimento.
+ */
+export const EVENTOS_CICLOS: EventoCiclo[] = [
+  {
+    id: 'EV1',
+    nome: 'Copa do Mundo',
+    tipo: 'EVENTO',
+    ativo: true,
+    verba: 460_000,
+    janela: 'Jun–Jul/2026',
+    emVitrine: true,
+    nota: 'Citada no release do 2T26 pelo fluxo menor em loja. A camiseta de torcida é a inclusão do Mapa.',
+  },
+  {
+    id: 'EV2',
+    nome: 'Dia dos Pais',
+    tipo: 'COMERCIAL',
+    ativo: true,
+    verba: 0,
+    janela: 'Ago/2026',
+    emVitrine: true,
+    nota: 'Campanha ativa no site na data da coleta — sem verba estratégica extra, roda no dorsal.',
+  },
+  {
+    id: 'EV3',
+    nome: 'Cápsula Stitch',
+    tipo: 'CÁPSULA',
+    ativo: true,
+    verba: 0,
+    janela: 'Set–Out/2026',
+    emVitrine: false,
+    nota: 'Licença Disney do snapshot, aplicada no infantil de 4 a 12 anos.',
+  },
+  {
+    id: 'EV4',
+    nome: 'Ciclo Animal Print',
+    tipo: 'CICLO',
+    ativo: true,
+    verba: 0,
+    janela: 'Out–Dez/2026',
+    emVitrine: false,
+    nota: 'Padronagem em alta na leitura de atributos; entra por vestido acetinado e tule.',
+  },
+  {
+    id: 'EV5',
+    nome: 'Virada Alto Verão',
+    tipo: 'VITRINE',
+    ativo: true,
+    verba: 0,
+    janela: 'Dez/2026',
+    emVitrine: false,
+    nota: 'Troca de parede: linho e laise assumem a vitrine na virada de dezembro.',
+  },
+  {
+    id: 'EV6',
+    nome: 'Dia dos Namorados',
+    tipo: 'COMERCIAL',
+    ativo: true,
+    verba: 0,
+    janela: '12/06/2026',
+    emVitrine: false,
+    nota: 'O vestido peplum de laise vermelho é a peça-conceito da data.',
+    ref: '1096942',
+  },
+  {
+    id: 'EV7',
+    nome: 'Cápsula Resort',
+    tipo: 'CÁPSULA',
+    ativo: false,
+    verba: 0,
+    janela: 'A definir',
+    emVitrine: false,
+    nota: 'Fora da temporada: reavaliada na próxima parede.',
+  },
+]
+
+export const RESUMO_EVENTOS = {
+  verbaEstrategica: soma(EVENTOS_CICLOS.map((e) => e.verba)),
+  ativos: EVENTOS_CICLOS.filter((e) => e.ativo).length,
+  total: EVENTOS_CICLOS.length,
+  emVitrine: EVENTOS_CICLOS.filter((e) => e.emVitrine).length,
+  /** % do mix que migrou de Need para Dorsal na temporada (âncora) */
+  mixNeedParaDorsal: 2,
+}
+
+/** Itens Need/NID candidatos a virar Dorsal, com o evento que os originou. */
+export type ItemNeed = {
+  id: string
+  ref?: string
+  produto: string
+  eventoId: string
+  pecas: number
+  motivoNeed: string
+}
+
+export const ITENS_NEED: ItemNeed[] = [
+  {
+    id: 'ND1',
+    ref: '1096942',
+    produto: 'Vestido midi peplum de laise com recorte',
+    eventoId: 'EV6',
+    pecas: 30_750,
+    motivoNeed: 'Entrou para o Dia dos Namorados, mas girou acima da meta fora da data.',
+  },
+  {
+    id: 'ND2',
+    ref: '1086292',
+    produto: 'Vestido midi halterneck linho bordado floral',
+    eventoId: 'EV5',
+    pecas: 30_750,
+    motivoNeed: 'Peça de vitrine da virada; pedido de recompra pelas lojas do cluster A.',
+  },
+  {
+    id: 'ND3',
+    produto: 'Vestido midi gola alta animal print acetinado',
+    eventoId: 'EV4',
+    pecas: 18_400,
+    motivoNeed: 'Ciclo de tendência com leitura positiva na terceira semana.',
+  },
+  {
+    id: 'ND4',
+    produto: 'Camiseta infantil algodão Athos Minecraft',
+    eventoId: 'EV3',
+    pecas: 22_100,
+    motivoNeed: 'Licença com sell-through alto no infantil 4–12.',
+  },
+]
+
+/* ========================== 28. RETROALIMENTAÇÃO (Fase 6) ================= */
+
+/**
+ * A inclusão que o Mapa trouxe para o plano: a camiseta de torcida da Copa.
+ * 24.000 peças × R$ 19,17 de custo = R$ 0,46 mi — exatamente a verba
+ * estratégica reservada para eventos.
+ */
+export const INCLUSAO_MAPA = {
+  produto: 'Camiseta Torcida Brasil',
+  eventoId: 'EV1',
+  pecas: 24_000,
+  pv: 49.99,
+  get pc() {
+    return Number((this.valor / this.pecas).toFixed(2))
+  },
+  valor: 460_000,
+  nota: 'Incluída pela parede de setembro para a janela da Copa do Mundo.',
+}
+
+/** Itens do plano que entraram vinculados a evento, cápsula, ciclo ou vitrine. */
+export type VinculoEvento = {
+  id: string
+  ref?: string
+  produto: string
+  tag: TipoEvento
+  eventoId: string
+  /** valor a custo que este vínculo adiciona ao plano */
+  valor: number
+}
+
+/**
+ * Os 4 vínculos somam R$ 0,31 mi ALÉM da verba estratégica de R$ 0,46 mi —
+ * é exatamente o que falta compensar no plano (âncora da spec).
+ */
+export const VINCULOS_EVENTO: VinculoEvento[] = [
+  {
+    id: 'VE1',
+    ref: '1096942',
+    produto: 'Vestido midi peplum de laise com recorte',
+    tag: 'EVENTO',
+    eventoId: 'EV6',
+    valor: 96_000,
+  },
+  {
+    id: 'VE2',
+    ref: '1099133',
+    produto: 'Calça super wide leg patchwork bicolor',
+    tag: 'CÁPSULA',
+    eventoId: 'EV3',
+    valor: 84_000,
+  },
+  {
+    id: 'VE3',
+    produto: 'Vestido midi gola alta animal print acetinado',
+    tag: 'CICLO',
+    eventoId: 'EV4',
+    valor: 72_000,
+  },
+  {
+    id: 'VE4',
+    ref: '1086292',
+    produto: 'Vestido midi halterneck linho bordado floral',
+    tag: 'VITRINE',
+    eventoId: 'EV5',
+    valor: 58_000,
+  },
+]
+
+/** Falta compensar = vínculos de evento além da verba estratégica reservada. */
+export const COMPENSACAO_NECESSARIA = soma(VINCULOS_EVENTO.map((v) => v.valor))
+
+/**
+ * Candidatos a compensação: reduções de quantidade em linhas do plano.
+ * Compensar chama alterarQtd no context, então a régua do /plano e os KPIs
+ * reagem de verdade — não é um contador isolado.
+ */
+export type CandidatoCompensacao = {
+  id: string
+  linhaId: string
+  ref: string
+  produto: string
+  pecas: number
+  motivo: string
+}
+
+export const CANDIDATOS_COMPENSACAO: CandidatoCompensacao[] = [
+  {
+    id: 'CP1',
+    linhaId: 'L09',
+    ref: 'CAT-01',
+    produto: 'Vestido midi algodão decote quadrado básico',
+    pecas: 3_000,
+    motivo: 'Entrada P1 com cobertura folgada nos clusters C e D.',
+  },
+  {
+    id: 'CP2',
+    linhaId: 'L02',
+    ref: '1046556',
+    produto: 'Camiseta algodão peruano bold manga curta',
+    pecas: 4_000,
+    motivo: 'Premium básico com giro abaixo do dorsal principal.',
+  },
+  {
+    id: 'CP3',
+    linhaId: 'L10',
+    ref: 'CAT-02',
+    produto: 'Sutiã renda sem bojo',
+    pecas: 4_500,
+    motivo: 'Programa de 6 cores pode abrir com 5 e reavaliar a sexta.',
+  },
+  {
+    id: 'CP4',
+    linhaId: 'L13',
+    ref: 'CAT-05',
+    produto: 'Legging ACE poliamida cintura alta',
+    pecas: 2_000,
+    motivo: 'Marca nova sem histórico: começar mais raso reduz risco.',
+  },
+  {
+    id: 'CP5',
+    linhaId: 'L14',
+    ref: '1114492',
+    produto: 'Calça wide leg jeans com brilhos cintura alta',
+    pecas: 1_500,
+    motivo: 'Ciclo de brilho concentrado no cluster A.',
+  },
+]
+
+/** Valor que cada candidato libera = peças × PC da linha no plano. */
+export function valorDoCandidato(c: CandidatoCompensacao): number {
+  const linha = LINHAS_PLANO.find((l) => l.id === c.linhaId)
+  return linha ? Math.round(c.pecas * linha.pc) : 0
 }
