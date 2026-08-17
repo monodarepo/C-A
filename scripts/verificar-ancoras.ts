@@ -17,6 +17,14 @@ import {
   ETAPAS_WORKFLOW,
   PREMISSAS_CALENDARIO,
   SEMANAS_NO_ANO,
+  OTB,
+  OTB_CATEGORIAS,
+  OTB_MENSAL_CALCULADO,
+  TOTAIS_OTB,
+  indicadoresOTB,
+  recortarPorSegmento,
+  totaisOTB,
+  validarHierarquiaOTB,
   DASHBOARD,
   FOLLOWUP_FORNECEDORES,
   PECAS_VENDIDAS_COLECAO,
@@ -228,6 +236,64 @@ console.log(`  campanhas na régua: ${CAMPANHAS.length} (${CAMPANHAS.filter((c) 
 for (const c of CAMPANHAS.filter((x) => x.real).slice(0, 3)) {
   console.log(`  ✓ ${c.nome}: semanas ${c.semanaInicio}–${c.semanaFim}`)
 }
+
+console.log('\n— OTB: COMPARATIVO POR CATEGORIA (Fase 3) —')
+checar('plano total (R$ mi)', TOTAIS_OTB.plano, OTB.vendaPlanejada / 1e6, 0)
+checar('LY total (R$ mi)', TOTAIS_OTB.ly, 2030, 0)
+checar('OTB total (R$ mi)', TOTAIS_OTB.otb, OTB.otb / 1e6, 0)
+checar('ATB total (R$ mi)', TOTAIS_OTB.atb, OTB.atb / 1e6, 0)
+checar('margem ponderada (%)', TOTAIS_OTB.margem, OTB.margemPlanejada, 0.0002)
+const topMalha = OTB_CATEGORIAS[0]
+checar('Top Malha · plano', topMalha.plano, 512, 0)
+checar('Top Malha · LY', topMalha.ly, 486, 0)
+checar('Top Malha · var %', (topMalha.plano / topMalha.ly - 1) * 100, 5.3, 0.01)
+checar('Top Malha · OTB', topMalha.otb, 208, 0)
+checar('Top Malha · margem', topMalha.margem, 59.8, 0)
+checar('Top Malha · cobertura (sem)', topMalha.coberturaSemanas, 10.2, 0)
+
+const errosHierarquia = validarHierarquiaOTB()
+falhas += errosHierarquia.length
+if (errosHierarquia.length === 0) {
+  console.log('✓ N1/N2/N3 de todas as categorias existem na árvore mercadológica real')
+} else {
+  errosHierarquia.forEach((e) => console.log(`✗ ${e}`))
+}
+
+console.log('\n— OTB: CURVA MENSAL AGO–FEV —')
+checar(
+  'soma do plano mensal',
+  OTB_MENSAL_CALCULADO.reduce((a, m) => a + m.plano, 0),
+  TOTAIS_OTB.plano,
+  0,
+)
+checar(
+  'soma do LY mensal',
+  OTB_MENSAL_CALCULADO.reduce((a, m) => a + m.ly, 0),
+  TOTAIS_OTB.ly,
+  0,
+)
+const dez = OTB_MENSAL_CALCULADO.find((m) => m.mes === 'DEZ')!
+checar('DEZ · plano (tooltip da spec)', dez.plano, 402, 0)
+checar('DEZ · LY (tooltip da spec)', dez.ly, 371, 0)
+checar('DEZ · crescimento (tooltip da spec)', dez.crescimento, 8.4, 0.01)
+checar('meses na curva', OTB_MENSAL_CALCULADO.length, 7, 0)
+
+console.log('\n— OTB: RECORTE POR SEGMENTO N5 —')
+const soColecao = totaisOTB(recortarPorSegmento(OTB_CATEGORIAS, 'Coleção 120d'))
+const soDorsal = totaisOTB(recortarPorSegmento(OTB_CATEGORIAS, 'Dorsal / NOS'))
+checar('Coleção + Dorsal = plano total', soColecao.plano + soDorsal.plano, TOTAIS_OTB.plano, 0.002)
+console.log(
+  `  Coleção 120d R$ ${soColecao.plano} mi (${((soColecao.plano / TOTAIS_OTB.plano) * 100).toFixed(0)}%) · Dorsal/NOS R$ ${soDorsal.plano} mi`,
+)
+
+console.log('\n— OTB: INDICADORES PARA DECISÃO —')
+const indicadores = indicadoresOTB()
+checar('indicadores gerados', indicadores.length, 3, 0)
+checar('alertas (warn)', indicadores.filter((i) => i.tom === 'warn').length, 2, 0)
+checar('sucessos (ok)', indicadores.filter((i) => i.tom === 'ok').length, 1, 0)
+const semNumeroOTB = indicadores.filter((i) => !/\d/.test(i.texto)).length
+if (semNumeroOTB > 0) falhas++
+console.log(`  ${semNumeroOTB === 0 ? '✓' : '✗'} todos os indicadores citam números da tabela`)
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)

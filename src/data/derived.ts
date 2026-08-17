@@ -1610,3 +1610,250 @@ export const PREMISSAS_CALENDARIO: { titulo: string; texto: string }[] = [
       'Barueri e Rio de Janeiro compartilham o pico de recebimento. Duas coleções não podem descarregar na mesma semana.',
   },
 ]
+
+/* ================================= 22. OTB — COMPARATIVO POR CATEGORIA ==== */
+
+export type LinhaOTB = {
+  categoria: string
+  /** caminho na árvore mercadológica REAL (validado contra o JSON) */
+  n1: string
+  n2: string
+  n3: string
+  /** R$ milhões */
+  plano: number
+  ly: number
+  otb: number
+  atb: number
+  margem: number
+  coberturaSemanas: number
+  /** participação do segmento N5 "Coleção 120d" (o resto é Dorsal/NOS) */
+  pctColecao: number
+}
+
+/**
+ * Comparativo do OTB por categoria (R$ milhões).
+ *
+ * ATENÇÃO — os valores de TOP MALHA (512 · 486 · +5,3% · 208 · 59,8% · 10,2s) e
+ * da linha TOTAL (2.180 · 2.030 · 890 · 59,4%) são os âncoras da spec. O
+ * blueprint §4.2, que traria as demais linhas, não estava disponível: as 7
+ * categorias intermediárias foram derivadas para FECHAR exatamente nos totais
+ * âncora (plano 2.180 · LY 2.030 · OTB 890 · ATB 228 · margem ponderada 59,4%),
+ * usando a árvore mercadológica real. Se o blueprint aparecer, é só substituir
+ * esta tabela — o autoteste garante que os totais continuam fechando.
+ */
+export const OTB_CATEGORIAS: LinhaOTB[] = [
+  { categoria: 'Top Malha', n1: 'Feminino', n2: 'Roupas', n3: 'Blusas e Camisetas', plano: 512, ly: 486, otb: 208, atb: 48, margem: 59.8, coberturaSemanas: 10.2, pctColecao: 45 },
+  { categoria: 'Jeans', n1: 'Jeans', n2: '&jeans', n3: 'Calças Femininas', plano: 386, ly: 352, otb: 158, atb: 42, margem: 61.2, coberturaSemanas: 11.4, pctColecao: 72 },
+  { categoria: 'Masculino', n1: 'Masculino', n2: 'Roupas', n3: 'Camisetas e Regatas', plano: 336, ly: 318, otb: 136, atb: 32, margem: 56.8, coberturaSemanas: 10.8, pctColecao: 52 },
+  { categoria: 'Vestidos', n1: 'Feminino', n2: 'Roupas', n3: 'Vestidos', plano: 298, ly: 281, otb: 122, atb: 34, margem: 60.5, coberturaSemanas: 9.6, pctColecao: 88 },
+  { categoria: 'Infantil', n1: 'Infantil', n2: '4 a 12 anos', n3: 'Blusas', plano: 274, ly: 262, otb: 112, atb: 28, margem: 57.4, coberturaSemanas: 9.2, pctColecao: 61 },
+  { categoria: 'Moda Íntima', n1: 'Feminino', n2: 'Moda Íntima', n3: 'Sutiãs e Tops', plano: 158, ly: 151, otb: 62, atb: 16, margem: 62.3, coberturaSemanas: 13.1, pctColecao: 24 },
+  { categoria: 'Alfaiataria', n1: 'Feminino', n2: 'Roupas', n3: 'Alfaiataria', plano: 122, ly: 108, otb: 50, atb: 14, margem: 59.9, coberturaSemanas: 12.2, pctColecao: 79 },
+  { categoria: 'Esportivo ACE', n1: 'Esportivo', n2: 'ACE', n3: 'Leggings', plano: 94, ly: 72, otb: 42, atb: 14, margem: 55.8, coberturaSemanas: 8.7, pctColecao: 66 },
+]
+
+/** Meta de margem do vestuário (fonte pública: financeiro.usoNoApp). */
+export const META_MARGEM_OTB = 59
+
+export type TotaisOTB = {
+  plano: number
+  ly: number
+  varPct: number
+  otb: number
+  atb: number
+  comprometido: number
+  margem: number
+  coberturaSemanas: number
+}
+
+/** Totais do comparativo — sempre calculados das linhas, nunca digitados. */
+export function totaisOTB(linhas: LinhaOTB[]): TotaisOTB {
+  const plano = soma(linhas.map((l) => l.plano))
+  const ly = soma(linhas.map((l) => l.ly))
+  const otb = soma(linhas.map((l) => l.otb))
+  const atb = soma(linhas.map((l) => l.atb))
+  return {
+    plano,
+    ly,
+    varPct: ly ? (plano / ly - 1) * 100 : 0,
+    otb,
+    atb,
+    comprometido: otb - atb,
+    margem: plano ? soma(linhas.map((l) => l.margem * l.plano)) / plano : 0,
+    coberturaSemanas: plano ? soma(linhas.map((l) => l.coberturaSemanas * l.plano)) / plano : 0,
+  }
+}
+
+export const TOTAIS_OTB = totaisOTB(OTB_CATEGORIAS)
+
+/** Níveis da hierarquia N1–N7 (texto do snapshot). O OTB é aprovado até N3. */
+export const NIVEIS_HIERARQUIA = [
+  { nivel: 'N1', rotulo: 'Departamento', ativo: true },
+  { nivel: 'N2', rotulo: 'Público / Linha', ativo: true },
+  { nivel: 'N3', rotulo: 'Categoria', ativo: true },
+  { nivel: 'N4', rotulo: 'Subcategoria', ativo: false },
+  { nivel: 'N5', rotulo: 'Segmento', ativo: true },
+  { nivel: 'N6', rotulo: 'Programa', ativo: false },
+  { nivel: 'N7', rotulo: 'Variante (cor)', ativo: false },
+] as const
+
+export const SEGMENTOS_N5 = ['Coleção 120d', 'Dorsal / NOS'] as const
+
+/** Recorte do OTB por segmento N5 — divide cada categoria pelo seu pctColecao. */
+export function recortarPorSegmento(
+  linhas: LinhaOTB[],
+  segmento: (typeof SEGMENTOS_N5)[number] | 'todos',
+): LinhaOTB[] {
+  if (segmento === 'todos') return linhas
+  const fator = (l: LinhaOTB) =>
+    segmento === 'Coleção 120d' ? l.pctColecao / 100 : 1 - l.pctColecao / 100
+  return linhas.map((l) => ({
+    ...l,
+    plano: Math.round(l.plano * fator(l)),
+    ly: Math.round(l.ly * fator(l)),
+    otb: Math.round(l.otb * fator(l)),
+    atb: Math.round(l.atb * fator(l)),
+  }))
+}
+
+/* ---------------------------------------------- curva mensal AGO–FEV ----- */
+
+export type MesOTB = {
+  mes: string
+  plano: number
+  ly: number
+  /** estoque projetado de fim de mês, R$ milhões */
+  estoque: number
+}
+
+/**
+ * Sazonalidade do verão 26-27 (R$ milhões). Soma = âncoras 2.180 e 2.030, e
+ * DEZ fecha em 402 × 371 (+8,4%), o exemplo de tooltip da spec.
+ */
+export const OTB_MENSAL: MesOTB[] = [
+  { mes: 'AGO', plano: 248, ly: 236, estoque: 612 },
+  { mes: 'SET', plano: 272, ly: 258, estoque: 638 },
+  { mes: 'OUT', plano: 306, ly: 288, estoque: 690 },
+  { mes: 'NOV', plano: 358, ly: 332, estoque: 742 },
+  { mes: 'DEZ', plano: 402, ly: 371, estoque: 668 },
+  { mes: 'JAN', plano: 336, ly: 306, estoque: 520 },
+  { mes: 'FEV', plano: 258, ly: 239, estoque: 432 },
+]
+
+/** Semanas por mês (365/12/7) — converte venda mensal em venda semanal. */
+const SEMANAS_POR_MES = 4.345
+
+/** Mensal com crescimento % e cobertura em semanas, ambos DERIVADOS. */
+export const OTB_MENSAL_CALCULADO = OTB_MENSAL.map((m) => ({
+  ...m,
+  crescimento: Number(((m.plano / m.ly - 1) * 100).toFixed(1)),
+  coberturaSemanas: Number((m.estoque / (m.plano / SEMANAS_POR_MES)).toFixed(1)),
+}))
+
+/* ------------------------------------------ indicadores para decisão ----- */
+
+export type IndicadorDecisao = { tom: 'warn' | 'ok'; titulo: string; texto: string }
+
+/** 2 alertas + 1 sucesso, todos calculados da tabela e dos âncoras. */
+export function indicadoresOTB(linhas: LinhaOTB[] = OTB_CATEGORIAS): IndicadorDecisao[] {
+  const t = totaisOTB(linhas)
+  const abaixoDaMeta = linhas.filter((l) => l.margem < META_MARGEM_OTB)
+  const pesoAbaixo = t.plano ? (soma(abaixoDaMeta.map((l) => l.plano)) / t.plano) * 100 : 0
+  const folgaMarkdown = OTB.markdownPlanejado - DASHBOARD.markdownAcumulado
+  const atbSobreOtb = t.otb ? (t.atb / t.otb) * 100 : 0
+  const maiorCobertura = [...linhas].sort((a, b) => b.coberturaSemanas - a.coberturaSemanas)[0]
+
+  return [
+    {
+      tom: 'warn',
+      titulo: `${abaixoDaMeta.length} categorias abaixo da meta de margem`,
+      texto: `${abaixoDaMeta.map((l) => l.categoria).join(', ')} planejam margem abaixo dos ${formatPct(META_MARGEM_OTB, 0)} de meta e respondem por ${formatPct(pesoAbaixo)} do plano. O mix pressiona a margem consolidada de ${formatPct(t.margem)} — ou o preço sobe, ou o custo cai antes da emissão.`,
+    },
+    {
+      tom: 'warn',
+      titulo: 'Verba de remarcação sem folga se o sell-through não vier',
+      texto: `O plano prevê markdown de ${formatPct(OTB.markdownPlanejado)} contra ${formatPct(DASHBOARD.markdownAcumulado)} já realizados — ${formatPP(folgaMarkdown)} de folga para o resto da temporada, condicionados ao sell-through alvo de ${formatPct(OTB.sellThroughAlvo, 0)}. ${maiorCobertura.categoria} entra com ${formatNum(maiorCobertura.coberturaSemanas, 1)} semanas de cobertura, a maior da tabela.`,
+    },
+    {
+      tom: 'ok',
+      titulo: 'ATB preservado para reagir dentro da temporada',
+      texto: `Dos ${formatBRLCompact(t.otb * 1e6)} de OTB, ${formatBRLCompact(t.atb * 1e6)} seguem como ATB — ${formatPct(atbSobreOtb)} da verba livre para recompra de best sellers, contra ${formatBRLCompact(t.comprometido * 1e6)} já comprometidos.`,
+    },
+  ]
+}
+
+/** Rodapé "OTB como insumo" — 3 módulos que consomem esta camada. */
+export const OTB_INSUMOS: { titulo: string; texto: string; rota: string }[] = [
+  {
+    titulo: 'Plano de Sortimento',
+    texto:
+      'A verba por categoria vira linhas de compra com quantidade, preço e margem. É lá que a banda de OTB é testada.',
+    rota: '/plano',
+  },
+  {
+    titulo: 'Distribuição',
+    texto:
+      'O plano aprovado é quebrado por cluster e loja, respeitando packs e coerência de clima.',
+    rota: '/distribuicao',
+  },
+  {
+    titulo: 'Emissão de Pedidos',
+    texto: 'O comprometido desta tela é o que já virou ordem de compra integrada ao ERP.',
+    rota: '/emissao',
+  },
+]
+
+/** Minutos desde a última leitura do ERP (âncora da spec). */
+export const OTB_ULTIMA_LEITURA_MIN = 18
+
+/**
+ * Autoteste da hierarquia do OTB: confere que N1 é um departamento REAL do
+ * snapshot e que N2/N3 aparecem na árvore mercadológica ou nas categorias dos
+ * produtos reais. Evita categoria inventada passando batido na tabela.
+ */
+export function validarHierarquiaOTB(): string[] {
+  const erros: string[] = []
+  const arvore = cea.arvoreMercadologica
+
+  // No JSON o nível N2 aparece como CHAVE do objeto ("roupas", "modaIntima"),
+  // não como item de array — daí a normalização camelCase → "Moda Íntima".
+  const rotuloDaChave = (k: string) =>
+    ({
+      roupas: 'Roupas',
+      modaIntima: 'Moda Íntima',
+      modaEsportiva: 'Moda Esportiva',
+      modaPraia: 'Moda Praia',
+    })[k] ?? k
+
+  const termosDaArvore = new Set<string>([
+    ...arvore.departamentos,
+    ...Object.keys(arvore.feminino).map(rotuloDaChave),
+    ...Object.keys(arvore.masculino).map(rotuloDaChave),
+    ...Object.values(arvore.feminino).flat(),
+    ...Object.values(arvore.masculino).flat(),
+    ...arvore.infantil.faixas,
+    ...arvore.infantil.marcas,
+    ...arvore.jeans.fitsReais,
+    ...arvore.jeans.linhas,
+    ...arvore.beleza,
+    // categorias e marcas que só aparecem nos produtos reais
+    ...cea.produtos.map((p) => p.cat),
+    ...cea.produtos.flatMap((p) => (p.marca ? [p.marca] : [])),
+    ...cea.marcas.proprias.map((m) => m.split(' (')[0]),
+  ])
+
+  for (const l of OTB_CATEGORIAS) {
+    if (!arvore.departamentos.includes(l.n1)) {
+      erros.push(`N1 "${l.n1}" (${l.categoria}) não é um departamento do snapshot`)
+    }
+    for (const [nivel, valor] of [
+      ['N2', l.n2],
+      ['N3', l.n3],
+    ] as const) {
+      if (!termosDaArvore.has(valor)) {
+        erros.push(`${nivel} "${valor}" (${l.categoria}) não existe na árvore mercadológica`)
+      }
+    }
+  }
+  return erros
+}

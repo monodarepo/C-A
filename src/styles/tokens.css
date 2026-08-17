@@ -28,6 +28,17 @@
   --warn-rgb: 245 158 11;
   --crit-rgb: 227 6 19;
 
+  /* Paleta de DADOS (gráficos). Validada com o validador de paleta:
+     banda de luminosidade, piso de croma, separação sob daltonismo e contraste
+     sobre o branco. O azul institucional (#00287A) tem L 0,317 — escuro demais
+     para preenchimento de barra —, então os dados usam passos mais claros da
+     mesma família azul. Identidade da marca segue nos tokens acima.
+       --viz-azul + --viz-azul-claro: ΔE 18,2 (CVD) e 18,3 (visão normal)
+       --viz-ref: neutro deliberado — LY é referência, não uma série par */
+  --viz-azul: #2f5fbf;
+  --viz-azul-claro: #6e9ae0;
+  --viz-ref: #cbd5e1;
+
   /* derivados de apoio (tons de tinta e bordas) */
   --ink: #0f172a;
   --ink-muted: #64748b;
