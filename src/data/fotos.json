@@ -1,1 +1,1502 @@
-{}
+{
+    "1046556":  {
+                    "nomeReal":  "camiseta de algodão peruano bold manga curta branca",
+                    "precoDe":  119.99,
+                    "precoPor":  119.99,
+                    "link":  "https://www.cea.com.br/camiseta-de-algodao-peruano-bold-manga-curta-branca-1046556-branco_1/p",
+                    "nomeJson":  "Camiseta algodão peruano bold manga curta",
+                    "cores":  [
+                                  {
+                                      "nome":  "P",
+                                      "img500":  "/produtos/1046556-0-500.jpg",
+                                      "img160":  "/produtos/1046556-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "1092215":  {
+                    "nomeReal":  "calça wide leg feminina jeans cintura alta azul",
+                    "precoDe":  179.99,
+                    "precoPor":  89.99,
+                    "link":  "https://www.cea.com.br/calca-wide-leg-feminina-jeans-cintura-alta-azul-1092215-jeans_am/p",
+                    "nomeJson":  "Calça wide leg jeans cintura alta pesponto contraste",
+                    "cores":  [
+                                  {
+                                      "nome":  "42",
+                                      "img500":  "/produtos/1092215-0-500.jpg",
+                                      "img160":  "/produtos/1092215-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "1075684":  {
+                    "nomeReal":  [
+                                     "vestido midi feminino com linho e fenda floral azul",
+                                     "vestido midi feminino com linho e fenda listrado azul",
+                                     "vestido midi com linho decote quadrado amarelo",
+                                     "vestido midi feminino decote canoa assimétrico marrom",
+                                     "vestido longo alça fina feminino com viscose decote quadrado preto"
+                                 ],
+                    "precoDe":  149.99,
+                    "precoPor":  149.99,
+                    "link":  [
+                                 "https://www.cea.com.br/vestido-midi-feminino-com-linho-e-fenda-floral-azul--1118073-azul_jeans/p",
+                                 "https://www.cea.com.br/vestido-midi-feminino-com-linho-e-fenda-listrado-azul-1118072-azul_cl4/p",
+                                 "https://www.cea.com.br/vestido-midi-com-linho-decote-quadrado-amarelo-1075684-amarelo_md/p",
+                                 "https://www.cea.com.br/vestido-midi-feminino-decote-canoa-assimetrico-marrom-1118648-marrom_e2/p",
+                                 "https://www.cea.com.br/vestido-longo-alca-fina-feminino-com-viscose-decote-quadrado-preto-1117203-preto/p"
+                             ],
+                    "nomeJson":  "Vestido midi com linho decote quadrado",
+                    "cores":  [
+                                  {
+                                      "nome":  "G",
+                                      "img500":  "/produtos/1075684-0-500.jpg",
+                                      "img160":  "/produtos/1075684-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  [
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A"
+                              ]
+                },
+    "1099133":  {
+                    "nomeReal":  "calça wide leg feminina jeans cintura alta com recortes azul",
+                    "precoDe":  209.99,
+                    "precoPor":  99.99,
+                    "link":  "https://www.cea.com.br/calca-wide-leg-feminina-jeans-cintura-alta-com-recortes-azul-1099133-jeans_cl/p",
+                    "nomeJson":  "Calça super wide leg com recortes bicolor patchwork",
+                    "cores":  [
+                                  {
+                                      "nome":  "36",
+                                      "img500":  "/produtos/1099133-0-500.jpg",
+                                      "img160":  "/produtos/1099133-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "1101163":  {
+                    "nomeReal":  [
+                                     "vestido midi evasê feminino com viscose e recortes preto",
+                                     "vestido midi feminino com viscose e recortes preto",
+                                     "vestido midi chemise feminino de viscose com cinto verde",
+                                     "vestido midi evasê feminino com viscose e recortes vinho",
+                                     "vestido midi feminino com viscose e recortes vermelho"
+                                 ],
+                    "precoDe":  179.99,
+                    "precoPor":  179.99,
+                    "link":  [
+                                 "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-preto-1109460-preto/p",
+                                 "https://www.cea.com.br/vestido-midi-feminino-com-viscose-e-recortes-preto-1109264-preto/p",
+                                 "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-com-cinto-verde-1103681-v_milit/p",
+                                 "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-vinho-1109460-vinho/p",
+                                 "https://www.cea.com.br/vestido-midi-feminino-com-viscose-e-recortes-vermelho-1109264-verm/p"
+                             ],
+                    "nomeJson":  "Vestido midi de viscose com recortes",
+                    "cores":  [
+                                  {
+                                      "nome":  "PP",
+                                      "img500":  "/produtos/1101163-0-500.jpg",
+                                      "img160":  "/produtos/1101163-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  [
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A"
+                              ]
+                },
+    "s049":  {
+                 "nomeReal":  [
+                                  "camiseta infantil manga longa proteção uv homem aranha - preto",
+                                  "camiseta infantil com proteção uv sonic azul",
+                                  "camiseta de praia infantil manga longa com recortes e proteção uv colorido",
+                                  "camiseta infantil com proteção uv manga longa preta",
+                                  "camiseta infantil manga longa com proteção uv minecraft verde"
+                              ],
+                 "precoDe":  89.99,
+                 "precoPor":  89.99,
+                 "link":  [
+                              "https://www.cea.com.br/camiseta-infantil-manga-longa-protecao-uv-homem-aranha-preto-1084858-preto/p",
+                              "https://www.cea.com.br/camiseta-infantil-com-protecao-uv-sonic-azul-1092757-azul_md/p",
+                              "https://www.cea.com.br/camiseta-de-praia-infantil-manga-longa-com-recortes-e-protecao-uv-colorido-1116438-multicor/p",
+                              "https://www.cea.com.br/camiseta-infantil-com-protecao-uv-manga-longa-preta-1108862-preto/p",
+                              "https://www.cea.com.br/camiseta-infantil-manga-longa-com-protecao-uv-minecraft-verde-1101142-verde_lima/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil ML proteção UV coqueiro",
+                 "cores":  [
+                               {
+                                   "nome":  "10",
+                                   "img500":  "/produtos/s049-0-500.jpg",
+                                   "img160":  "/produtos/s049-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s048":  {
+                 "nomeReal":  [
+                                  "camiseta infantil de algodão manga curta estampada azul",
+                                  "camiseta infantil de algodão manga curta estampada off white",
+                                  "camiseta infantil de algodão manga longa estampada azul",
+                                  "camiseta infantil de algodão manga curta com bolso estampada vermelha",
+                                  "camiseta infantil de algodão manga longa estampada azul"
+                              ],
+                 "precoDe":  39.99,
+                 "precoPor":  39.99,
+                 "link":  [
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-manga-curta-estampada-azul--1111151-azul_cl4/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-manga-curta-estampada-off-white-1113036-off_white/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-manga-longa-estampada-azul--1112982-azul_cl4/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-manga-curta-com-bolso-estampada-vermelha-1110476-verm/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-manga-longa-estampada-azul--1110478-azul_bebe/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil ML estampada",
+                 "cores":  [
+                               {
+                                   "nome":  "4",
+                                   "img500":  "/produtos/s048-0-500.jpg",
+                                   "img160":  "/produtos/s048-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1086292":  {
+                    "nomeReal":  "vestido midi halterneck feminino com linho bordado floral bege",
+                    "precoDe":  289.99,
+                    "precoPor":  129.99,
+                    "link":  "https://www.cea.com.br/vestido-midi-halterneck-feminino-com-linho-bordado-floral-bege-1086292-amarelo_c1/p",
+                    "nomeJson":  "Vestido midi halterneck linho bordado floral",
+                    "cores":  [
+                                  {
+                                      "nome":  "PP",
+                                      "img500":  "/produtos/1086292-0-500.jpg",
+                                      "img160":  "/produtos/1086292-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "s018":  {
+                 "nomeReal":  [
+                                  "vestido midi feminino gola alta animal print acetinado marrom",
+                                  "Vestido Feminino em Jacquard Estampado Animal Print Gola Alta Kaki",
+                                  "Vestido Feminino em Tule com Estampa Animal Print de Zebra Manga Longa Gola Alta Preto",
+                                  "Vestido Slip Dress Feminino Mindset Midi Acetinado Estampado Animal Print Guepardo Alça Fina Azul",
+                                  "vestido curto de tule animal print manga longa gola alta preto"
+                              ],
+                 "precoDe":  259.99,
+                 "precoPor":  259.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-feminino-gola-alta-animal-print-acetinado-marrom-1111934-marrom_e3/p",
+                              "https://www.cea.com.br/vestido-feminino-em-jacquard-estampado-animal-print-gola-alta-kaki-9512691-kaki/p",
+                              "https://www.cea.com.br/vestido-feminino-em-tule-com-estampa-animal-print-de-zebra-manga-longa-gola-alta-preto-9891986-preto/p",
+                              "https://www.cea.com.br/vestido-slip-dress-feminino-mindset-midi-acetinado-estampado-animal-print-guepardo-alca-fina-azul-9947926-azul/p",
+                              "https://www.cea.com.br/vestido-curto-de-tule-animal-print-manga-longa-gola-alta-preto-1026919-preto/p"
+                          ],
+                 "nomeJson":  "Vestido midi gola alta animal print acetinado",
+                 "cores":  [
+                               {
+                                   "nome":  "PP",
+                                   "img500":  "/produtos/s018-0-500.jpg",
+                                   "img160":  "/produtos/s018-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s015":  {
+                 "nomeReal":  [
+                                  "vestido longo alça fina feminino com viscose poá marrom",
+                                  "vestido midi alça fina feminino de sarja listrado bege",
+                                  "vestido midi alça fina feminino de sarja listrado marrom",
+                                  "vestido longo alça fina feminino com viscose decote quadrado preto",
+                                  "vestido longo alça fina feminino paisley rosa"
+                              ],
+                 "precoDe":  159.99,
+                 "precoPor":  159.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-longo-alca-fina-feminino-com-viscose-poa-marrom--1117204-marrom_esc/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-sarja-listrado-bege-1118255-kaki/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-sarja-listrado-marrom-1116662-marrom_med/p",
+                              "https://www.cea.com.br/vestido-longo-alca-fina-feminino-com-viscose-decote-quadrado-preto-1117203-preto/p",
+                              "https://www.cea.com.br/vestido-longo-alca-fina-feminino-paisley-rosa-1115411-rosa_cl/p"
+                          ],
+                 "nomeJson":  "Vestido midi alça fina com babado",
+                 "cores":  [
+                               {
+                                   "nome":  "P",
+                                   "img500":  "/produtos/s015-0-500.jpg",
+                                   "img160":  "/produtos/s015-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s017":  {
+                 "nomeReal":  [
+                                  "vestido midi feminino com linho e fenda floral azul",
+                                  "vestido midi feminino com linho e fenda listrado azul",
+                                  "vestido midi com linho decote quadrado amarelo",
+                                  "vestido midi feminino decote canoa assimétrico marrom",
+                                  "vestido longo alça fina feminino com viscose decote quadrado preto"
+                              ],
+                 "precoDe":  149.99,
+                 "precoPor":  149.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-feminino-com-linho-e-fenda-floral-azul--1118073-azul_jeans/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-linho-e-fenda-listrado-azul-1118072-azul_cl4/p",
+                              "https://www.cea.com.br/vestido-midi-com-linho-decote-quadrado-amarelo-1075684-amarelo_md/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-decote-canoa-assimetrico-marrom-1118648-marrom_e2/p",
+                              "https://www.cea.com.br/vestido-longo-alca-fina-feminino-com-viscose-decote-quadrado-preto-1117203-preto/p"
+                          ],
+                 "nomeJson":  "Vestido midi com linho decote quadrado",
+                 "cores":  [
+                               {
+                                   "nome":  "G",
+                                   "img500":  "/produtos/s017-0-500.jpg",
+                                   "img160":  "/produtos/s017-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s044":  {
+                 "nomeReal":  [
+                                  "camiseta infantil de algodão floral com glitter rosa",
+                                  "camiseta infantil de algodão princesas com glitter off white",
+                                  "camiseta infantil de algodão borboleta com glitter off white",
+                                  "camiseta infantil com botões texturizada azul",
+                                  "camiseta infantil texturizada homem aranha azul"
+                              ],
+                 "precoDe":  29.99,
+                 "precoPor":  29.99,
+                 "link":  [
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-floral-com-glitter-rosa-1097561-rosa_cl/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-princesas-com-glitter-off-white-1095133-off_white/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-borboleta-com-glitter-off-white-1097559-off_white/p",
+                              "https://www.cea.com.br/camiseta-infantil-com-botoes-texturizada-azul-1101470-azul_marin/p",
+                              "https://www.cea.com.br/camiseta-infantil-texturizada-homem-aranha-azul--1097199-azul_cl4/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil cerejas com glitter texturizada",
+                 "cores":  [
+                               {
+                                   "nome":  "4",
+                                   "img500":  "/produtos/s044-0-500.jpg",
+                                   "img160":  "/produtos/s044-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s041":  {
+                 "nomeReal":  [
+                                  "blusa infantil de algodão manga skye patrulha canina bege",
+                                  "kit de 3 camisetas infantil manga curta patrulha canina colorido",
+                                  "conjunto curto infantil de algodão patrulha canina off white",
+                                  "conjunto curto infantil de algodão patrulha canina bege",
+                                  "pijama longo infantil com algodão patrulha canina azul"
+                              ],
+                 "precoDe":  49.99,
+                 "precoPor":  29.99,
+                 "link":  [
+                              "https://www.cea.com.br/blusa-infantil-de-algodao-manga-skye-patrulha-canina-bege-1109699-bege_l/p",
+                              "https://www.cea.com.br/kit-de-3-camisetas-infantil-manga-curta-patrulha-canina-colorido-1115902-multicor/p",
+                              "https://www.cea.com.br/conjunto-curto-infantil-de-algodao-patrulha-canina-off-white-1097397-off_white/p",
+                              "https://www.cea.com.br/conjunto-curto-infantil-de-algodao-patrulha-canina-bege-1102731-bege_esc/p",
+                              "https://www.cea.com.br/pijama-longo-infantil-com-algodao-patrulha-canina-azul-1112842-azul_md/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil algodão MC Patrulha Canina",
+                 "cores":  [
+                               {
+                                   "nome":  "2",
+                                   "img500":  "/produtos/s041-0-500.jpg",
+                                   "img160":  "/produtos/s041-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s014":  {
+                 "nomeReal":  [
+                                  "vestido midi feminino ombro a ombro a franzido mindset preto",
+                                  "vestido midi feminino com linho e fenda floral azul",
+                                  "vestido midi feminino com linho e fenda listrado azul",
+                                  "vestido midi feminino de algodão com recorte franzido marrom",
+                                  "vestido midi feminino decote coração com fenda preto"
+                              ],
+                 "precoDe":  219.99,
+                 "precoPor":  219.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-feminino-ombro-a-ombro-a-franzido-mindset-preto-1118164-preto/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-linho-e-fenda-floral-azul--1118073-azul_jeans/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-linho-e-fenda-listrado-azul-1118072-azul_cl4/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-algodao-com-recorte-franzido-marrom-1113555-marrom_e2/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-decote-coracao-com-fenda-preto-1090953-preto/p"
+                          ],
+                 "nomeJson":  "Vestido midi franzido com fenda",
+                 "cores":  [
+                               {
+                                   "nome":  "P",
+                                   "img500":  "/produtos/s014-0-500.jpg",
+                                   "img160":  "/produtos/s014-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s056":  {
+                 "nomeReal":  "top dupla face esportivo - bege medio",
+                 "precoDe":  59.99,
+                 "precoPor":  45.99,
+                 "link":  "https://www.cea.com.br/top-dupla-face-esportivo-bege-medio-1059395-bege_md/p",
+                 "nomeJson":  "Top ACE médio impacto",
+                 "cores":  [
+                               {
+                                   "nome":  "G",
+                                   "img500":  "/produtos/s056-0-500.jpg",
+                                   "img160":  "/produtos/s056-0-160.jpg"
+                               }
+                           ],
+                 "marca":  "C\u0026A"
+             },
+    "1049412":  {
+                    "nomeReal":  "camiseta masculina de algodão básica manga curta preta",
+                    "precoDe":  49.99,
+                    "precoPor":  49.99,
+                    "link":  "https://www.cea.com.br/camiseta-masculina-de-algodao-basica-manga-curta-preta-1049412-preto/p",
+                    "nomeJson":  "Camiseta básica de algodão manga curta",
+                    "cores":  [
+                                  {
+                                      "nome":  "PP",
+                                      "img500":  "/produtos/1049412-0-500.jpg",
+                                      "img160":  "/produtos/1049412-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "s024":  {
+                 "nomeReal":  [
+                                  "vestido midi de crepe com gola laço e estampa poá vermelho",
+                                  "Vestido Feminino Mindset Midi Estampado de Poá Manga Longa Gola Alta Preto",
+                                  "Vestido Feminino Mindset Midi Estampado de Poá Gola Degagê Preto"
+                              ],
+                 "precoDe":  239.99,
+                 "precoPor":  239.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-de-crepe-com-gola-laco-e-estampa-poa-vermelho-1112053-terracota/p",
+                              "https://www.cea.com.br/vestido-feminino-mindset-midi-estampado-de-poa-manga-longa-gola-alta-preto-9683308-preto/p",
+                              "https://www.cea.com.br/vestido-feminino-mindset-midi-estampado-de-poa-gola-degage-preto-9758916-preto/p"
+                          ],
+                 "nomeJson":  "Vestido midi crepe gola laço poá",
+                 "cores":  [
+                               {
+                                   "nome":  "PP",
+                                   "img500":  "/produtos/s024-0-500.jpg",
+                                   "img160":  "/produtos/s024-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s042":  {
+                 "nomeReal":  [
+                                  "pijama curto infantil de algodão manga curta mario bros preta",
+                                  "camiseta infantil de algodão mario bros off white",
+                                  "camiseta infantil de algodão manga curta mario bros bege",
+                                  "camiseta infantil de algodão manga curta mario bros off white",
+                                  "camiseta juvenil de algodão manga curta mario bros preta"
+                              ],
+                 "precoDe":  99.99,
+                 "precoPor":  99.99,
+                 "link":  [
+                              "https://www.cea.com.br/pijama-curto-infantil-de-algodao-manga-curta-mario-bros-preta-1117060-preto/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-mario-bros-off-white-1112299-off_white/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-manga-curta-mario-bros-bege-1112298-areia/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-manga-curta-mario-bros-off-white-1112300-off_white/p",
+                              "https://www.cea.com.br/camiseta-juvenil-de-algodao-manga-curta-mario-bros-preta-1111955-preto/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil algodão MC Mario Bros",
+                 "cores":  [
+                               {
+                                   "nome":  "8",
+                                   "img500":  "/produtos/s042-0-500.jpg",
+                                   "img160":  "/produtos/s042-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s022":  {
+                 "nomeReal":  [
+                                  "vestido midi feminino de tule manga curta floral franzido azul",
+                                  "vestido midi de viscose manga bufante arabescos vinho",
+                                  "vestido midi feminino de algodão manga curta vinho",
+                                  "vestido midi feminino de algodão manga curta preto",
+                                  "vestido midi feminino de algodão manga curta bege"
+                              ],
+                 "precoDe":  179.99,
+                 "precoPor":  179.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-feminino-de-tule-manga-curta-floral-franzido-azul-1120127-azul_marin/p",
+                              "https://www.cea.com.br/vestido-midi-de-viscose-manga-bufante-arabescos-vinho-1108564-vinho_escu/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-algodao-manga-curta-vinho-1113834-vinho_escu/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-algodao-manga-curta-preto-1113834-preto/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-algodao-manga-curta-bege-1113834-bege_l/p"
+                          ],
+                 "nomeJson":  "Vestido midi viscose manga curta listrado",
+                 "cores":  [
+                               {
+                                   "nome":  "PP",
+                                   "img500":  "/produtos/s022-0-500.jpg",
+                                   "img160":  "/produtos/s022-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1082771":  {
+                    "nomeReal":  [
+                                     "calça jeans wide leg slim cintura alta azul",
+                                     "calça wide leg petit feminina jeans azul",
+                                     "calça wide leg feminina jeans azul",
+                                     "calça wide leg slim feminina jeans preta",
+                                     "calça wide leg petit feminina jeans cintura alta azul"
+                                 ],
+                    "precoDe":  159.99,
+                    "precoPor":  159.99,
+                    "link":  [
+                                 "https://www.cea.com.br/calca-jeans-wide-leg-slim-cintura-alta-azul-1067527-jeans-esc/p",
+                                 "https://www.cea.com.br/calca-wide-leg-petit-feminina-jeans-azul-1099376-jeans-md/p",
+                                 "https://www.cea.com.br/calca-wide-leg-feminina-jeans-azul-1096289-jeans-md/p",
+                                 "https://www.cea.com.br/calca-wide-leg-slim-feminina-jeans-preta-1094727-jeans_bck/p",
+                                 "https://www.cea.com.br/calca-wide-leg-petit-feminina-jeans-cintura-alta-azul-1099381-jeans-md/p"
+                             ],
+                    "nomeJson":  "Calça wide leg jeans barra desfiada",
+                    "cores":  [
+                                  {
+                                      "nome":  "36",
+                                      "img500":  "/produtos/1082771-0-500.jpg",
+                                      "img160":  "/produtos/1082771-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  [
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A"
+                              ]
+                },
+    "s047":  {
+                 "nomeReal":  [
+                                  "camiseta de algodão infantil listrada preta",
+                                  "camiseta infantil com botões texturizada azul",
+                                  "camiseta infantil com linho listrada marrom",
+                                  "camiseta infantil texturizada homem aranha azul",
+                                  "camiseta infantil com linho listrada verde"
+                              ],
+                 "precoDe":  39.99,
+                 "precoPor":  39.99,
+                 "link":  [
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-listrada-preta-1083936-preto/p",
+                              "https://www.cea.com.br/camiseta-infantil-com-botoes-texturizada-azul-1101470-azul_marin/p",
+                              "https://www.cea.com.br/camiseta-infantil-com-linho-listrada-marrom-1084052-marrom_e2/p",
+                              "https://www.cea.com.br/camiseta-infantil-texturizada-homem-aranha-azul--1097199-azul_cl4/p",
+                              "https://www.cea.com.br/camiseta-infantil-com-linho-listrada-verde-1084052-verde_cl9/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil texturizada listrada",
+                 "cores":  [
+                               {
+                                   "nome":  "4",
+                                   "img500":  "/produtos/s047-0-500.jpg",
+                                   "img160":  "/produtos/s047-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s011":  {
+                 "nomeReal":  [
+                                  "vestido midi feminino de renda decote v alça fina floral preto",
+                                  "Vestido Feminino Estampado de Folhagens Midi Alças Finas Decote V Off White",
+                                  "Vestido Feminino Midi Estampado de Coqueiros com Babado Alças Finas Decote V Off White",
+                                  "Vestido Feminino Midi Listrado com Babado Alças Finas Decote V Off White",
+                                  "Vestido Midi Mindset Listrado com Laço e Fendas Alças Finas Decote V Off White"
+                              ],
+                 "precoDe":  159.99,
+                 "precoPor":  159.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-feminino-de-renda-decote-v-alca-fina-floral-preto-1118045-preto/p",
+                              "https://www.cea.com.br/vestido-feminino-estampado-de-folhagens-midi-alcas-finas-decote-v-off-white-9191405-off-white/p",
+                              "https://www.cea.com.br/vestido-feminino-midi-estampado-de-coqueiros-com-babado-alcas-finas-decote-v-off-white-9183734-off-white/p",
+                              "https://www.cea.com.br/vestido-feminino-midi-listrado-com-babado-alcas-finas-decote-v-off-white-9183733-off-white/p",
+                              "https://www.cea.com.br/vestido-midi-mindset-listrado-com-laco-e-fendas-alcas-finas-decote-v-off-white-9258508-off-white/p"
+                          ],
+                 "nomeJson":  "Vestido midi de renda decote V alça fina floral",
+                 "cores":  [
+                               {
+                                   "nome":  "M",
+                                   "img500":  "/produtos/s011-0-500.jpg",
+                                   "img160":  "/produtos/s011-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s025":  {
+                 "nomeReal":  [
+                                  "vestido midi feminino de tule manga longa animal print marrom",
+                                  "vestido midi feminino de tule manga longa franzido marrom",
+                                  "vestido midi feminino de tule manga longa franzido floral marrom",
+                                  "vestido midi feminino de tule com pregas animal print bege",
+                                  "body feminino de tule manga longa animal print marrom"
+                              ],
+                 "precoDe":  169.99,
+                 "precoPor":  169.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-feminino-de-tule-manga-longa-animal-print-marrom-1115032-marrom_c9/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-tule-manga-longa-franzido-marrom-1114309-marrom_e2/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-tule-manga-longa-franzido-floral-marrom--1112858-marrom_esc/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-tule-com-pregas-animal-print-bege-1113605-areia/p",
+                              "https://www.cea.com.br/body-feminino-de-tule-manga-longa-animal-print-marrom-1112324-marrom_e2/p"
+                          ],
+                 "nomeJson":  "Vestido midi tule manga longa animal print",
+                 "cores":  [
+                               {
+                                   "nome":  "G",
+                                   "img500":  "/produtos/s025-0-500.jpg",
+                                   "img160":  "/produtos/s025-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s043":  {
+                 "nomeReal":  [
+                                  "kit de 3 camisetas infantil de algodão manga curta toy story colorido",
+                                  "camiseta de algodão infantil hot wheels  preta",
+                                  "camiseta de algodão infantil homem aranha vermelha",
+                                  "camiseta de algodão infantil manga curta skate marrom",
+                                  "camiseta infantil de algodão floral com glitter rosa"
+                              ],
+                 "precoDe":  99.99,
+                 "precoPor":  99.99,
+                 "link":  [
+                              "https://www.cea.com.br/kit-de-3-camisetas-infantil-de-algodao-manga-curta-toy-story-colorido-1113028-multicor/p",
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-hot-wheels-preta-1096848-preto/p",
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-homem-aranha-vermelha-1086455-verm_escur/p",
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-manga-curta-skate-marrom-1097108-marrom_e2/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-floral-com-glitter-rosa-1097561-rosa_cl/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil algodão Athos Minecraft",
+                 "cores":  [
+                               {
+                                   "nome":  "2",
+                                   "img500":  "/produtos/s043-0-500.jpg",
+                                   "img160":  "/produtos/s043-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1071833":  {
+                    "nomeReal":  "calça jeans wide leg cintura super alta preta",
+                    "precoDe":  159.99,
+                    "precoPor":  159.99,
+                    "link":  "https://www.cea.com.br/calca-jeans-wide-leg-cintura-super-alta-preta-1071833-jeans-bck/p",
+                    "nomeJson":  "Calça jeans wide leg cintura super alta",
+                    "cores":  [
+                                  {
+                                      "nome":  "34",
+                                      "img500":  "/produtos/1071833-0-500.jpg",
+                                      "img160":  "/produtos/1071833-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "s023":  {
+                 "nomeReal":  [
+                                  "vestido midi alça fina feminino de sarja listrado bege",
+                                  "vestido midi alça fina feminino de sarja listrado marrom",
+                                  "vestido midi alça fina de tule com renda franzido azul",
+                                  "vestido midi alça fina feminino acetinado preto",
+                                  "vestido midi alça fina feminino de tule com babado e fenda paisley azul"
+                              ],
+                 "precoDe":  239.99,
+                 "precoPor":  239.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-sarja-listrado-bege-1118255-kaki/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-sarja-listrado-marrom-1116662-marrom_med/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-de-tule-com-renda-franzido-azul-1118884-azul/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-acetinado-preto-1111480-preto/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-tule-com-babado-e-fenda-paisley-azul--1114353-azul_cl4/p"
+                          ],
+                 "nomeJson":  "Vestido midi alça fina sarja listrado",
+                 "cores":  [
+                               {
+                                   "nome":  "P",
+                                   "img500":  "/produtos/s023-0-500.jpg",
+                                   "img160":  "/produtos/s023-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1096942":  {
+                    "nomeReal":  "vestido midi peplum feminino de laise com recorte vermelho",
+                    "precoDe":  289.99,
+                    "precoPor":  149.99,
+                    "link":  "https://www.cea.com.br/vestido-midi-peplum-feminino-de-laise-com-recorte-vermelho-1096942-verm/p",
+                    "nomeJson":  "Vestido midi peplum de laise com recorte",
+                    "cores":  [
+                                  {
+                                      "nome":  "P",
+                                      "img500":  "/produtos/1096942-0-500.jpg",
+                                      "img160":  "/produtos/1096942-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "s045":  {
+                 "nomeReal":  [
+                                  "camiseta infantil de algodão floral com glitter rosa",
+                                  "camiseta infantil de algodão princesas com glitter off white",
+                                  "camiseta infantil de algodão borboleta com glitter off white",
+                                  "vestido infantil de tule corações com glitter azul",
+                                  "camiseta de algodão infantil frutinhas com glitter off white"
+                              ],
+                 "precoDe":  29.99,
+                 "precoPor":  29.99,
+                 "link":  [
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-floral-com-glitter-rosa-1097561-rosa_cl/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-princesas-com-glitter-off-white-1095133-off_white/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-borboleta-com-glitter-off-white-1097559-off_white/p",
+                              "https://www.cea.com.br/vestido-infantil-de-tule-coracoes-com-glitter-azul-1091420-azul_cl4/p",
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-frutinhas-com-glitter-off-white-1096599-off_white/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil corações com glitter",
+                 "cores":  [
+                               {
+                                   "nome":  "4",
+                                   "img500":  "/produtos/s045-0-500.jpg",
+                                   "img160":  "/produtos/s045-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s009":  {
+                 "nomeReal":  [
+                                  "vestido midi chemise feminino jeans manga curta com faixa azul",
+                                  "vestido midi chemise feminino de viscose manga curta com lastex preto",
+                                  "vestido midi chemise feminino de viscose manga curta com lastex vinho",
+                                  "vestido midi chemise feminino de viscose manga curta com lastex azul",
+                                  "Vestido Chemise Midi Estampado Xadrez Vichy Manga Bufante com Faixa Para Amarrar Mindset Preto"
+                              ],
+                 "precoDe":  239.99,
+                 "precoPor":  239.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-jeans-manga-curta-com-faixa-azul-1118281-jeans_am/p",
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-manga-curta-com-lastex-preto-1117489-preto/p",
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-manga-curta-com-lastex-vinho-1117489-vinho/p",
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-manga-curta-com-lastex-azul-1117489-azul_md/p",
+                              "https://www.cea.com.br/vestido-chemise-midi-estampado-xadrez-vichy-manga-bufante-com-faixa-para-amarrar-mindset-preto-1006482-preto/p"
+                          ],
+                 "nomeJson":  "Vestido midi chemise jeans manga curta com faixa",
+                 "cores":  [
+                               {
+                                   "nome":  "G",
+                                   "img500":  "/produtos/s009-0-500.jpg",
+                                   "img160":  "/produtos/s009-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "7413962":  {
+                    "nomeReal":  [
+                                     "kit de 2 sutiãs meia taça com renda floral coloridos",
+                                     "sutiã meia taça com alças removíveis preto",
+                                     "sutiã meia taça com alça removíveis e renda preto",
+                                     "sutiã meia taça com alça removíveis e renda off white",
+                                     "sutiã meia taça feminino naked skin com alça removível bege"
+                                 ],
+                    "precoDe":  99.99,
+                    "precoPor":  99.99,
+                    "link":  [
+                                 "https://www.cea.com.br/kit-de-2-sutias-meia-taca-com-renda-floral-coloridos-1073619-sortido-5/p",
+                                 "https://www.cea.com.br/sutia-meia-taca-com-alcas-removiveis-preto-1072726-preto/p",
+                                 "https://www.cea.com.br/sutia-meia-taca-com-alca-removiveis-e-renda-preto-1098372-preto/p",
+                                 "https://www.cea.com.br/sutia-meia-taca-com-alca-removiveis-e-renda-off-white-1098372-off_white/p",
+                                 "https://www.cea.com.br/sutia-meia-taca-feminino-naked-skin-com-alca-removivel-bege-1083111-creme/p"
+                             ],
+                    "nomeJson":  "Sutiã meia taça canelado com renda",
+                    "cores":  [
+                                  {
+                                      "nome":  "44",
+                                      "img500":  "/produtos/7413962-0-500.jpg",
+                                      "img160":  "/produtos/7413962-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  [
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A"
+                              ]
+                },
+    "s046":  {
+                 "nomeReal":  [
+                                  "camiseta infantil de algodão floral com glitter rosa",
+                                  "camiseta infantil de algodão princesas com glitter off white",
+                                  "camiseta infantil de algodão borboleta com glitter off white",
+                                  "camiseta infantil de algodão capivara rosa",
+                                  "camiseta de algodão infantil frutinhas com glitter off white"
+                              ],
+                 "precoDe":  29.99,
+                 "precoPor":  29.99,
+                 "link":  [
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-floral-com-glitter-rosa-1097561-rosa_cl/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-princesas-com-glitter-off-white-1095133-off_white/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-borboleta-com-glitter-off-white-1097559-off_white/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-capivara-rosa-1105205-rosa_cl/p",
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-frutinhas-com-glitter-off-white-1096599-off_white/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil capivara com glitter",
+                 "cores":  [
+                               {
+                                   "nome":  "4",
+                                   "img500":  "/produtos/s046-0-500.jpg",
+                                   "img160":  "/produtos/s046-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s008":  {
+                 "nomeReal":  [
+                                  "vestido midi chemise feminino de viscose com cinto verde",
+                                  "vestido midi chemise feminino de viscose com cinto vinho",
+                                  "vestido midi alça fina feminino de viscose com fenda listrado marrom",
+                                  "vestido midi feminino com viscose manga curta listrado marrom",
+                                  "vestido midi chemise feminino de viscose manga curta com lastex preto"
+                              ],
+                 "precoDe":  239.99,
+                 "precoPor":  239.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-com-cinto-verde-1103681-v_milit/p",
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-com-cinto-vinho-1103681-vinho/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-viscose-com-fenda-listrado-marrom-1110368-marrom_esc/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-viscose-manga-curta-listrado-marrom-1115885-marrom_esc/p",
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-manga-curta-com-lastex-preto-1117489-preto/p"
+                          ],
+                 "nomeJson":  "Vestido midi chemise viscose com cinto listrado",
+                 "cores":  [
+                               {
+                                   "nome":  "PP",
+                                   "img500":  "/produtos/s008-0-500.jpg",
+                                   "img160":  "/produtos/s008-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s013":  {
+                 "nomeReal":  [
+                                  "vestido longo alça fina feminino com viscose poá marrom",
+                                  "vestido midi alça fina feminino de sarja listrado bege",
+                                  "vestido midi alça fina feminino de sarja listrado marrom",
+                                  "vestido longo alça fina feminino com viscose decote quadrado preto",
+                                  "vestido longo alça fina feminino paisley rosa"
+                              ],
+                 "precoDe":  159.99,
+                 "precoPor":  159.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-longo-alca-fina-feminino-com-viscose-poa-marrom--1117204-marrom_esc/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-sarja-listrado-bege-1118255-kaki/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-sarja-listrado-marrom-1116662-marrom_med/p",
+                              "https://www.cea.com.br/vestido-longo-alca-fina-feminino-com-viscose-decote-quadrado-preto-1117203-preto/p",
+                              "https://www.cea.com.br/vestido-longo-alca-fina-feminino-paisley-rosa-1115411-rosa_cl/p"
+                          ],
+                 "nomeJson":  "Vestido midi alça fina",
+                 "cores":  [
+                               {
+                                   "nome":  "P",
+                                   "img500":  "/produtos/s013-0-500.jpg",
+                                   "img160":  "/produtos/s013-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s010":  {
+                 "nomeReal":  [
+                                  "vestido midi evasê feminino com viscose e recortes preto",
+                                  "vestido midi feminino com viscose e recortes preto",
+                                  "vestido midi chemise feminino de viscose com cinto verde",
+                                  "vestido midi evasê feminino com viscose e recortes vinho",
+                                  "vestido midi feminino com viscose e recortes vermelho"
+                              ],
+                 "precoDe":  179.99,
+                 "precoPor":  179.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-preto-1109460-preto/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-viscose-e-recortes-preto-1109264-preto/p",
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-com-cinto-verde-1103681-v_milit/p",
+                              "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-vinho-1109460-vinho/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-viscose-e-recortes-vermelho-1109264-verm/p"
+                          ],
+                 "nomeJson":  "Vestido midi chemise viscose com lastex",
+                 "cores":  [
+                               {
+                                   "nome":  "PP",
+                                   "img500":  "/produtos/s010-0-500.jpg",
+                                   "img160":  "/produtos/s010-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "9947820":  {
+                    "nomeReal":  "camiseta básica de algodão manga curta cinza",
+                    "precoDe":  49.99,
+                    "precoPor":  49.99,
+                    "link":  "https://www.cea.com.br/camiseta-basica-de-algodao-manga-curta-cinza-9947820-cin-mes-es/p",
+                    "nomeJson":  "Camiseta básica de algodão manga curta",
+                    "cores":  [
+                                  {
+                                      "nome":  "XG",
+                                      "img500":  "/produtos/9947820-0-500.jpg",
+                                      "img160":  "/produtos/9947820-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "1072708":  {
+                    "nomeReal":  "calça jeans wide leg slim com brilho cintura super alta azul",
+                    "precoDe":  199.99,
+                    "precoPor":  199.99,
+                    "link":  "https://www.cea.com.br/calca-jeans-wide-leg-slim-com-brilho-cintura-super-alta-azul-1072708-jeans-md/p",
+                    "nomeJson":  "Calça jeans wide leg slim com brilho cintura super alta",
+                    "cores":  [
+                                  {
+                                      "nome":  "38",
+                                      "img500":  "/produtos/1072708-0-500.jpg",
+                                      "img160":  "/produtos/1072708-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "s054":  {
+                 "nomeReal":  [
+                                  "kit de 2 sutiãs meia taça com renda floral coloridos",
+                                  "Kit de 2 sutiãs triângulo bojo removível rendado colorido",
+                                  "sutiã meia taça com alça removíveis e renda preto",
+                                  "kit de 2 sutiãs base feminino com renda floral colorido",
+                                  "sutiã meia taça com alça removíveis e renda off white"
+                              ],
+                 "precoDe":  99.99,
+                 "precoPor":  99.99,
+                 "link":  [
+                              "https://www.cea.com.br/kit-de-2-sutias-meia-taca-com-renda-floral-coloridos-1073619-sortido-5/p",
+                              "https://www.cea.com.br/kit-de-2-sutias-triangulo-bojo-removivel-rendado-colorido-1073617-sortido-5/p",
+                              "https://www.cea.com.br/sutia-meia-taca-com-alca-removiveis-e-renda-preto-1098372-preto/p",
+                              "https://www.cea.com.br/kit-de-2-sutias-base-feminino-com-renda-floral-colorido-1073618-sortido_5/p",
+                              "https://www.cea.com.br/sutia-meia-taca-com-alca-removiveis-e-renda-off-white-1098372-off_white/p"
+                          ],
+                 "nomeJson":  "Sutiã bralette renda",
+                 "cores":  [
+                               {
+                                   "nome":  "44",
+                                   "img500":  "/produtos/s054-0-500.jpg",
+                                   "img160":  "/produtos/s054-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1114492":  {
+                    "nomeReal":  "calça wide leg feminina jeans com brilhos cintura alta preta",
+                    "precoDe":  239.99,
+                    "precoPor":  239.99,
+                    "link":  "https://www.cea.com.br/calca-wide-leg-feminina-jeans-com-brilhos-cintura-alta-preta-1114492-jeans_bck/p",
+                    "nomeJson":  "Calça wide leg jeans com brilhos cintura alta",
+                    "cores":  [
+                                  {
+                                      "nome":  "34",
+                                      "img500":  "/produtos/1114492-0-500.jpg",
+                                      "img160":  "/produtos/1114492-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "s006":  {
+                 "nomeReal":  [
+                                  "camisa oversized feminina de algodão decote v manga longa off white",
+                                  "blusa feminina de renda decote v manga longa  com babado preta",
+                                  "vestido curto feminino decote canoa manga longa acetinado mindset preto",
+                                  "blusa feminina de renda decote v manga longa  com babado bege",
+                                  "vestido midi feminino de tule manga longa animal print marrom"
+                              ],
+                 "precoDe":  149.99,
+                 "precoPor":  149.99,
+                 "link":  [
+                              "https://www.cea.com.br/camisa-oversized-feminina-de-algodao-decote-v-manga-longa-off-white-1118412-off_white/p",
+                              "https://www.cea.com.br/blusa-feminina-de-renda-decote-v-manga-longa-com-babado-preta-1115676-preto/p",
+                              "https://www.cea.com.br/vestido-curto-feminino-decote-canoa-manga-longa-acetinado-mindset-preto-1119128-preto/p",
+                              "https://www.cea.com.br/blusa-feminina-de-renda-decote-v-manga-longa-com-babado-bege-1115676-cru_5/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-tule-manga-longa-animal-print-marrom-1115032-marrom_c9/p"
+                          ],
+                 "nomeJson":  "Vestido midi decote V manga longa",
+                 "cores":  [
+                               {
+                                   "nome":  "G",
+                                   "img500":  "/produtos/s006-0-500.jpg",
+                                   "img160":  "/produtos/s006-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s016":  {
+                 "nomeReal":  [
+                                  "vestido midi com linho decote quadrado amarelo",
+                                  "vestido midi com linho decote quadrado marrom",
+                                  "vestido midi com linho decote quadrado vinho",
+                                  "vestido midi com linho decote quadrado azul",
+                                  "vestido midi feminino de algodão decote v franzido off white"
+                              ],
+                 "precoDe":  149.99,
+                 "precoPor":  149.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-com-linho-decote-quadrado-amarelo-1075684-amarelo_md/p",
+                              "https://www.cea.com.br/vestido-midi-com-linho-decote-quadrado-marrom-1075684-marrom_med/p",
+                              "https://www.cea.com.br/vestido-midi-com-linho-decote-quadrado-vinho-1075684-vinho/p",
+                              "https://www.cea.com.br/vestido-midi-com-linho-decote-quadrado-azul-1075684-marinho_e3/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-algodao-decote-v-franzido-off-white-1113179-off_white/p"
+                          ],
+                 "nomeJson":  "Vestido midi algodão decote quadrado básico",
+                 "cores":  [
+                               {
+                                   "nome":  "P",
+                                   "img500":  "/produtos/s016-0-500.jpg",
+                                   "img160":  "/produtos/s016-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s055":  {
+                 "nomeReal":  [
+                                  "calça legging cintura alta com bolso esportiva preta",
+                                  "calça legging cintura alta com recorte canelado esportiva azul marinho",
+                                  "kit de 2 calcinhas plus size de poliamida caleçon cintura alta delrio colorido",
+                                  "kit de 2 calcinhas plus size de poliamida caleçon cintura alta delrio colorido",
+                                  "calça legging cintura alta azul"
+                              ],
+                 "precoDe":  119.99,
+                 "precoPor":  119.99,
+                 "link":  [
+                              "https://www.cea.com.br/calca-legging-cintura-alta-com-bolso-esportiva-preta-1067239-preto/p",
+                              "https://www.cea.com.br/calca-legging-cintura-alta-com-recorte-canelado-esportiva-azul-marinho-1046815-azul_marin/p",
+                              "https://www.cea.com.br/kit-de-2-calcinhas-plus-size-de-poliamida-calecon-cintura-alta-delrio-colorido-1053801-colorido/p",
+                              "https://www.cea.com.br/kit-de-2-calcinhas-plus-size-de-poliamida-calecon-cintura-alta-delrio-colorido-1053800-colorido/p",
+                              "https://www.cea.com.br/calca-legging-cintura-alta-azul-1070357-azul-escu/p"
+                          ],
+                 "nomeJson":  "Legging ACE poliamida cintura alta",
+                 "cores":  [
+                               {
+                                   "nome":  "M",
+                                   "img500":  "/produtos/s055-0-500.jpg",
+                                   "img160":  "/produtos/s055-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1094124":  {
+                    "nomeReal":  [
+                                     "calça jeans wide leg slim cintura alta azul",
+                                     "calça wide leg petit feminina jeans azul",
+                                     "calça wide leg feminina jeans azul",
+                                     "calça jeans feminina wide cintura super alta azul",
+                                     "calça wide leg slim feminina jeans preta"
+                                 ],
+                    "precoDe":  159.99,
+                    "precoPor":  159.99,
+                    "link":  [
+                                 "https://www.cea.com.br/calca-jeans-wide-leg-slim-cintura-alta-azul-1067527-jeans-esc/p",
+                                 "https://www.cea.com.br/calca-wide-leg-petit-feminina-jeans-azul-1099376-jeans-md/p",
+                                 "https://www.cea.com.br/calca-wide-leg-feminina-jeans-azul-1096289-jeans-md/p",
+                                 "https://www.cea.com.br/calca-jeans-feminina-wide-cintura-super-alta-azul-1109175-jeans_esc/p",
+                                 "https://www.cea.com.br/calca-wide-leg-slim-feminina-jeans-preta-1094727-jeans_bck/p"
+                             ],
+                    "nomeJson":  "Calça wide leg jeans cintura alta",
+                    "cores":  [
+                                  {
+                                      "nome":  "36",
+                                      "img500":  "/produtos/1094124-0-500.jpg",
+                                      "img160":  "/produtos/1094124-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  [
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A"
+                              ]
+                },
+    "s007":  {
+                 "nomeReal":  [
+                                  "vestido midi evasê feminino com viscose e recortes preto",
+                                  "vestido midi feminino com viscose e recortes preto",
+                                  "vestido midi feminino com linho e fenda floral azul",
+                                  "vestido midi chemise feminino de viscose com cinto verde",
+                                  "vestido midi evasê feminino com viscose e recortes vinho"
+                              ],
+                 "precoDe":  179.99,
+                 "precoPor":  179.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-preto-1109460-preto/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-viscose-e-recortes-preto-1109264-preto/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-linho-e-fenda-floral-azul--1118073-azul_jeans/p",
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-com-cinto-verde-1103681-v_milit/p",
+                              "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-vinho-1109460-vinho/p"
+                          ],
+                 "nomeJson":  "Vestido midi de viscose floral",
+                 "cores":  [
+                               {
+                                   "nome":  "PP",
+                                   "img500":  "/produtos/s007-0-500.jpg",
+                                   "img160":  "/produtos/s007-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1033472":  {
+                    "nomeReal":  "calça wide leg jeans feminina cintura alta azul",
+                    "precoDe":  159.99,
+                    "precoPor":  159.99,
+                    "link":  "https://www.cea.com.br/calca-wide-leg-jeans-feminina-cintura-alta-azul-1033472-jeans_cl/p",
+                    "nomeJson":  "Calça wide leg jeans cintura alta",
+                    "cores":  [
+                                  {
+                                      "nome":  "34",
+                                      "img500":  "/produtos/1033472-0-500.jpg",
+                                      "img160":  "/produtos/1033472-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "s019":  {
+                 "nomeReal":  [
+                                  "vestido midi sem alça feminino de tule franzido poá mindset off white",
+                                  "vestido midi alça fina feminino de tule franzido poá marrom",
+                                  "vestido midi feminino de tule franzido poá mindset preto"
+                              ],
+                 "precoDe":  199.99,
+                 "precoPor":  199.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-sem-alca-feminino-de-tule-franzido-poa-mindset-off-white-1120550-off_white/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-tule-franzido-poa-marrom-1102324-marrom_e2/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-de-tule-franzido-poa-mindset-preto-1099831-preto/p"
+                          ],
+                 "nomeJson":  "Vestido midi sem alça tule franzido poá — Mindse7",
+                 "cores":  [
+                               {
+                                   "nome":  "P",
+                                   "img500":  "/produtos/s019-0-500.jpg",
+                                   "img160":  "/produtos/s019-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s051":  {
+                 "nomeReal":  [
+                                  "sutiã triângulo feminino naked skin com bojo removível marrom",
+                                  "kit de 2 sutiãs meia taça com renda floral coloridos",
+                                  "Kit de 2 sutiãs triângulo bojo removível rendado colorido",
+                                  "sutiã base com bojo bege",
+                                  "sutiã triangulo com bojo macio bege"
+                              ],
+                 "precoDe":  69.99,
+                 "precoPor":  69.99,
+                 "link":  [
+                              "https://www.cea.com.br/sutia-triangulo-feminino-naked-skin-com-bojo-removivel-marrom-1071296-caramelo/p",
+                              "https://www.cea.com.br/kit-de-2-sutias-meia-taca-com-renda-floral-coloridos-1073619-sortido-5/p",
+                              "https://www.cea.com.br/kit-de-2-sutias-triangulo-bojo-removivel-rendado-colorido-1073617-sortido-5/p",
+                              "https://www.cea.com.br/sutia-base-com-bojo-bege-1064282-beige-7/p",
+                              "https://www.cea.com.br/sutia-triangulo-com-bojo-macio-bege-1057346-bege-l/p"
+                          ],
+                 "nomeJson":  "Sutiã renda sem bojo",
+                 "cores":  [
+                               {
+                                   "nome":  "44",
+                                   "img500":  "/produtos/s051-0-500.jpg",
+                                   "img160":  "/produtos/s051-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "8472740":  {
+                    "nomeReal":  "Camiseta Masculina Manga Curta Básica Gola Careca Branca",
+                    "precoDe":  39.99,
+                    "precoPor":  39.99,
+                    "link":  "https://www.cea.com.br/camiseta-masculina-manga-curta-basica-gola-careca-branca-8472740-branco/p",
+                    "nomeJson":  "Camiseta manga curta básica gola careca",
+                    "cores":  [
+                                  {
+                                      "nome":  "G",
+                                      "img500":  "/produtos/8472740-0-500.jpg",
+                                      "img160":  "/produtos/8472740-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "1095276":  {
+                    "nomeReal":  [
+                                     "calça jeans wide leg slim cintura alta azul",
+                                     "calça jeans feminina wide cintura super alta azul",
+                                     "calça wide leg slim feminina jeans preta",
+                                     "calça wide leg petit feminina jeans cintura alta azul",
+                                     "calça jeans wide leg slim cintura alta preta"
+                                 ],
+                    "precoDe":  159.99,
+                    "precoPor":  159.99,
+                    "link":  [
+                                 "https://www.cea.com.br/calca-jeans-wide-leg-slim-cintura-alta-azul-1067527-jeans-esc/p",
+                                 "https://www.cea.com.br/calca-jeans-feminina-wide-cintura-super-alta-azul-1109175-jeans_esc/p",
+                                 "https://www.cea.com.br/calca-wide-leg-slim-feminina-jeans-preta-1094727-jeans_bck/p",
+                                 "https://www.cea.com.br/calca-wide-leg-petit-feminina-jeans-cintura-alta-azul-1099381-jeans-md/p",
+                                 "https://www.cea.com.br/calca-jeans-wide-leg-slim-cintura-alta-preta-1071226-jeans-bck5/p"
+                             ],
+                    "nomeJson":  "Calça wide leg slim jeans cintura alta",
+                    "cores":  [
+                                  {
+                                      "nome":  "36",
+                                      "img500":  "/produtos/1095276-0-500.jpg",
+                                      "img160":  "/produtos/1095276-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  [
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A",
+                                  "C\u0026A"
+                              ]
+                },
+    "s020":  {
+                 "nomeReal":  [
+                                  "blusa feminina de algodão gola alta manga longa com recorte preta",
+                                  "blusa feminina de algodão gola alta canelada bege",
+                                  "blusa feminina de algodão gola alta canelada preta",
+                                  "blusa feminina de algodão gola alta manga curta preta",
+                                  "blusa feminina de algodão gola alta manga curta bege"
+                              ],
+                 "precoDe":  99.99,
+                 "precoPor":  59.99,
+                 "link":  [
+                              "https://www.cea.com.br/blusa-feminina-de-algodao-gola-alta-manga-longa-com-recorte-preta-1113616-preto/p",
+                              "https://www.cea.com.br/blusa-feminina-de-algodao-gola-alta-canelada-bege--1112296-bege_l/p",
+                              "https://www.cea.com.br/blusa-feminina-de-algodao-gola-alta-canelada-preta-1112296-preto/p",
+                              "https://www.cea.com.br/blusa-feminina-de-algodao-gola-alta-manga-curta-preta-1113295-preto/p",
+                              "https://www.cea.com.br/blusa-feminina-de-algodao-gola-alta-manga-curta-bege-1113295-bege_l/p"
+                          ],
+                 "nomeJson":  "Vestido algodão gola alta",
+                 "cores":  [
+                               {
+                                   "nome":  "P",
+                                   "img500":  "/produtos/s020-0-500.jpg",
+                                   "img160":  "/produtos/s020-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s040":  {
+                 "nomeReal":  [
+                                  "kit de 3 camisetas infantil de algodão manga curta toy story colorido",
+                                  "camiseta de algodão infantil hot wheels  preta",
+                                  "camiseta de algodão infantil homem aranha vermelha",
+                                  "camiseta de algodão infantil manga curta skate marrom",
+                                  "camiseta infantil de algodão floral com glitter rosa"
+                              ],
+                 "precoDe":  99.99,
+                 "precoPor":  99.99,
+                 "link":  [
+                              "https://www.cea.com.br/kit-de-3-camisetas-infantil-de-algodao-manga-curta-toy-story-colorido-1113028-multicor/p",
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-hot-wheels-preta-1096848-preto/p",
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-homem-aranha-vermelha-1086455-verm_escur/p",
+                              "https://www.cea.com.br/camiseta-de-algodao-infantil-manga-curta-skate-marrom-1097108-marrom_e2/p",
+                              "https://www.cea.com.br/camiseta-infantil-de-algodao-floral-com-glitter-rosa-1097561-rosa_cl/p"
+                          ],
+                 "nomeJson":  "Camiseta infantil algodão MC Snoopy",
+                 "cores":  [
+                               {
+                                   "nome":  "2",
+                                   "img500":  "/produtos/s040-0-500.jpg",
+                                   "img160":  "/produtos/s040-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "s021":  {
+                 "nomeReal":  [
+                                  "vestido midi alça fina feminino de sarja listrado bege",
+                                  "vestido midi alça fina feminino de sarja listrado marrom",
+                                  "vestido midi feminino ombro a ombro a franzido mindset preto",
+                                  "vestido midi evasê feminino com viscose e recortes preto",
+                                  "vestido infantil de algodão texturizado listrado rosa"
+                              ],
+                 "precoDe":  239.99,
+                 "precoPor":  239.99,
+                 "link":  [
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-sarja-listrado-bege-1118255-kaki/p",
+                              "https://www.cea.com.br/vestido-midi-alca-fina-feminino-de-sarja-listrado-marrom-1116662-marrom_med/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-ombro-a-ombro-a-franzido-mindset-preto-1118164-preto/p",
+                              "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-preto-1109460-preto/p",
+                              "https://www.cea.com.br/vestido-infantil-de-algodao-texturizado-listrado-rosa-1100930-rosa_vl/p"
+                          ],
+                 "nomeJson":  "Vestido midi de algodão",
+                 "cores":  [
+                               {
+                                   "nome":  "P",
+                                   "img500":  "/produtos/s021-0-500.jpg",
+                                   "img160":  "/produtos/s021-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1094926":  {
+                    "nomeReal":  "camisa masculina algodão manga curta branca",
+                    "precoDe":  159.99,
+                    "precoPor":  159.99,
+                    "link":  "https://www.cea.com.br/camisa-masculina-algodao-manga-curta-branca-1094926-branco_1/p",
+                    "nomeJson":  "Camisa algodão manga curta listrada sutil",
+                    "cores":  [
+                                  {
+                                      "nome":  "P",
+                                      "img500":  "/produtos/1094926-0-500.jpg",
+                                      "img160":  "/produtos/1094926-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                },
+    "s012":  {
+                 "nomeReal":  [
+                                  "saia midi evasê feminina jeans com recortes cintura alta azul",
+                                  "vestido midi evasê feminino com viscose e recortes preto",
+                                  "vestido midi feminino com viscose e recortes preto",
+                                  "vestido midi chemise feminino de viscose com cinto verde",
+                                  "vestido midi evasê feminino com viscose e recortes vinho"
+                              ],
+                 "precoDe":  179.99,
+                 "precoPor":  179.99,
+                 "link":  [
+                              "https://www.cea.com.br/saia-midi-evase-feminina-jeans-com-recortes-cintura-alta-azul-1118266-jeans_am/p",
+                              "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-preto-1109460-preto/p",
+                              "https://www.cea.com.br/vestido-midi-feminino-com-viscose-e-recortes-preto-1109264-preto/p",
+                              "https://www.cea.com.br/vestido-midi-chemise-feminino-de-viscose-com-cinto-verde-1103681-v_milit/p",
+                              "https://www.cea.com.br/vestido-midi-evase-feminino-com-viscose-e-recortes-vinho-1109460-vinho/p"
+                          ],
+                 "nomeJson":  "Vestido midi evasê viscose com recortes",
+                 "cores":  [
+                               {
+                                   "nome":  "36",
+                                   "img500":  "/produtos/s012-0-500.jpg",
+                                   "img160":  "/produtos/s012-0-160.jpg"
+                               }
+                           ],
+                 "marca":  [
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A",
+                               "C\u0026A"
+                           ]
+             },
+    "1083993":  {
+                    "nomeReal":  "vestido midi feminino de tricot canelado  cinza",
+                    "precoDe":  199.99,
+                    "precoPor":  89.99,
+                    "link":  "https://www.cea.com.br/vestido-midi-feminino-de-tricot-canelado-cinza-1083993-grafite/p",
+                    "nomeJson":  "Vestido midi de tricot canelado",
+                    "cores":  [
+                                  {
+                                      "nome":  "PP",
+                                      "img500":  "/produtos/1083993-0-500.jpg",
+                                      "img160":  "/produtos/1083993-0-160.jpg"
+                                  }
+                              ],
+                    "marca":  "C\u0026A"
+                }
+}
