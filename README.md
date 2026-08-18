@@ -145,5 +145,18 @@ Quando um âncora do `CLAUDE.md` não fechava com outro, a decisão está coment
 
 ## Identidade
 
-Azul institucional `#00287A` com o **&** em vermelho `#E30613` (a C&A Brasil manteve o wordmark
-azul-marinho). Tipografia Poppins (títulos) + Inter (dados). Tokens em `src/styles/tokens.css`.
+O logo é o **wordmark oficial de 2011** — moldura ondulada vermelha, miolo branco e "C&A" em azul.
+O arquivo de origem está em [`docs/marca/C-und-A-Logo-2011.svg`](docs/marca/C-und-A-Logo-2011.svg)
+e os traçados foram embutidos em `src/components/layout/LogoCea.tsx`, para o logo funcionar igual no
+dev, no build e no arquivo único publicado, sem nenhuma requisição. O mesmo desenho serve de favicon.
+
+Duas notas sobre cor, porque as fontes divergem:
+
+- No logo real o **"&" é azul**, não vermelho; o vermelho é o da moldura. A descrição
+  "azul institucional + & vermelho" do `CLAUDE.md` se referia à moldura.
+- O logo traz azul `#002e5c` e vermelho `#9d0822` (exportados como `CORES_LOGO` em `lib/cea.ts`).
+  A interface segue com os tokens do `CLAUDE.md` — `--cea-blue #00287A` e `--cea-red #E30613` —,
+  então o logo usa as cores dele e a interface as dela. Alinhar as duas paletas é uma decisão de
+  marca, não de código: basta trocar os dois valores em `src/styles/tokens.css`.
+
+Tipografia Poppins (títulos) + Inter (dados). Tokens em `src/styles/tokens.css`.

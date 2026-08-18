@@ -214,6 +214,15 @@ export async function buscarAoVivo(term: string): Promise<ColetaViva> {
   }
 }
 
+/**
+ * Cores do LOGO OFICIAL (C-und-A-Logo-2011.svg), lidas direto dos fills do
+ * arquivo: azul das letras e vermelho da moldura ondulada.
+ *
+ * Não são as mesmas dos tokens da interface (--cea-blue #00287A / --cea-red
+ * #E30613), que vêm do CLAUDE.md. O logo usa as suas, a interface usa as dela.
+ */
+export const CORES_LOGO = { azul: '#002e5c', vermelho: '#9d0822' } as const
+
 /** Cores da marca extraídas do logo oficial; fallback = tokens do CLAUDE.md. */
 export const CORES_FALLBACK = { blue: '#00287A', red: '#E30613' } as const
 

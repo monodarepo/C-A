@@ -43,6 +43,11 @@ const ROSA_PROIBIDO = /#EC008C|#ec008c|#FF69B4|#ff69b4|magenta/
  */
 const NUMERO_SUSPEITO = /(?<![\w.#-])(\d{1,3}(?:[.,]\d{3})+|\d{5,})(?![\w%px])/g
 
+/* Geometria de SVG (o atributo `d` de um <path>) é coordenada, não número de
+   negócio: o logo oficial da C&A sozinho traz 10 mil dígitos de traçado. A
+   isenção é específica para a definição do caminho, não para SVG inteiro. */
+const PATH_SVG = /\bd[:=]\s*['"]?\s*[MmLlHhVvCcSsQqTtAaZz]/
+
 /* Limite conhecido: a isenção é por LINHA. Uma linha que já traz um hex de cor
    ou uma medida em px isenta os números vizinhos dela. É heurística de
    varredura, não análise de AST — vale como rede, não como prova. */
@@ -83,7 +88,12 @@ for (const pasta of PASTAS) {
         achados.push({ arquivo: rel, linha: n, trecho: linha.trim(), regra: 'rosa proibido' })
       }
 
-      if (SO_COMPONENTES.test(rel) && !comentario && !CONTEXTO_INOCENTE.test(linha)) {
+      if (
+        SO_COMPONENTES.test(rel) &&
+        !comentario &&
+        !PATH_SVG.test(linha) &&
+        !CONTEXTO_INOCENTE.test(linha)
+      ) {
         const encontrados = linha.match(NUMERO_SUSPEITO)
         if (encontrados) {
           achados.push({
