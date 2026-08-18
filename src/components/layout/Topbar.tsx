@@ -93,7 +93,7 @@ export function Topbar({ onAbrirMenu }: { onAbrirMenu: () => void }) {
             ref={campoBusca}
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar referência, produto ou loja"
+            placeholder="Buscar referência ou produto"
             aria-label="Buscar"
             className="focus-ring w-full rounded-lg border border-line bg-slate-50/80 py-[7px] pl-8 pr-12 text-[13px] transition-colors placeholder:text-slate-400 hover:border-line-forte focus:bg-white"
           />
@@ -208,8 +208,8 @@ export function Topbar({ onAbrirMenu }: { onAbrirMenu: () => void }) {
                   Coleção ativa: <strong className="text-ink">{colecao}</strong>
                 </p>
                 <p>
-                  Conector VTEX: <strong className="text-ink">opcional</strong> — a demo funciona
-                  offline com o snapshot de {cea.meta.dataColeta}.
+                  Origem dos dados: <strong className="text-ink">snapshot de {cea.meta.dataColeta}</strong>{' '}
+                  · catálogo revalidado quando o conector responde.
                 </p>
                 <p>Fuso: America/São_Paulo · Moeda: BRL · Idioma: pt-BR</p>
               </div>

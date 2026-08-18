@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type TomChip = 'ok' | 'warn' | 'crit' | 'info' | 'neutro' | 'marca'
+export type TomChip = 'ok' | 'warn' | 'crit' | 'info' | 'neutro' | 'marca' | 'violeta'
 
 const TONS: Record<TomChip, string> = {
   ok: 'bg-[var(--ok-soft)] text-[#0A7355] border-[#A7E8D0]',
@@ -9,6 +9,7 @@ const TONS: Record<TomChip, string> = {
   info: 'bg-cea-soft text-cea-blue border-[#C7D4F0]',
   neutro: 'bg-slate-100 text-slate-600 border-slate-200',
   marca: 'bg-cea-blue text-white border-cea-blue',
+  violeta: 'bg-violet-50 text-violet-700 border-violet-200',
 }
 
 type Props = {

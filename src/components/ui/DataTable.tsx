@@ -79,7 +79,7 @@ export function DataTable<T>({
     <div className={`scroll-x ${className}`}>
       <table className="w-full border-collapse text-[13px]">
         <thead>
-          <tr className="border-b border-line bg-slate-50/80">
+          <tr className="border-b border-line bg-slate-50/50">
             {colunas.map((c) => {
               const ativo = ordem?.chave === c.chave
               const ordenavel = c.ordenavel ?? Boolean(c.valor)
@@ -88,17 +88,25 @@ export function DataTable<T>({
                   key={c.chave}
                   scope="col"
                   style={c.largura ? { width: c.largura } : undefined}
-                  className={`px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted ${ALINHA[c.alinhar ?? 'esq']}`}
+                  className={`px-3 py-2 text-[10.5px] font-semibold uppercase tracking-wider text-slate-400 ${ALINHA[c.alinhar ?? 'esq']}`}
                 >
                   {ordenavel ? (
                     <button
                       type="button"
                       onClick={() => alternar(c.chave)}
-                      className="focus-ring inline-flex items-center gap-1 rounded uppercase hover:text-cea-blue"
+                      className="focus-ring group inline-flex items-center gap-1 rounded uppercase hover:text-cea-blue"
                       title="Ordenar"
                     >
                       {c.titulo}
-                      <span aria-hidden className={ativo ? 'text-cea-blue' : 'text-slate-300'}>
+                      {/* seta visível só na coluna ordenada; nas demais aparece no hover */}
+                      <span
+                        aria-hidden
+                        className={
+                          ativo
+                            ? 'text-cea-blue'
+                            : 'text-slate-300 opacity-0 transition-opacity group-hover:opacity-100'
+                        }
+                      >
                         {ativo && ordem?.dir === 'asc' ? '↑' : '↓'}
                       </span>
                     </button>

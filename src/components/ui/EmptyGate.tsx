@@ -30,7 +30,7 @@ export function EmptyGate({
 }: Props) {
   return (
     <div
-      className={`card-base flex flex-col items-center justify-center gap-3 px-6 py-14 text-center ${className}`}
+      className={`card-base flex min-h-[52vh] flex-col items-center justify-center gap-3 px-6 py-14 text-center ${className}`}
     >
       <span
         aria-hidden
@@ -45,7 +45,7 @@ export function EmptyGate({
           {cta.rotulo}
         </Button>
       )}
-      {nota && <p className="text-[11px] uppercase tracking-wide text-slate-400">{nota}</p>}
+      {nota && <p className="text-xs text-slate-500">{nota}</p>}
       {assinatura && <p className="mt-1 text-xs text-slate-400">{TOM_DE_VOZ.vazio}</p>}
     </div>
   )

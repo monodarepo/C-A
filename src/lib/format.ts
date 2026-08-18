@@ -80,6 +80,14 @@ export function formatPecas(v: number): string {
   return `${formatNum(v)} pç`
 }
 
+/**
+ * "3 lojas" / "1 loja" — concordância de verdade no lugar do "(s)" de
+ * programador. Zero segue o plural do pt-BR ("0 registros").
+ */
+export function plural(n: number, singular: string, formaPlural?: string): string {
+  return `${formatNum(n)} ${n === 1 ? singular : (formaPlural ?? `${singular}s`)}`
+}
+
 /** 14:32 — timestamp curto para "último push" e históricos. */
 export function formatHora(d: Date): string {
   return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })

@@ -1,4 +1,4 @@
-import { Area, AreaChart, ResponsiveContainer } from 'recharts'
+import { Area, AreaChart, ResponsiveContainer, YAxis } from 'recharts'
 
 type Props = {
   dados: { i: number; v: number }[]
@@ -21,6 +21,9 @@ export function Sparkline({ dados, cor = 'var(--cea-blue)', altura = 34, classNa
               <stop offset="100%" stopColor={cor} stopOpacity={0} />
             </linearGradient>
           </defs>
+          {/* sem domínio explícito o Recharts inclui o zero e variações de ±1%
+              viram linha chapada — o domínio colado na série devolve a forma */}
+          <YAxis hide domain={['dataMin', 'dataMax']} />
           <Area
             type="monotone"
             dataKey="v"

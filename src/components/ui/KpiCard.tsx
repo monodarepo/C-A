@@ -12,7 +12,14 @@ const COR_SUB: Record<TomSub, string> = {
 }
 
 /** 'alerta' não leva seta: é um aviso de patamar, não uma direção de variação. */
-const SETA: Record<TomSub, string> = { alta: '▲', baixa: '▼', neutra: '', alerta: '' }
+const SETA_DO_TOM: Record<TomSub, string> = { alta: '▲', baixa: '▼', neutra: '', alerta: '' }
+
+/**
+ * A seta indica DIREÇÃO de variação; a cor indica LEITURA (bom/ruim). Quando o
+ * subtexto é um status sem variação ("nada a escoar") use 'nenhuma'; quando a
+ * variação é negativa mas a leitura é boa (verde), use 'desce' explícito.
+ */
+export type SetaSub = 'auto' | 'sobe' | 'desce' | 'nenhuma'
 
 type Props = {
   label: string
@@ -20,6 +27,10 @@ type Props = {
   /** subtexto colorido com seta (ex.: "+2,4 p.p. vs LY") */
   sub?: ReactNode
   tomSub?: TomSub
+  /** direção da seta do sub — default 'auto' (derivada do tom) */
+  seta?: SetaSub
+  /** valor em 23px para fileiras densas (6+ cards) sem quebrar a unidade */
+  compacto?: boolean
   /** explicação do indicador — abre no "?" ao lado do label */
   dica?: ReactNode
   badge?: { texto: string; tom?: TomChip }
@@ -35,6 +46,8 @@ export function KpiCard({
   valor,
   sub,
   tomSub = 'neutra',
+  seta = 'auto',
+  compacto = false,
   dica,
   badge,
   extra,
@@ -71,7 +84,9 @@ export function KpiCard({
 
       {/* figuras proporcionais de propósito: tabular em display size deixa o
           número frouxo — tabular fica só nas colunas de tabela */}
-      <p className="mt-2 font-display text-[27px] font-semibold leading-none tracking-tight text-cea-deep">
+      <p
+        className={`mt-2 whitespace-nowrap font-display ${compacto ? 'text-[23px]' : 'text-[27px]'} font-semibold leading-none tracking-tight text-cea-deep`}
+      >
         {valor}
       </p>
 
@@ -79,7 +94,11 @@ export function KpiCard({
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {sub && (
             <span className={`text-xs font-medium ${COR_SUB[tomSub]}`}>
-              {SETA[tomSub] && <span aria-hidden>{SETA[tomSub]} </span>}
+              {(() => {
+                const glifo =
+                  seta === 'auto' ? SETA_DO_TOM[tomSub] : seta === 'sobe' ? '▲' : seta === 'desce' ? '▼' : ''
+                return glifo ? <span aria-hidden>{glifo} </span> : null
+              })()}
               {sub}
             </span>
           )}
