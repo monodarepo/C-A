@@ -94,32 +94,37 @@ perfeitamente offline do conector**, caindo no snapshot local.
 
 ## Fotos dos produtos
 
-As imagens são as **fotos públicas do catálogo do cea.com.br**, baixadas uma única vez e
-commitadas no repo — a demo serve tudo local e não depende de rede na hora de apresentar.
+As imagens são **fotos públicas do catálogo do cea.com.br**, baixadas uma vez e commitadas em
+`public/produtos/` — a demo serve tudo local e não faz nenhuma requisição de rede para exibir
+produto. São 54 produtos com foto (500px para card e 160px para thumb) e o manifesto em
+`src/data/fotos.json`.
+
+O `ProductImage` resolve em dois níveis: **foto local** → **silhueta SVG**. A silhueta é o desenho
+da peça por categoria (vestido, camiseta, camisa, calça, bermuda, legging, sutiã, top, camiseta
+infantil) preenchido com a cor real da variante, e cobre tanto os produtos sem foto quanto o caso
+de a imagem falhar ao carregar. As fotos são JPG de estúdio com fundo branco, então entram com
+`object-contain` sobre moldura branca e `aspect-ratio` fixo: a peça aparece inteira, sem corte nem
+layout shift.
+
+**Foto de referência.** Em 39 das 54 entradas o manifesto traz `nomeReal`, `link` e `marca` como
+lista, porque a coleta caiu na busca por termo e o catálogo devolveu vários candidatos. Comparando
+imagem por imagem, a foto baixada é sempre a do **primeiro** candidato — que costuma ser outra peça
+da mesma família, não o SKU do snapshot (o vestido de linho natural veio com a foto da versão
+floral azul; a camiseta UV "coqueiro", com a do Homem-Aranha). Nesses casos a tela marca a imagem
+como *foto de referência* e o `title` diz o que ela mostra de fato, em vez de deixar o card afirmar
+uma cor que a foto contradiz. Onde a coleta achou um resultado só, o nome do catálogo aparece na
+ficha do PLM.
+
+**Preço nunca vem daqui.** O `fotos.json` traz preço coletado, e ele diverge do snapshot em vários
+itens (a camiseta 1049412 aparece como R$ 49,99 contra os R$ 29,99 reais do catálogo). A fonte da
+verdade continua sendo o `cea_data.json`; do manifesto a tela usa só imagem, nome real e marca.
+
+Para recoletar (precisa de acesso ao cea.com.br):
 
 ```bash
-npm run fotos            # baixa o que falta e atualiza src/data/fotos.json
-npm run fotos -- --forcar # rebaixa tudo, ignorando o que já existe
+npm run fotos            # baixa o que falta e atualiza o manifesto
+npm run fotos -- --forcar # rebaixa tudo
 ```
-
-Para cada produto do snapshot que tem código, o script tenta três caminhos e para no primeiro
-que trouxer imagem: busca por RefId na API de catálogo, busca por termo (pegando o resultado mais
-parecido com o nome) e, por último, a PDP do produto via `og:image`. Baixa duas versões de cada
-cor — 500px para card e 160px para thumb — em `public/produtos/{cod}-{cor}-{lado}.jpg`, e escreve
-o manifesto em `src/data/fotos.json`. Roda com 3 requisições em paralelo, 400 ms entre chamadas e
-2 retentativas com backoff; item que falha entra na contagem de "sem foto" e **nunca aborta o
-script**. Preço coletado vai só para o manifesto: divergência aparece no log, mas a fonte da
-verdade continua sendo o `cea_data.json`.
-
-Na tela, o `ProductImage` resolve em três níveis: **foto local** → **conector VTEX em runtime**
-(uma tentativa por sessão, 2 s de timeout) → **silhueta SVG**. A silhueta é o desenho da peça
-por categoria (vestido, camiseta, camisa, calça, bermuda, legging, sutiã, top, camiseta infantil)
-preenchido com a cor real da variante — é o que aparece se as duas primeiras falharem, e foi
-desenhada para ser apresentável, não para ser um retângulo cinza. `<img>` que quebra cai para a
-silhueta automaticamente.
-
-> Se `public/produtos/` estiver vazio, é porque a coleta ainda não rodou num ambiente com acesso
-> ao cea.com.br. O app funciona igual — só aparece com silhuetas em vez de fotografia.
 
 ## Como os números se sustentam
 

@@ -6,6 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { ProductImage } from '@/components/ui/ProductImage'
+import { fotoDoProduto, marcaDaFoto, nomeExibivel } from '@/lib/fotos'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useToast } from '@/components/ui/Toast'
 import {
@@ -239,6 +240,11 @@ export default function PlmPage() {
 function FichaProduto({ ficha }: { ficha: FichaPLM }) {
   const fase = FASES_PLM[ficha.fase - 1]
   const aceleracao = ficha.velocidadeDepois - ficha.velocidadeAntes
+  /* nome do catálogo só quando a coleta achou um resultado só: com lista
+     ambígua não dá para afirmar qual dos candidatos é esta peça */
+  const foto = fotoDoProduto(ficha.cod, ficha.nome)
+  const nomeCatalogo = nomeExibivel(foto)
+  const marca = marcaDaFoto(foto)
 
   return (
     <div className="space-y-4">
@@ -265,6 +271,12 @@ function FichaProduto({ ficha }: { ficha: FichaPLM }) {
           <p className="text-[12.5px] text-muted">
             {ficha.categoria} · {ficha.cor} · {ficha.idadeSemanas} semanas em loja
           </p>
+          {nomeCatalogo && (
+            <p className="text-[11.5px] leading-snug text-slate-400">
+              No catálogo: <span className="text-slate-500">{nomeCatalogo}</span>
+              {marca && ` · ${marca}`}
+            </p>
+          )}
           <p className="num text-[13px]">
             {ficha.precoDe && (
               <span className="mr-1.5 text-muted line-through">{formatBRL(ficha.precoDe)}</span>
@@ -337,7 +349,7 @@ function StepperFases({ fase }: { fase: number }) {
         const passada = f.n < fase
         const atual = f.n === fase
         return (
-          <li key={f.n} className="min-w-[104px] flex-1">
+          <li key={f.n} className="min-w-fit flex-1">
             <div
               title={f.descricao}
               aria-current={atual ? 'step' : undefined}

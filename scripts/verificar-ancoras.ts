@@ -5,6 +5,7 @@
  * (clusters, regiões) fecham exatamente.
  */
 import { cea, produtoPorCod, produtos } from '../src/lib/cea'
+import { PRODUTOS_COM_FOTO, TOTAL_COM_FOTO, fotoAproximada, fotoDoProduto } from '../src/lib/fotos'
 import { formatDelta } from '../src/lib/format'
 import {
   AGREGADOS_FROTA,
@@ -1210,6 +1211,28 @@ if (!avisoComEstouro) falhas++
 console.log(
   `${avisoComEstouro ? '✓' : '✗'} o aviso do OTB carrega o estouro real do plano (+3,6%)`,
 )
+
+console.log('\n— FOTOS DOS PRODUTOS —')
+checar('entradas no manifesto', TOTAL_COM_FOTO, 54, 0)
+checar('produtos do snapshot com foto', PRODUTOS_COM_FOTO, produtos.length - 3, 0)
+const semFoto = produtos.filter((p) => !fotoDoProduto(p.cod, p.nome))
+console.log(
+  `${semFoto.length === 3 ? '✓' : '✗'} ${semFoto.length} produto(s) sem foto usam silhueta: ${semFoto.map((p) => p.nome).join(' · ')}`,
+)
+if (semFoto.length !== 3) falhas++
+const linhaSemFoto = LINHAS_PLANO.filter((l) => !fotoDoProduto(l.ref, l.produto))
+falhas += linhaSemFoto.length
+console.log(
+  `${linhaSemFoto.length === 0 ? '✓' : '✗'} as ${LINHAS_PLANO.length} linhas do plano têm foto`,
+)
+const mapaSemFoto = SKUS_MAPA.filter((s) => !fotoDoProduto(s.cod, s.produto)).length
+console.log(
+  `  → parede: ${SKUS_MAPA.length - mapaSemFoto}/${SKUS_MAPA.length} cards com foto · ` +
+    `${SKUS_MAPA.filter((s) => fotoAproximada(fotoDoProduto(s.cod, s.produto))).length} marcados como foto de referência`,
+)
+const fichaSemFoto = FICHAS_PLM.filter((f) => !fotoDoProduto(f.cod, f.nome))
+falhas += fichaSemFoto.length
+console.log(`${fichaSemFoto.length === 0 ? '✓' : '✗'} as ${FICHAS_PLM.length} fichas do PLM têm foto`)
 
 console.log('\n— LOJA PADRÃO DA DISTRIBUIÇÃO —')
 const eldorado = lojaPorNome(LOJA_PADRAO_DISTRIBUICAO)
