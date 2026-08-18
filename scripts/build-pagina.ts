@@ -13,7 +13,7 @@
  * Uso: npm run build:pagina
  */
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const RAIZ = process.cwd()
@@ -65,7 +65,26 @@ const fontes = ['Poppins', 'Inter']
   .flatMap((familia) => PESOS.map((peso) => faceEmbutida(familia, peso)))
   .join('\n')
 const estilos = css.map((f) => readFileSync(join(DIST, 'assets', f), 'utf8')).join('\n')
-const script = readFileSync(join(DIST, 'assets', js[0]), 'utf8')
+let script = readFileSync(join(DIST, 'assets', js[0]), 'utf8')
+
+/**
+ * As fotos dos produtos são servidas de /produtos/*.jpg, caminho que não existe
+ * num arquivo solto — sem isto todas cairiam para a silhueta no onError. Cada
+ * referência vira data URI, e a página continua sem nenhuma requisição externa.
+ */
+const PASTA_FOTOS = join(RAIZ, 'public', 'produtos')
+let fotosEmbutidas = 0
+let bytesFotos = 0
+if (existsSync(PASTA_FOTOS)) {
+  for (const arquivo of readdirSync(PASTA_FOTOS).filter((f) => f.endsWith('.jpg'))) {
+    const referencia = `/produtos/${arquivo}`
+    if (!script.includes(referencia)) continue
+    const bytes = readFileSync(join(PASTA_FOTOS, arquivo))
+    script = script.split(referencia).join(`data:image/jpeg;base64,${bytes.toString('base64')}`)
+    fotosEmbutidas++
+    bytesFotos += bytes.length
+  }
+}
 
 /* O arquivo é o CONTEÚDO da página: quem publica embrulha em html/head/body.
    O <meta charset> vai junto mesmo assim: sem ele, um servidor que não declare
@@ -90,5 +109,6 @@ writeFileSync(destino, pagina)
 const mb = (Buffer.byteLength(pagina) / 1024 / 1024).toFixed(2)
 console.log(`\n✓ ${destino}`)
 console.log(
-  `  ${mb} MB · ${css.length} folha(s) de estilo, ${fontes.split('@font-face').length - 1} fontes e 1 bundle embutidos · zero requisição externa\n`,
+  `  ${mb} MB · ${css.length} folha(s) de estilo, ${fontes.split('@font-face').length - 1} fontes, ` +
+    `${fotosEmbutidas} fotos (${(bytesFotos / 1024 / 1024).toFixed(2)} MB) e 1 bundle embutidos · zero requisição externa\n`,
 )
