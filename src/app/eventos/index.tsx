@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Button } from '@/components/ui/Button'
@@ -134,7 +135,7 @@ export default function EventosPage() {
         titulo="Eventos & Ciclos"
         subtitulo={`${COLECAO.rotulo} · calendário comercial, cápsulas licenciadas e ciclos de tendência`}
         acoes={
-          <Button variante="primario" icone="+" onClick={() => setModalNovo(true)}>
+          <Button variante="primario" icone={<Icone nome="mais" tamanho={15} />} onClick={() => setModalNovo(true)}>
             Novo evento
           </Button>
         }

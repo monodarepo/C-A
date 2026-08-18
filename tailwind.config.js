@@ -17,6 +17,7 @@ export default {
         warn: 'rgb(var(--warn-rgb) / <alpha-value>)',
         crit: 'rgb(var(--crit-rgb) / <alpha-value>)',
         line: 'var(--border)',
+        'line-forte': 'var(--border-forte)',
         ink: 'var(--ink)',
         muted: 'var(--ink-muted)',
       },
@@ -29,7 +30,7 @@ export default {
       },
       boxShadow: {
         card: 'var(--shadow)',
-        pop: '0 8px 24px rgba(16,24,40,.12)',
+        pop: 'var(--shadow-pop)',
       },
     },
   },

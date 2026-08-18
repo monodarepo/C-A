@@ -545,7 +545,7 @@ export default function HistoricoPage() {
               <div className="scroll-x">
                 <table className="w-full border-collapse text-[13px]">
                   <thead>
-                    <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                    <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                       <th className="px-3 py-2 text-left">Loja</th>
                       <th className="px-3 py-2 text-center">Cluster</th>
                       <th className="px-3 py-2 text-right">Faturamento</th>
@@ -587,7 +587,7 @@ export default function HistoricoPage() {
               <div className="scroll-x">
                 <table className="w-full border-collapse text-[13px]">
                   <thead>
-                    <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                    <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                       <th className="px-3 py-2 text-left">Região</th>
                       <th className="px-3 py-2 text-right">Lojas</th>
                       <th className="px-3 py-2 text-right">Estoque</th>
@@ -650,7 +650,7 @@ export default function HistoricoPage() {
           <div className="scroll-x">
             <table className="w-full border-collapse text-[13px]">
               <thead>
-                <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                   <th className="px-3 py-2 text-left">Ref</th>
                   <th className="px-3 py-2 text-left">Produto</th>
                   <th className="px-3 py-2 text-left">Departamento</th>

@@ -53,14 +53,14 @@ export function Modal({
         type="button"
         aria-label="Fechar"
         onClick={onFechar}
-        className="fixed inset-0 cursor-default bg-slate-900/40 backdrop-blur-[1px]"
+        className="fixed inset-0 cursor-default bg-slate-900/45 backdrop-blur-[2px]"
       />
       <div
         ref={caixa}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        className={`relative z-10 w-full ${LARGURAS[largura]} rounded-card border border-line bg-card shadow-pop outline-none`}
+        className={`relative z-10 w-full ${LARGURAS[largura]} rounded-2xl border border-line bg-card shadow-pop outline-none`}
       >
         <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
           <div className="min-w-0">

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button } from './Button'
+import { Icone } from './Icone'
 import { TOM_DE_VOZ } from '@/lib/cea'
 
 type Props = {
@@ -19,7 +20,7 @@ type Props = {
  * Microcopy no tom C&A — nunca lorem ipsum.
  */
 export function EmptyGate({
-  icone = '📋',
+  icone = <Icone nome="caixaVazia" tamanho={22} />,
   titulo,
   texto,
   nota,
@@ -31,7 +32,10 @@ export function EmptyGate({
     <div
       className={`card-base flex flex-col items-center justify-center gap-3 px-6 py-14 text-center ${className}`}
     >
-      <span aria-hidden className="grid h-12 w-12 place-items-center rounded-full bg-cea-soft text-xl">
+      <span
+        aria-hidden
+        className="grid h-14 w-14 place-items-center rounded-2xl bg-cea-soft text-xl text-cea-blue"
+      >
         {icone}
       </span>
       <h3 className="font-display text-base font-semibold text-cea-deep">{titulo}</h3>

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { EmptyGate } from '@/components/ui/EmptyGate'
@@ -38,13 +39,13 @@ export default function LinePage() {
           subtitulo={`${COLECAO.rotulo} · pedido planejado × retorno negociado com os fornecedores`}
         />
         <EmptyGate
-          icone="📦"
+          icone={<Icone nome="pacote" tamanho={22} />}
           titulo="Carregar Line devolvido"
           texto="O line é o que os fornecedores devolvem depois da negociação: preço fechado e quantidade confirmada por referência. Carregue para comparar com o plano e decidir item a item."
           nota={`Demo · devolução simulada de ${LINHAS_LINE.length} itens`}
           cta={{
             rotulo: 'Carregar Line devolvido',
-            icone: '↧',
+            icone: <Icone nome="baixar" tamanho={15} />,
             onClick: () => {
               carregarLine()
               push(
@@ -121,7 +122,7 @@ export default function LinePage() {
         <div className="scroll-x">
           <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+              <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                 <th className="px-3 py-2 text-left">Ref</th>
                 <th className="px-3 py-2 text-left">Produto</th>
                 <th className="px-3 py-2 text-left">Fornecedor</th>

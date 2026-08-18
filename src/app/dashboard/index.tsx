@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { StatusChip } from '@/components/ui/StatusChip'
@@ -162,7 +163,7 @@ export default function DashboardPage() {
         titulo="Dashboard Executivo"
         subtitulo={`${COLECAO.nome} · semana ${COLECAO.semana} · ${formatNum(REDE.totalLojas)} lojas · ${formatNum(COLECAO.skusAtivos)} SKUs ativos`}
         acoes={
-          <Button variante="primario" icone="✨" onClick={() => setResumoAberto(true)}>
+          <Button variante="primario" icone={<Icone nome="ia" tamanho={15} />} onClick={() => setResumoAberto(true)}>
             Pedir Resumo da IA
           </Button>
         }

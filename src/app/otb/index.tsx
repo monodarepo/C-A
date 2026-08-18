@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
@@ -230,10 +231,10 @@ export default function OtbPage() {
         subtitulo={`${COLECAO.rotulo} · verba aprovada por categoria · valores em R$ milhões`}
         acoes={
           <>
-            <Button onClick={sincronizar} disabled={sincronizando} icone="⟳">
+            <Button onClick={sincronizar} disabled={sincronizando} icone={<Icone nome="recalcular" tamanho={15} />}>
               {sincronizando ? 'Sincronizando…' : 'Sincronizar'}
             </Button>
-            <Button variante="primario" onClick={exportarCSV} icone="⤓">
+            <Button variante="primario" onClick={exportarCSV} icone={<Icone nome="baixar" tamanho={15} />}>
               Exportar CSV
             </Button>
           </>

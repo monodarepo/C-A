@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
@@ -22,11 +23,25 @@ import {
 } from '@/data/derived'
 import { formatBRLCompact, formatNum, formatPct } from '@/lib/format'
 
-const ICONE_BADGE: Record<BadgeMapa, { icone: string; titulo: string }> = {
-  destaque: { icone: '⭐', titulo: 'Destaque da parede' },
-  novo: { icone: '🔴', titulo: 'Novo sem histórico' },
-  repeat: { icone: '🔁', titulo: 'Repeat / programa' },
-  evento: { icone: '❤', titulo: 'Vinculado a evento' },
+/* badges do card: ícone de traço + cor semântica própria (o significado está
+   no title/aria-label, nunca só na cor) */
+const ICONE_BADGE: Record<BadgeMapa, { icone: JSX.Element; titulo: string }> = {
+  destaque: {
+    icone: <Icone nome="estrela" tamanho={11} className="text-warn" />,
+    titulo: 'Destaque da parede',
+  },
+  novo: {
+    icone: <Icone nome="ia" tamanho={11} className="text-cea-blue" />,
+    titulo: 'Novo sem histórico',
+  },
+  repeat: {
+    icone: <Icone nome="recalcular" tamanho={11} className="text-slate-500" />,
+    titulo: 'Repeat / programa',
+  },
+  evento: {
+    icone: <Icone nome="eventos" tamanho={11} className="text-cea-red" />,
+    titulo: 'Vinculado a evento',
+  },
 }
 
 const DESCRICAO_ZONA: Record<Zona, string> = {
@@ -84,7 +99,7 @@ export default function MapaPage() {
         acoes={
           <>
             <Button
-              icone="⎙"
+              icone={<Icone nome="baixar" tamanho={15} />}
               onClick={() =>
                 push(
                   'Export simulado',
@@ -96,7 +111,7 @@ export default function MapaPage() {
               Exportar PPTX
             </Button>
             <Button
-              icone="⎙"
+              icone={<Icone nome="baixar" tamanho={15} />}
               onClick={() =>
                 push('Export simulado', 'info', 'PDF de uma página com o board completo.')
               }

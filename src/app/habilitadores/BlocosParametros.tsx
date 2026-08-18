@@ -61,7 +61,7 @@ export function BlocoPiramide() {
       <div className="scroll-x">
         <table className="w-full border-collapse text-[13px]">
           <thead>
-            <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+            <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
               <th className="px-3 py-2 text-left">Faixa</th>
               <th className="px-3 py-2 text-left">Intervalo real</th>
               <th className="px-3 py-2 text-right">Preço ref.</th>
@@ -211,7 +211,7 @@ export function BlocoGabarito() {
       <div className="scroll-x">
         <table className="w-full border-collapse text-[13px]">
           <thead>
-            <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+            <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
               <th className="px-3 py-2 text-left">Faixa</th>
               {PORTES_GABARITO.map((p) => (
                 <th key={p} className="px-3 py-2 text-right">

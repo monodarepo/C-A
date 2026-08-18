@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { AlertTriangle, Check, Info, OctagonAlert } from 'lucide-react'
 
 /**
  * Toasts — infraestrutura da regra de ouro 8 ("nenhum clique morto").
@@ -13,14 +14,14 @@ type Ctx = { push: (texto: string, tom?: TomToast, detalhe?: string) => void }
 
 const ToastCtx = createContext<Ctx | null>(null)
 
-const TONS: Record<TomToast, string> = {
-  ok: 'border-l-ok',
-  info: 'border-l-cea-blue',
-  warn: 'border-l-warn',
-  crit: 'border-l-crit',
+/* chip do ícone: círculo suave na cor semântica — o ícone carrega o estado,
+   nunca só a cor (acessibilidade) */
+const CHIP: Record<TomToast, { caixa: string; Icone: typeof Check }> = {
+  ok: { caixa: 'bg-[var(--ok-soft)] text-[#0A7355]', Icone: Check },
+  info: { caixa: 'bg-cea-soft text-cea-blue', Icone: Info },
+  warn: { caixa: 'bg-[var(--warn-soft)] text-[#A15C00]', Icone: AlertTriangle },
+  crit: { caixa: 'bg-[var(--crit-soft)] text-[#A8060F]', Icone: OctagonAlert },
 }
-
-const ICONES: Record<TomToast, string> = { ok: '✓', info: 'ℹ', warn: '⚠', crit: '⛔' }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [itens, setItens] = useState<Toast[]>([])
@@ -40,20 +41,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         aria-live="polite"
         className="pointer-events-none fixed bottom-5 right-5 z-50 flex w-[min(360px,90vw)] flex-col gap-2"
       >
-        {itens.map((t) => (
-          <div
-            key={t.id}
-            className={`pointer-events-auto flex items-start gap-2.5 rounded-card border border-line border-l-4 bg-card px-3.5 py-3 shadow-pop ${TONS[t.tom]}`}
-          >
-            <span aria-hidden className="text-sm font-bold text-cea-blue">
-              {ICONES[t.tom]}
-            </span>
-            <div className="min-w-0 text-[13px]">
-              <p className="font-semibold text-ink">{t.texto}</p>
-              {t.detalhe && <p className="mt-0.5 leading-snug text-muted">{t.detalhe}</p>}
+        {itens.map((t) => {
+          const chip = CHIP[t.tom]
+          return (
+            <div
+              key={t.id}
+              className="toast-entrando pointer-events-auto flex items-start gap-2.5 rounded-xl border border-line bg-card px-3.5 py-3 shadow-pop"
+            >
+              <span
+                aria-hidden
+                className={`mt-px grid h-6 w-6 shrink-0 place-items-center rounded-full ${chip.caixa}`}
+              >
+                <chip.Icone size={13} strokeWidth={2.25} />
+              </span>
+              <div className="min-w-0 text-[13px]">
+                <p className="font-semibold text-ink">{t.texto}</p>
+                {t.detalhe && <p className="mt-0.5 leading-snug text-muted">{t.detalhe}</p>}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </ToastCtx.Provider>
   )

@@ -6,6 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Sparkline } from '@/components/ui/Sparkline'
+import { Icone } from '@/components/ui/Icone'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import {
@@ -164,7 +165,7 @@ export default function VivoPage() {
       {/* ----------------------------------------------- cards de ação -- */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <CardAcao
-          icone="⚠"
+          icone={<Icone nome="alerta" tamanho={17} />}
           tom="crit"
           titulo="Rupturas agora"
           valor={formatNum(VIVO.rupturas)}
@@ -175,7 +176,7 @@ export default function VivoPage() {
           }
         />
         <CardAcao
-          icone="▲"
+          icone={<Icone nome="subindo" tamanho={17} />}
           tom="ok"
           titulo="Best movers"
           valor={formatNum(VIVO.bestMovers)}
@@ -184,7 +185,7 @@ export default function VivoPage() {
           onClick={() => navigate('/historico')}
         />
         <CardAcao
-          icone="⎙"
+          icone={<Icone nome="emissao" tamanho={17} />}
           tom="info"
           titulo="Ordens de compra"
           valor={formatNum(VIVO.ordensCompra)}
@@ -193,7 +194,7 @@ export default function VivoPage() {
           onClick={() => navigate('/emissao')}
         />
         <CardAcao
-          icone="▼"
+          icone={<Icone nome="descendo" tamanho={17} />}
           tom="warn"
           titulo="Markdowns ativos"
           valor={formatNum(VIVO.markdownsAtivos)}
@@ -325,7 +326,7 @@ function CardAcao({
   cta,
   onClick,
 }: {
-  icone: string
+  icone: React.ReactNode
   tom: keyof typeof TOM_CARD
   titulo: string
   valor: string
@@ -339,12 +340,12 @@ function CardAcao({
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="kpi-label">{titulo}</p>
-          <p className="num mt-1 font-display text-[26px] font-semibold leading-none text-cea-deep">
+          <p className="mt-1 font-display text-[26px] font-semibold leading-none tracking-tight text-cea-deep">
             {valor}
           </p>
           <p className="mt-1 text-[11.5px] text-muted">{detalhe}</p>
         </div>
-        <span aria-hidden className={`text-[17px] ${t.icone}`}>
+        <span aria-hidden className={t.icone}>
           {icone}
         </span>
       </div>

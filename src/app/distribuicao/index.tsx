@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
@@ -128,11 +129,11 @@ export default function DistribuicaoPage() {
           subtitulo={`${COLECAO.rotulo} · snapshot da alocação: packs, coerência de clima e lacunas`}
         />
         <EmptyGate
-          icone="⇉"
+          icone={<Icone nome="distribuicao" tamanho={22} />}
           titulo="Carregue o Line antes de ver a distribuição"
           texto="A alocação é feita sobre a quantidade que entrou em pedido. Sem line devolvido não existe carga para distribuir."
           nota="A cadeia é Line → Grade → Emissão → Distribuição"
-          cta={{ rotulo: 'Ir para o Line', icone: '→', onClick: () => navigate('/line') }}
+          cta={{ rotulo: 'Ir para o Line', icone: <Icone nome="seta" tamanho={15} />, onClick: () => navigate('/line') }}
         />
       </div>
     )
@@ -239,7 +240,7 @@ export default function DistribuicaoPage() {
               <div className="scroll-x">
                 <table className="w-full border-collapse text-[13px]">
                   <thead>
-                    <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                    <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                       <th className="px-3 py-2 text-left">Ref</th>
                       <th className="px-3 py-2 text-left">Produto</th>
                       <th className="px-3 py-2 text-left">Sessão</th>
@@ -313,7 +314,7 @@ export default function DistribuicaoPage() {
             <div className="scroll-x">
               <table className="w-full border-collapse text-[13px]">
                 <thead>
-                  <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                  <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                     <th className="px-3 py-2 text-left">Cluster</th>
                     <th className="px-3 py-2 text-right">Lojas</th>
                     <th className="px-3 py-2 text-right">Packs</th>
@@ -366,7 +367,7 @@ export default function DistribuicaoPage() {
             <div className="scroll-x">
               <table className="w-full border-collapse text-[13px]">
                 <thead>
-                  <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                  <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                     <th className="px-3 py-2 text-left">Template de grade</th>
                     <th className="px-3 py-2 text-left">Tamanhos</th>
                     <th className="px-3 py-2 text-right">Peças por pack</th>
@@ -416,7 +417,7 @@ export default function DistribuicaoPage() {
             <div className="scroll-x">
               <table className="w-full border-collapse text-[13px]">
                 <thead>
-                  <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                  <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                     <th className="px-3 py-2 text-left">Sessão</th>
                     <th className="px-3 py-2 text-right">SKUs</th>
                     <th className="px-3 py-2 text-right">Packs</th>
@@ -526,7 +527,7 @@ export default function DistribuicaoPage() {
               <div className="scroll-x">
                 <table className="w-full border-collapse text-[13px]">
                   <thead>
-                    <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                    <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                       <th className="px-3 py-2 text-left">Loja</th>
                       <th className="px-3 py-2 text-left">Cluster · clima</th>
                       <th className="px-3 py-2 text-left">Ref</th>

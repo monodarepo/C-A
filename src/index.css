@@ -16,6 +16,11 @@
     color: var(--ink);
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgb(var(--cea-blue-rgb) / 0.14);
   }
 
   h1,
@@ -25,7 +30,9 @@
     font-family: 'Poppins', system-ui, sans-serif;
   }
 
-  /* numerais tabulares em tabelas e KPIs para as colunas não dançarem */
+  /* Numerais tabulares SÓ onde há coluna para alinhar (tabelas e .num).
+     Valor grande de KPI usa figuras proporcionais — tabular em display size
+     deixa "121" frouxo, cada dígito com a largura do zero. */
   table,
   .num {
     font-variant-numeric: tabular-nums;
@@ -34,7 +41,7 @@
 
 @layer components {
   .kpi-label {
-    @apply text-[11px] font-semibold uppercase tracking-wider text-muted;
+    @apply text-[10.5px] font-semibold uppercase tracking-[0.08em] text-slate-500;
   }
 
   .card-base {
@@ -47,6 +54,34 @@
 
   .focus-ring {
     @apply outline-none ring-cea-blue/40 focus-visible:ring-2;
+  }
+
+  /* item da sidebar navy: os três níveis de tinta branca + estados */
+  .sidebar-item {
+    color: var(--nav-muted);
+  }
+  .sidebar-item .sidebar-icone {
+    color: var(--nav-apagado);
+    transition: color 150ms;
+  }
+  .sidebar-item:hover {
+    background: var(--nav-hover);
+    color: var(--nav-ink);
+  }
+  .sidebar-item:hover .sidebar-icone {
+    color: var(--nav-muted);
+  }
+  .sidebar-item-ativo,
+  .sidebar-item-ativo:hover {
+    background: var(--nav-ativo);
+    color: #ffffff;
+  }
+  .sidebar-item-ativo .sidebar-icone,
+  .sidebar-item-ativo:hover .sidebar-icone {
+    color: #ffffff;
+  }
+  .sidebar-item.focus-ring:focus-visible {
+    --tw-ring-color: rgba(255, 255, 255, 0.45);
   }
 }
 
@@ -78,6 +113,35 @@
     animation: none;
     background: rgb(226 232 240);
   }
+}
+
+/* entrada do toast: sobe 8px com fade — curto o bastante para não atrapalhar */
+.toast-entrando {
+  animation: toast-entrar 180ms cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+@keyframes toast-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-entrando {
+    animation: none;
+  }
+}
+
+/* scrollbar da sidebar navy — o polegar claro padrão grita sobre o escuro */
+.scroll-nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.scroll-nav::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
 }
 
 /* scrollbar discreta para kanbans e gantt horizontais */

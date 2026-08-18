@@ -5,6 +5,7 @@ import { StatusChip } from '@/components/ui/StatusChip'
 import { useToast } from '@/components/ui/Toast'
 import { iniciaisPessoa } from '@/lib/cea'
 import { formatDataCurta, segundaDaSemanaISO } from '@/lib/format'
+import { Icone } from '@/components/ui/Icone'
 import {
   AREAS,
   COLECAO,
@@ -138,7 +139,7 @@ export function AbaWorkflow() {
           )}
         </div>
 
-        <Button variante="primario" icone="+" onClick={() => setModalAberto(true)}>
+        <Button variante="primario" icone={<Icone nome="mais" tamanho={15} />} onClick={() => setModalAberto(true)}>
           Nova Entrega
         </Button>
       </div>

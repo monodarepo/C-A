@@ -69,7 +69,9 @@ export function KpiCard({
         {dica && <Tooltip texto={dica} />}
       </div>
 
-      <p className="mt-2 font-display text-[26px] font-semibold leading-none text-cea-deep">
+      {/* figuras proporcionais de propósito: tabular em display size deixa o
+          número frouxo — tabular fica só nas colunas de tabela */}
+      <p className="mt-2 font-display text-[27px] font-semibold leading-none tracking-tight text-cea-deep">
         {valor}
       </p>
 

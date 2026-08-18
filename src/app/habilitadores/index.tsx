@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { KpiCard } from '@/components/ui/KpiCard'
@@ -28,7 +29,7 @@ export default function HabilitadoresPage() {
         acoes={
           <>
             <Button
-              icone="⇪"
+              icone={<Icone nome="enviar" tamanho={15} />}
               onClick={() =>
                 push(
                   'Importação em lote',

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { EmptyGate } from '@/components/ui/EmptyGate'
@@ -74,11 +75,11 @@ export default function EmissaoPage() {
           subtitulo={`${COLECAO.rotulo} · ordens de compra por fornecedor e integração com o ERP`}
         />
         <EmptyGate
-          icone="⎙"
+          icone={<Icone nome="emissao" tamanho={22} />}
           titulo="Carregue o Line antes de emitir os pedidos"
           texto="A ordem de compra sai do preço negociado e da quantidade confirmada no line. Emitir antes disso seria emitir contra o plano, não contra o acordo."
           nota="A cadeia é Line → Grade → Emissão → Distribuição"
-          cta={{ rotulo: 'Ir para o Line', icone: '→', onClick: () => navigate('/line') }}
+          cta={{ rotulo: 'Ir para o Line', icone: <Icone nome="seta" tamanho={15} />, onClick: () => navigate('/line') }}
         />
       </div>
     )
@@ -153,12 +154,12 @@ export default function EmissaoPage() {
 
       {emitidas.length === 0 ? (
         <EmptyGate
-          icone="📄"
+          icone={<Icone nome="documento" tamanho={22} />}
           titulo="Nenhuma ordem emitida ainda"
           texto={`O line está carregado e ${OCS_DO_LINE.length} ordens estão prontas para sair, agrupadas por fornecedor. Gerar as OCs integra cada uma ao ERP.`}
           nota="Demo · integração simulada"
           assinatura={false}
-          cta={{ rotulo: `Gerar ${OCS_DO_LINE.length} OCs`, icone: '⎙', onClick: gerar }}
+          cta={{ rotulo: `Gerar ${OCS_DO_LINE.length} OCs`, icone: <Icone nome="emissao" tamanho={15} />, onClick: gerar }}
         />
       ) : (
         <SectionCard
@@ -169,7 +170,7 @@ export default function EmissaoPage() {
           <div className="scroll-x">
             <table className="w-full border-collapse text-[13px]">
               <thead>
-                <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+                <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                   <th className="px-3 py-2 text-left">Ordem</th>
                   <th className="px-3 py-2 text-left">Fornecedor</th>
                   <th className="px-3 py-2 text-left">Referências</th>

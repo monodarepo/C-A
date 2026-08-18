@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
@@ -112,7 +113,7 @@ export default function PlanoPage() {
         subtitulo={`${COLECAO.rotulo} · ${formatNum(linhas.length)} linhas geradas automaticamente`}
         acoes={
           <>
-            <Button icone="+" onClick={() => setModalAberto(true)}>
+            <Button icone={<Icone nome="mais" tamanho={15} />} onClick={() => setModalAberto(true)}>
               Incluir item
             </Button>
             <Button
@@ -123,12 +124,12 @@ export default function PlanoPage() {
             >
               Restaurar
             </Button>
-            <Button icone="⤓" onClick={() => exportarCSV(linhas, push)}>
+            <Button icone={<Icone nome="baixar" tamanho={15} />} onClick={() => exportarCSV(linhas, push)}>
               Exportar CSV
             </Button>
             <Button
               variante="primario"
-              icone="⟳"
+              icone={<Icone nome="recalcular" tamanho={15} />}
               onClick={() => {
                 const { antes, depois } = recalcular()
                 push(

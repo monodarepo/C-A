@@ -1,3 +1,5 @@
+import type { NomeIcone } from '@/components/ui/Icone'
+
 /**
  * Registro único de rotas — alimenta a Sidebar, o breadcrumb da Topbar e o
  * roteador. Mudou o nome/subtítulo de uma tela? Muda só aqui.
@@ -15,7 +17,7 @@ export type Rota = {
   titulo: string
   subtitulo: string
   grupo: Grupo
-  icone: string
+  icone: NomeIcone
   /** fase do docs/PROMPTS_CLAUDE_CODE.md que implementa a tela */
   fase: number
 }
@@ -28,7 +30,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Dashboard Executivo',
     subtitulo: 'Cockpit da coleção — performance, atributos e alertas da semana',
     grupo: 'Dashboard Executivo',
-    icone: '◎',
+    icone: 'dashboard',
     fase: 1,
   },
   {
@@ -38,7 +40,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Workflow da Coleção',
     subtitulo: '16 etapas do processo de compra e o calendário anual de coleções',
     grupo: 'Pré-Season',
-    icone: '▤',
+    icone: 'workflow',
     fase: 2,
   },
   {
@@ -48,7 +50,7 @@ export const ROTAS: Rota[] = [
     titulo: 'OTB — Open to Buy',
     subtitulo: 'Camada executiva somente leitura: verba, comprometido e margem planejada',
     grupo: 'Pré-Season',
-    icone: '◈',
+    icone: 'otb',
     fase: 3,
   },
   {
@@ -58,7 +60,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Habilitadores de Sortimento',
     subtitulo: 'Pirâmide de preço, gabarito de packs, clusterização de verba e Dorsal × Need',
     grupo: 'Pré-Season',
-    icone: '⚙',
+    icone: 'habilitadores',
     fase: 4,
   },
   {
@@ -68,7 +70,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Atributos de Produto',
     subtitulo: 'Taxonomia N3–N7 e janela de otimização do mix',
     grupo: 'Pré-Season',
-    icone: '⌘',
+    icone: 'atributos',
     fase: 4,
   },
   {
@@ -78,7 +80,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Plano de Sortimento',
     subtitulo: 'Linhas geradas, banda de OTB e lista de compras da coleção',
     grupo: 'Pré-Season',
-    icone: '▦',
+    icone: 'plano',
     fase: 5,
   },
   {
@@ -88,7 +90,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Versões & Aprovação',
     subtitulo: 'Plano Original × Qualificado, deltas e aprovação por nível agregado',
     grupo: 'Pré-Season',
-    icone: '⑃',
+    icone: 'versoes',
     fase: 5,
   },
   {
@@ -98,7 +100,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Mapa da Coleção',
     subtitulo: 'Parede visual por cápsula — Vitrine, Dorsal e Need',
     grupo: 'Pré-Season',
-    icone: '▩',
+    icone: 'mapa',
     fase: 6,
   },
   {
@@ -108,7 +110,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Retroalimentação do Plano',
     subtitulo: 'Impacto do Mapa na verba e compensações necessárias',
     grupo: 'Pré-Season',
-    icone: '⟳',
+    icone: 'retroalimentacao',
     fase: 6,
   },
   {
@@ -118,7 +120,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Eventos & Ciclos',
     subtitulo: 'Calendário comercial, cápsulas licenciadas e ciclos de tendência',
     grupo: 'Pré-Season',
-    icone: '★',
+    icone: 'eventos',
     fase: 6,
   },
   {
@@ -128,7 +130,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Montagem do Line',
     subtitulo: 'Pedido × retorno do fornecedor e decisão de negociação',
     grupo: 'Pré-Season',
-    icone: '☰',
+    icone: 'line',
     fase: 7,
   },
   {
@@ -138,7 +140,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Grade de Tamanhos',
     subtitulo: 'Curvas padrão por sessão e distribuição de peças por tamanho',
     grupo: 'Pré-Season',
-    icone: '⊞',
+    icone: 'grade',
     fase: 7,
   },
   {
@@ -148,7 +150,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Emissão de Pedidos',
     subtitulo: 'Ordens de compra por fornecedor e integração com o ERP',
     grupo: 'Pré-Season',
-    icone: '⎙',
+    icone: 'emissao',
     fase: 7,
   },
   {
@@ -158,7 +160,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Distribuição por Loja',
     subtitulo: 'Snapshot da alocação: packs, coerência de clima e lacunas',
     grupo: 'Pré-Season',
-    icone: '⇉',
+    icone: 'distribuicao',
     fase: 7,
   },
   {
@@ -168,7 +170,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Benchmark de Mercado',
     subtitulo: 'Coleta de concorrentes, preço comparável e movimentos recomendados',
     grupo: 'Follow-up',
-    icone: '⚖',
+    icone: 'benchmark',
     fase: 8,
   },
   {
@@ -178,7 +180,7 @@ export const ROTAS: Rota[] = [
     titulo: 'PLM — Ciclo de Vida',
     subtitulo: '8 fases do produto, pipeline de risco e gatilhos automáticos',
     grupo: 'Follow-up',
-    icone: '◔',
+    icone: 'plm',
     fase: 8,
   },
   {
@@ -188,7 +190,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Histórico de Vendas',
     subtitulo: 'Série por produto, região, canal e período — best e slow sellers',
     grupo: 'In-Season',
-    icone: '⌛',
+    icone: 'historico',
     fase: 9,
   },
   {
@@ -198,7 +200,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Sortimento Vivo',
     subtitulo: 'Leitura em tempo real: GMV do dia, rupturas, excessos e carteira',
     grupo: 'In-Season',
-    icone: '◉',
+    icone: 'vivo',
     fase: 9,
   },
   {
@@ -208,7 +210,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Pricing & Markdown',
     subtitulo: 'Ações de preço por cluster, profundidade e calendário promocional',
     grupo: 'In-Season',
-    icone: '▽',
+    icone: 'pricing',
     fase: 9,
   },
   {
@@ -218,7 +220,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Lojas & Clusters',
     subtitulo: '335 lojas físicas, 4 clusters e reagrupamento sugerido',
     grupo: 'Transversais',
-    icone: '⌂',
+    icone: 'lojas',
     fase: 10,
   },
   {
@@ -228,7 +230,7 @@ export const ROTAS: Rota[] = [
     titulo: 'Cadastro de Produtos',
     subtitulo: 'Hierarquia mercadológica, qualidade de cadastro e pirâmide de preço',
     grupo: 'Transversais',
-    icone: '✎',
+    icone: 'cadastro',
     fase: 10,
   },
 ]

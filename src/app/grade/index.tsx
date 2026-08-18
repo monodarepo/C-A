@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Icone } from '@/components/ui/Icone'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { EmptyGate } from '@/components/ui/EmptyGate'
 import { Button } from '@/components/ui/Button'
@@ -60,13 +61,13 @@ export default function GradePage() {
           subtitulo={`${COLECAO.rotulo} · curvas padrão por sessão e distribuição de peças por tamanho`}
         />
         <EmptyGate
-          icone="⊞"
+          icone={<Icone nome="grade" tamanho={22} />}
           titulo="Carregue o Line antes de montar as grades"
           texto="A grade parte da quantidade que o fornecedor confirmou, não da planejada. Sem o line devolvido não há o que distribuir por tamanho."
           nota="A cadeia é Line → Grade → Emissão → Distribuição"
           cta={{
             rotulo: 'Ir para o Line',
-            icone: '→',
+            icone: <Icone nome="seta" tamanho={15} />,
             onClick: () => navigate('/line'),
           }}
         />
@@ -203,7 +204,7 @@ export default function GradePage() {
         <div className="scroll-x">
           <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+              <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                 <th className="px-3 py-2 text-left">Ref</th>
                 <th className="px-3 py-2 text-left">Produto</th>
                 <th className="px-3 py-2 text-left">Template</th>

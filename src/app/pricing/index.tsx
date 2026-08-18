@@ -440,7 +440,7 @@ export default function PricingPage() {
         <div className="scroll-x">
           <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr className="border-b border-line bg-slate-50/80 text-[11px] uppercase tracking-wide text-muted">
+              <tr className="border-b border-line bg-slate-50/50 text-[10.5px] uppercase tracking-wider text-slate-400">
                 <th className="px-3 py-2 text-left">Nível</th>
                 <th className="px-3 py-2 text-right">Físico cluster {clusterFoco}</th>
                 <th className="px-3 py-2 text-right">Digital</th>
