@@ -34,6 +34,20 @@ const GRADE = 'var(--border)'
 /** R$ em milhões — a unidade de toda esta tela. */
 const mi = (v: number, casas = 0) => `R$ ${formatNum(v, casas)} mi`
 
+/**
+ * Rótulo curto para o eixo X horizontal: rótulos até 9 caracteres passam
+ * inteiros; nos maiores, cada palavra com mais de 5 letras vira as 3 primeiras
+ * + ponto ("Moda Íntima" → "Moda Ínt.", "Esportivo ACE" → "Esp. ACE"). O nome
+ * completo segue no tooltip.
+ */
+const abreviarRotulo = (rotulo: string) =>
+  rotulo.length <= 9
+    ? rotulo
+    : rotulo
+        .split(' ')
+        .map((palavra) => (palavra.length > 5 ? `${palavra.slice(0, 3)}.` : palavra))
+        .join(' ')
+
 function Legenda({ itens }: { itens: { cor: string; rotulo: string }[] }) {
   return (
     <span className="flex flex-wrap items-center gap-3 text-[11px] text-muted">
@@ -195,9 +209,8 @@ export function GraficoComprometido({ linhas, totais }: { linhas: LinhaOTB[]; to
               axisLine={false}
               tickLine={false}
               interval={0}
-              angle={-18}
-              textAnchor="end"
-              height={52}
+              angle={0}
+              tickFormatter={abreviarRotulo}
             />
             <YAxis
               tick={EIXO}

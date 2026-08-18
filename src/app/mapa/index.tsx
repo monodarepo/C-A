@@ -21,7 +21,7 @@ import {
   type SkuMapa,
   type Zona,
 } from '@/data/derived'
-import { formatBRLCompact, formatNum, formatPct } from '@/lib/format'
+import { formatBRLCompact, formatNum, formatPP, formatPct, plural } from '@/lib/format'
 
 /* badges do card: ícone de traço + cor semântica própria (o significado está
    no title/aria-label, nunca só na cor) */
@@ -85,10 +85,14 @@ export default function MapaPage() {
     setSkus((atual) => atual.map((s) => ({ ...s, aprovado: true })))
     decidir({
       tipo: 'mapa',
-      titulo: `${pendentes.length} SKUs aprovados na parede`,
+      titulo: `${plural(pendentes.length, 'SKU aprovado', 'SKUs aprovados')} na parede`,
       detalhe: `A parede de ${MAPA.parede} passou de ${formatPct(totais.aprovadosPct, 0)} para 100% aprovada.`,
     })
-    push('Pendentes aprovados', 'ok', `${pendentes.length} SKUs liberados para o line.`)
+    push(
+      'Pendentes aprovados',
+      'ok',
+      `${plural(pendentes.length, 'SKU liberado', 'SKUs liberados')} para o line.`,
+    )
   }
 
   return (
@@ -152,19 +156,29 @@ export default function MapaPage() {
           {piramide.map((p) => {
             const desvio = p.pct - p.alvo
             const dentro = Math.abs(desvio) <= 5
+            const acima = desvio > 0
             return (
               <span
                 key={p.faixa}
-                title={`${p.skus} SKUs · alvo ${p.alvo}%`}
+                title={`${plural(p.skus, 'SKU')} · alvo ${p.alvo}% · ${
+                  dentro ? 'dentro da banda' : acima ? 'acima do alvo' : 'abaixo do alvo'
+                }`}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
                   dentro
                     ? 'border-[#A7E8D0] bg-[var(--ok-soft)] text-[#0A7355]'
-                    : 'border-[#F6D8A0] bg-[var(--warn-soft)] text-[#A15C00]'
+                    : acima
+                      ? 'border-[#F6D8A0] bg-[var(--warn-soft)] text-[#A15C00]'
+                      : 'border-slate-300 bg-slate-100 text-slate-600'
                 }`}
               >
                 {p.faixa} · {p.rotulo}
                 <span className="num">{formatPct(p.pct, 0)}</span>
                 <span className="num font-normal opacity-70">alvo {formatPct(p.alvo, 0)}</span>
+                {!dentro && (
+                  <span className="num" aria-label={acima ? 'acima do alvo' : 'abaixo do alvo'}>
+                    {acima ? '▲' : '▼'} {formatPP(desvio, 0)}
+                  </span>
+                )}
               </span>
             )
           })}
@@ -244,8 +258,7 @@ export default function MapaPage() {
                       {zona}
                     </h3>
                     <span className="num text-[11px] text-muted">
-                      {cards.length} SKU{cards.length === 1 ? '' : 's'} ·{' '}
-                      {formatNum(unidades)} un
+                      {plural(cards.length, 'SKU')} · {formatNum(unidades)} un
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] leading-snug text-slate-500">
@@ -281,7 +294,16 @@ export default function MapaPage() {
                           tamanho="card"
                           className="!rounded-none !border-0 w-full"
                         />
-                        <span className="absolute right-1 top-1 flex flex-col items-end gap-0.5">
+                        {!s.aprovado && (
+                          <span className="absolute inset-x-0 top-0 bg-warn/90 py-0.5 text-center text-[9.5px] font-bold uppercase tracking-wide text-white">
+                            pendente
+                          </span>
+                        )}
+                        <span
+                          className={`absolute right-1 flex flex-col items-end gap-0.5 ${
+                            s.aprovado ? 'top-1' : 'top-6'
+                          }`}
+                        >
                           {s.badges.map((b) => (
                             <span
                               key={b}
@@ -294,13 +316,12 @@ export default function MapaPage() {
                           ))}
                         </span>
                         {s.cod && (
-                          <span className="num absolute left-1 top-1 rounded bg-cea-deep/85 px-1.5 py-0.5 text-[10px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          <span
+                            className={`num absolute left-1 rounded bg-cea-deep/85 px-1.5 py-0.5 text-[10px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100 ${
+                              s.aprovado ? 'top-1' : 'top-6'
+                            }`}
+                          >
                             ref {s.cod}
-                          </span>
-                        )}
-                        {!s.aprovado && (
-                          <span className="absolute inset-x-0 bottom-0 bg-warn/90 py-0.5 text-center text-[9.5px] font-bold uppercase tracking-wide text-white">
-                            pendente
                           </span>
                         )}
                       </div>
@@ -311,8 +332,10 @@ export default function MapaPage() {
                         </p>
                         <p className="mt-0.5 text-[10.5px] capitalize text-muted">{s.cor}</p>
                         <footer className="mt-1.5 flex items-center justify-between gap-2 border-t border-line pt-1.5 text-[10px]">
-                          <span className="num text-muted">{formatNum(s.unidades)} un</span>
-                          <span className="truncate text-slate-400" title={s.fornecedor}>
+                          <span className="num shrink-0 whitespace-nowrap text-muted">
+                            {formatNum(s.unidades)} un
+                          </span>
+                          <span className="truncate text-[11px] text-slate-500" title={s.fornecedor}>
                             {s.fornecedor}
                           </span>
                         </footer>
@@ -356,7 +379,7 @@ export default function MapaPage() {
         <SectionCard
           titulo="Decisões da parede"
           subtitulo="Movimentos de zona e aprovações desta sessão"
-          tag={<StatusChip tom="neutro">{decisoes.length} registro(s)</StatusChip>}
+          tag={<StatusChip tom="neutro">{plural(decisoes.length, 'registro')}</StatusChip>}
         >
           {decisoes.length === 0 ? (
             <p className="rounded-lg border border-line bg-slate-50/60 p-4 text-[12.5px] leading-snug text-slate-600">

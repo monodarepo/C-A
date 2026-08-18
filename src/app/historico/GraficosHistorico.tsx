@@ -101,17 +101,9 @@ export function GraficoMensalHistorico({ dados }: { dados: PontoMes[] }) {
               tickFormatter={(v: number) => `${formatNum(v, 0)}%`}
             />
             <Tooltip content={<TooltipMes />} />
-            <ReferenceLine
-              y={HISTORICO.margem}
-              stroke={AZUL_CLARO}
-              strokeDasharray="4 4"
-              label={{
-                value: `média ${formatPct(HISTORICO.margem)}`,
-                position: 'insideTopRight',
-                fontSize: 10,
-                fill: 'var(--ink-muted)',
-              }}
-            />
+            {/* Sem rótulo no plot: a média aparece no subtítulo do card, onde
+                não colide com o último ponto da série na borda direita. */}
+            <ReferenceLine y={HISTORICO.margem} stroke={AZUL_CLARO} strokeDasharray="4 4" />
             <Line
               type="monotone"
               dataKey="margem"

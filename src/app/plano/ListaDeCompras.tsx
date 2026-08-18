@@ -8,8 +8,8 @@ import { totaisPlano, type LinhaPlano, type StatusLinha } from '@/data/derived'
 import { usePlano } from '@/app/PlanoProvider'
 
 const TOM_STATUS: Record<StatusLinha, TomChip> = {
-  Dorsal: 'marca',
-  Repeat: 'info',
+  Dorsal: 'info',
+  Repeat: 'violeta',
   Novo: 'ok',
   Evento: 'warn',
 }
@@ -80,13 +80,12 @@ export function ListaDeCompras({ linhas }: { linhas: LinhaPlano[] }) {
                     {l.ref}
                   </td>
                   <td className="px-3 py-2">
-                    <p className="max-w-[240px] font-medium leading-snug text-ink">{l.produto}</p>
-                    {delta !== 0 && (
-                      <p className="num mt-0.5 text-[10.5px] font-semibold text-cea-blue">
-                        {delta > 0 ? '+' : '−'}
-                        {formatNum(Math.abs(delta))} pç vs Original
-                      </p>
-                    )}
+                    <p
+                      className="line-clamp-2 max-w-[320px] font-medium leading-snug text-ink"
+                      title={l.produto}
+                    >
+                      {l.produto}
+                    </p>
                   </td>
                   <td className="px-3 py-2 text-[12px] text-slate-600">{l.categoria}</td>
                   <td className="px-3 py-2">
@@ -111,6 +110,12 @@ export function ListaDeCompras({ linhas }: { linhas: LinhaPlano[] }) {
                       />
                     ) : (
                       <span className="num">{formatNum(qtd)}</span>
+                    )}
+                    {delta !== 0 && (
+                      <p className="num mt-0.5 text-[10.5px] font-semibold text-cea-blue">
+                        {delta > 0 ? '+' : '−'}
+                        {formatNum(Math.abs(delta))} pç vs Original
+                      </p>
                     )}
                   </td>
                   <td className="num px-3 py-2 text-right font-semibold text-cea-deep">
@@ -149,8 +154,8 @@ export function ListaDeCompras({ linhas }: { linhas: LinhaPlano[] }) {
         </table>
       </div>
       <p className="border-t border-line px-3 py-2 text-[11px] text-slate-400">
-        PC e PV planejados: passe o mouse na célula para ver a origem do preço. As oito primeiras
-        linhas são referências reais do catálogo; o passo do stepper é 1% da quantidade da linha.
+        PC e PV planejados · a origem do preço aparece no tooltip da célula · passo do stepper: 1%
+        da quantidade da linha.
       </p>
     </SectionCard>
   )

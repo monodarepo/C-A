@@ -6,6 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
+import { Select } from '@/components/ui/Select'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import {
@@ -22,7 +23,7 @@ import {
   type LinhaDrillPreco,
   type TipoEtiqueta,
 } from '@/data/derived'
-import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct } from '@/lib/format'
+import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, plural } from '@/lib/format'
 
 type AcaoAtiva = {
   id: number
@@ -76,13 +77,14 @@ export default function PricingPage() {
   const tipoEtiqueta = TIPOS_ETIQUETA.find((t) => t.id === etiqueta)!
   const podeCriar = itens.length > 0 && clustersAlvo.length > 0 && nome.trim().length > 2
 
-  function criarAcao() {
-    if (!podeCriar) return
+  /** Cria a ação com os clusters do formulário ou com o cluster em foco (header). */
+  function criarAcao(clusters: string[] = clustersAlvo) {
+    if (!podeCriar || clusters.length === 0) return
     const nova: AcaoAtiva = {
       id: acoes.length + 1,
       nome: nome.trim(),
       etiqueta: tipoEtiqueta.nome,
-      clusters: [...clustersAlvo].sort(),
+      clusters: [...clusters].sort(),
       vigencia: `${inicio} a ${fim}`,
       pecas: previa.pecas,
       impacto: previa.impacto,
@@ -93,22 +95,15 @@ export default function PricingPage() {
     push(
       'Ação de preço criada',
       'ok',
-      `${nova.itens} referência(s) · ${formatNum(nova.pecas)} peças · cluster ${nova.clusters.join(', ')} · ${nova.vigencia}.`,
+      `${plural(nova.itens, 'referência')} · ${formatNum(nova.pecas)} peças · cluster ${nova.clusters.join(', ')} · ${nova.vigencia}.`,
     )
   }
 
+  /** Botão do header: espelha a condição do formulário e aplica a seleção atual. */
   function aplicarNoClusterFoco() {
-    const foco = CLUSTERS.find((c) => c.id === clusterFoco)!
-    const recomendados = DRILL_PRECO.filter(
-      (l) => l.nivel === 'SKU' && l.recomendacao === 'Reduzir',
-    ).slice(0, 3)
-    setClustersAlvo([foco.id])
-    setSelecionados(CANDIDATOS_PRECO.slice(0, 3).map((c) => c.id))
-    push(
-      `Pré-carregado no cluster ${foco.id}`,
-      'info',
-      `${recomendados.length} recomendações de redução do drill-down entraram na ação — revise e confirme.`,
-    )
+    if (!podeCriar) return
+    setClustersAlvo([clusterFoco])
+    criarAcao([clusterFoco])
   }
 
   return (
@@ -119,7 +114,7 @@ export default function PricingPage() {
         meta={
           <>
             <StatusChip tom={acoes.length ? 'ok' : 'neutro'}>
-              {formatNum(acoes.length)} ação(ões) criada(s) nesta sessão
+              {plural(acoes.length, 'ação criada', 'ações criadas')} nesta sessão
             </StatusChip>
             <StatusChip tom="warn">
               Markdown acumulado {formatPct(DASHBOARD.markdownAcumulado)} de{' '}
@@ -128,8 +123,8 @@ export default function PricingPage() {
           </>
         }
         acoes={
-          <Button variante="primario" onClick={aplicarNoClusterFoco}>
-            Aplicar no Cluster {clusterFoco} ({formatNum(CANDIDATOS_PRECO.slice(0, 3).length)})
+          <Button variante="primario" onClick={aplicarNoClusterFoco} disabled={!podeCriar}>
+            Aplicar no Cluster {clusterFoco} ({formatNum(itens.length)})
           </Button>
         }
       />
@@ -140,7 +135,7 @@ export default function PricingPage() {
         subtitulo="Escolha as referências, o tipo de etiqueta, a vigência e os clusters-alvo"
         tag={
           <StatusChip tom={itens.length ? 'info' : 'neutro'}>
-            {formatNum(itens.length)} selecionada(s)
+            {plural(itens.length, 'selecionada')}
           </StatusChip>
         }
       >
@@ -197,17 +192,17 @@ export default function PricingPage() {
               <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted">
                 Tipo de etiqueta
               </span>
-              <select
+              <Select
                 value={etiqueta}
                 onChange={(e) => setEtiqueta(e.target.value as TipoEtiqueta)}
-                className="focus-ring w-full rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-medium text-ink"
+                className="w-full"
               >
                 {TIPOS_ETIQUETA.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.nome}
                   </option>
                 ))}
-              </select>
+              </Select>
               <span className="mt-1 block text-[11px] leading-snug text-slate-400">
                 {tipoEtiqueta.nota}
               </span>
@@ -306,7 +301,7 @@ export default function PricingPage() {
               )}
             </div>
 
-            <Button variante="primario" className="w-full" onClick={criarAcao} disabled={!podeCriar}>
+            <Button variante="primario" className="w-full" onClick={() => criarAcao()} disabled={!podeCriar}>
               {podeCriar ? 'Criar ação de preço' : 'Selecione referência e cluster'}
             </Button>
           </div>
@@ -563,7 +558,9 @@ function LinhaCandidato({
           <p className="text-[12.5px] font-medium leading-snug text-ink">{c.produto}</p>
           <p className="num mt-0.5 text-[11.5px] text-muted">
             {c.cod ? `ref ${c.cod} · ` : ''}
-            {c.cor} · <span className="line-through">{formatBRL(c.precoDe)}</span>{' '}
+            {/* cor só quando o snapshot traz uma de verdade — nada de travessão na UI */}
+            {c.cor && c.cor !== '—' ? `${c.cor} · ` : ''}
+            <span className="line-through">{formatBRL(c.precoDe)}</span>{' '}
             <span className="font-semibold text-ink">{formatBRL(c.precoPor)}</span>{' '}
             <span className="font-semibold text-cea-red">{formatDelta(c.markdownPct)}</span>
           </p>
@@ -625,7 +622,7 @@ function LinhaDrill({
       <td className="num px-3 py-2 text-right">
         {formatBRL(l.precoDigital)}
         {l.precoDigital < l.precoFisicoA && (
-          <span className="ml-1 text-[10px] font-semibold text-warn">ação de canal</span>
+          <span className="block text-right text-[10px] font-semibold text-warn">ação de canal</span>
         )}
       </td>
       <td className="num px-3 py-2 text-right text-muted">{formatBRL(l.precoMercadoDigital)}</td>
@@ -638,7 +635,7 @@ function LinhaDrill({
         {l.profundidade === 0 ? '—' : formatPct(l.profundidade, 0)}
       </td>
       <td className="max-w-[300px] px-3 py-2 text-[11.5px] font-normal leading-snug text-slate-600">
-        {l.acao}
+        {l.recomendacao === 'Manter' ? <span className="text-slate-400">Alinhado</span> : l.acao}
       </td>
     </tr>
   )

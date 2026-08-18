@@ -28,12 +28,16 @@ export function formatBRL(v: number, casas: 0 | 2 = 2): string {
   return menos(casas === 0 ? BRL0.format(v) : BRL.format(v))
 }
 
-/** R$ 2,08 bi · R$ 435 mi · R$ 46,4 mil — escala automática para KPIs. */
+/**
+ * R$ 2,08 bi · R$ 435 mi · R$ 46,4 mil — escala automática para KPIs.
+ * Negativo leva o sinal ANTES do R$ (−R$ 210,5 mil), como o resto da UI.
+ */
 export function formatBRLCompact(v: number, casas = 1): string {
   const abs = Math.abs(v)
-  if (abs >= 1e9) return `R$ ${formatNum(v / 1e9, casas)} bi`
-  if (abs >= 1e6) return `R$ ${formatNum(v / 1e6, casas)} mi`
-  if (abs >= 1e3) return `R$ ${formatNum(v / 1e3, casas)} mil`
+  const sinalPrefixo = v < 0 ? '−' : ''
+  if (abs >= 1e9) return `${sinalPrefixo}R$ ${formatNum(abs / 1e9, casas)} bi`
+  if (abs >= 1e6) return `${sinalPrefixo}R$ ${formatNum(abs / 1e6, casas)} mi`
+  if (abs >= 1e3) return `${sinalPrefixo}R$ ${formatNum(abs / 1e3, casas)} mil`
   return formatBRL(v)
 }
 

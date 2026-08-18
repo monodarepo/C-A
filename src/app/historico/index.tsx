@@ -6,6 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
+import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
 import { useToast } from '@/components/ui/Toast'
 import { ProductImage } from '@/components/ui/ProductImage'
@@ -30,7 +31,7 @@ import {
   type FiltroHistorico,
   type RankingSku,
 } from '@/data/derived'
-import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, formatPP } from '@/lib/format'
+import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, formatPP, plural } from '@/lib/format'
 import { exportarArquivo } from '@/lib/exportar'
 
 const ABAS = [
@@ -230,7 +231,7 @@ export default function HistoricoPage() {
           <>
             <StatusChip tom={filtrosAtivos ? 'info' : 'neutro'}>
               {filtrosAtivos
-                ? `${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''}`
+                ? plural(filtrosAtivos, 'filtro ativo', 'filtros ativos')
                 : 'Recorte completo'}
             </StatusChip>
             {loja && <StatusChip tom="warn">Rateio por loja ativo</StatusChip>}
@@ -263,8 +264,8 @@ export default function HistoricoPage() {
       >
         <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
           <Campo rotulo="Coleção">
-            <select
-              className={ESTILO_SELECT}
+            <Select
+              className="w-full"
               value={filtro.colecao}
               onChange={(e) =>
                 setFiltro({ ...filtro, colecao: e.target.value as ColecaoHistorico })
@@ -276,11 +277,11 @@ export default function HistoricoPage() {
                   {c.atual ? ' (ativa)' : ''}
                 </option>
               ))}
-            </select>
+            </Select>
           </Campo>
           <Campo rotulo="Produto">
-            <select
-              className={ESTILO_SELECT}
+            <Select
+              className="w-full"
               value={filtro.sku}
               onChange={(e) => setFiltro({ ...filtro, sku: e.target.value })}
             >
@@ -291,11 +292,11 @@ export default function HistoricoPage() {
                   {s.nome}
                 </option>
               ))}
-            </select>
+            </Select>
           </Campo>
           <Campo rotulo="Categoria">
-            <select
-              className={ESTILO_SELECT}
+            <Select
+              className="w-full"
               value={filtro.categoria}
               onChange={(e) => setFiltro({ ...filtro, categoria: e.target.value })}
             >
@@ -305,11 +306,11 @@ export default function HistoricoPage() {
                   {c}
                 </option>
               ))}
-            </select>
+            </Select>
           </Campo>
           <Campo rotulo="Região">
-            <select
-              className={ESTILO_SELECT}
+            <Select
+              className="w-full"
               value={filtro.regiao}
               disabled={Boolean(loja)}
               onChange={(e) => setFiltro({ ...filtro, regiao: e.target.value })}
@@ -320,11 +321,11 @@ export default function HistoricoPage() {
                   {r.regiao}
                 </option>
               ))}
-            </select>
+            </Select>
           </Campo>
           <Campo rotulo="Loja">
-            <select
-              className={ESTILO_SELECT}
+            <Select
+              className="w-full"
               value={filtro.loja}
               onChange={(e) =>
                 setFiltro({ ...filtro, loja: e.target.value, regiao: 'todas' })
@@ -336,11 +337,11 @@ export default function HistoricoPage() {
                   {l.nome}
                 </option>
               ))}
-            </select>
+            </Select>
           </Campo>
           <Campo rotulo="Canal">
-            <select
-              className={ESTILO_SELECT}
+            <Select
+              className="w-full"
               value={filtro.canal}
               onChange={(e) => setFiltro({ ...filtro, canal: e.target.value })}
             >
@@ -350,11 +351,11 @@ export default function HistoricoPage() {
                   {c}
                 </option>
               ))}
-            </select>
+            </Select>
           </Campo>
           <Campo rotulo="Período">
-            <select
-              className={ESTILO_SELECT}
+            <Select
+              className="w-full"
               value={filtro.meses}
               onChange={(e) => setFiltro({ ...filtro, meses: Number(e.target.value) })}
             >
@@ -363,7 +364,7 @@ export default function HistoricoPage() {
                   {m === 6 ? '6 meses (completo)' : `Últimos ${m} ${m === 1 ? 'mês' : 'meses'}`}
                 </option>
               ))}
-            </select>
+            </Select>
           </Campo>
         </div>
         {loja && (
@@ -438,7 +439,7 @@ export default function HistoricoPage() {
         <div className="space-y-5">
           <SectionCard
             titulo="Receita e margem no período"
-            subtitulo={`${dados.serie.length} ${dados.serie.length === 1 ? 'mês' : 'meses'} · a linha pontilhada é a margem média do recorte`}
+            subtitulo={`${plural(dados.serie.length, 'mês', 'meses')} · a linha pontilhada é a margem média do recorte (${formatPct(HISTORICO.margem)})`}
           >
             <GraficoMensalHistorico dados={dados.serie} />
           </SectionCard>
@@ -715,9 +716,6 @@ export default function HistoricoPage() {
 }
 
 /* ------------------------------------------------------------- auxiliares -- */
-
-const ESTILO_SELECT =
-  'focus-ring w-full truncate rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-medium text-ink disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400'
 
 function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
   return (

@@ -15,7 +15,7 @@ import {
   PRAZO_IMPORTADO_DIAS,
   type OrdemCompra,
 } from '@/data/derived'
-import { formatBRLCompact, formatDataHora, formatNum } from '@/lib/format'
+import { formatBRLCompact, formatDataHora, formatNum, plural } from '@/lib/format'
 
 export default function EmissaoPage() {
   const { push } = useToast()
@@ -54,14 +54,16 @@ export default function EmissaoPage() {
       window.setTimeout(() => {
         setEmitidas((atual) => (atual.includes(oc.numero) ? atual : [...atual, oc.numero]))
         setIntegradoEm((atual) => ({ ...atual, [oc.numero]: new Date() }))
-        push(
-          `${oc.numero} integrada ao ERP`,
-          'ok',
-          `${oc.fornecedor} · ${formatNum(oc.pecas)} pç · ${formatBRLCompact(oc.valor, 2)}`,
-        )
         if (i === OCS_DO_LINE.length - 1) {
           setEmitindo(false)
           emitirOCs()
+          const pecas = OCS_DO_LINE.reduce((a, o) => a + o.pecas, 0)
+          const valor = OCS_DO_LINE.reduce((a, o) => a + o.valor, 0)
+          push(
+            plural(OCS_DO_LINE.length, 'OC integrada ao ERP', 'OCs integradas ao ERP'),
+            'ok',
+            `${formatNum(pecas)} pç · ${formatBRLCompact(valor, 2)}`,
+          )
         }
       }, 450 * (i + 1))
     })
@@ -98,7 +100,9 @@ export default function EmissaoPage() {
               {emitidas.length} de {OCS_DO_LINE.length} emitidas
             </StatusChip>
             {totais.importadas > 0 && (
-              <StatusChip tom="warn">{totais.importadas} importada(s) · D-90</StatusChip>
+              <StatusChip tom="warn">
+                {plural(totais.importadas, 'importada')} · D-{formatNum(PRAZO_IMPORTADO_DIAS)}
+              </StatusChip>
             )}
           </>
         }
@@ -110,12 +114,16 @@ export default function EmissaoPage() {
             >
               Ver distribuição <span aria-hidden>→</span>
             </Link>
-            <Button variante="primario" onClick={gerar} disabled={emitindo || pendentes === 0}>
+            <Button
+              variante={emitidas.length === 0 ? 'secundario' : 'primario'}
+              onClick={gerar}
+              disabled={emitindo || pendentes === 0}
+            >
               {emitindo
                 ? 'Emitindo…'
                 : pendentes === 0
                   ? 'Tudo emitido ✓'
-                  : `Gerar OCs (${pendentes})`}
+                  : `Gerar ${plural(pendentes, 'OC')}`}
             </Button>
           </>
         }
@@ -125,7 +133,7 @@ export default function EmissaoPage() {
         <KpiCard
           label="Ordens emitidas"
           valor={`${formatNum(totais.ocs)} / ${formatNum(OCS_DO_LINE.length)}`}
-          sub={pendentes === 0 ? 'carteira completa' : `${pendentes} pendentes`}
+          sub={pendentes === 0 ? 'carteira completa' : plural(pendentes, 'pendente')}
           tomSub={pendentes === 0 ? 'alta' : 'neutra'}
           dica="Uma OC por fornecedor, agrupando todas as referências negociadas com ele."
         />
@@ -159,7 +167,11 @@ export default function EmissaoPage() {
           texto={`O line está carregado e ${OCS_DO_LINE.length} ordens estão prontas para sair, agrupadas por fornecedor. Gerar as OCs integra cada uma ao ERP.`}
           nota="Demo · integração simulada"
           assinatura={false}
-          cta={{ rotulo: `Gerar ${OCS_DO_LINE.length} OCs`, icone: <Icone nome="emissao" tamanho={15} />, onClick: gerar }}
+          cta={{
+            rotulo: `Gerar ${plural(OCS_DO_LINE.length, 'OC')}`,
+            icone: <Icone nome="emissao" tamanho={15} />,
+            onClick: gerar,
+          }}
         />
       ) : (
         <SectionCard

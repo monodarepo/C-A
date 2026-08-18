@@ -21,7 +21,7 @@ import {
   serieSparkline,
   type AlertaSortimento,
 } from '@/data/derived'
-import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct } from '@/lib/format'
+import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, plural } from '@/lib/format'
 
 /** Um tick a cada 5 segundos, como manda a spec da fase. */
 const INTERVALO_MS = 5000
@@ -253,7 +253,9 @@ export default function VivoPage() {
       </SectionCard>
 
       {/* ------------------------------------------------------- alertas -- */}
-      <div className="grid gap-5 xl:grid-cols-2">
+      {/* items-start: cada card fecha na altura do próprio conteúdo, sem
+          rodapé morto quando a coluna irmã é mais alta */}
+      <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
         <SectionCard
           titulo="Alertas de falta"
           subtitulo={`${formatNum(ALERTAS_FALTA.length)} referências somando as ${formatNum(VIVO.rupturas)} rupturas do dia`}
@@ -270,7 +272,7 @@ export default function VivoPage() {
                 push(
                   'Reposição encaminhada',
                   'ok',
-                  `${a.produto} · ${formatNum(a.lojas)} loja(s) na fila de reposição por tamanho.`,
+                  `${a.produto} · ${plural(a.lojas, 'loja')} na fila de reposição por tamanho.`,
                 )
               }}
             />
@@ -421,7 +423,14 @@ function ListaAlertas({
               </div>
               <p className="num mt-0.5 text-[11px] text-muted">
                 {a.cod ? `ref ${a.cod} · ` : ''}
-                {a.cor} · {formatNum(a.lojas)} loja(s) · {formatNum(a.pecas)} pç ·{' '}
+                {[
+                  a.cor && a.cor !== '—' ? a.cor : null,
+                  plural(a.lojas, 'loja'),
+                  `${formatNum(a.pecas)} pç`,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+                {' · '}
                 <span className={tipo === 'falta' ? 'text-crit' : 'text-warn'}>
                   {formatNum(a.cobertura, 1)} d de cobertura
                 </span>

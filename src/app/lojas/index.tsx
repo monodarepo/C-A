@@ -22,7 +22,7 @@ import {
   type Loja,
   type Porte,
 } from '@/data/derived'
-import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct } from '@/lib/format'
+import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, plural } from '@/lib/format'
 
 type LojaNova = {
   nome: string
@@ -79,12 +79,12 @@ export default function LojasPage() {
             <StatusChip tom="neutro">{formatNum(REDE.clusters.length)} clusters</StatusChip>
             {cadastradas.length > 0 && (
               <StatusChip tom="ok">
-                +{formatNum(cadastradas.length)} cadastrada(s) nesta sessão
+                +{plural(cadastradas.length, 'cadastrada')} nesta sessão
               </StatusChip>
             )}
             {pendentes.length > 0 && (
               <StatusChip tom="warn">
-                {formatNum(pendentes.length)} loja(s) fora do cluster
+                {plural(pendentes.length, 'loja')} fora do cluster
               </StatusChip>
             )}
           </>
@@ -133,7 +133,7 @@ export default function LojasPage() {
       {/* ------------------------------------------------ reagrupamento -- */}
       {pendentes.length > 0 && (
         <SectionCard
-          titulo={`Reagrupamento sugerido — ${formatNum(pendentes.length)} loja(s) fora do cluster`}
+          titulo={`Reagrupamento sugerido — ${plural(pendentes.length, 'loja')} fora do cluster`}
           subtitulo="Lojas cujo desempenho está no patamar de outro degrau da escada A→B→C"
           tag={<StatusChip tom="warn">Sugestão da IA</StatusChip>}
         >
@@ -157,10 +157,22 @@ export default function LojasPage() {
                       <StatusChip tom="info">{s.clusterSugerido}</StatusChip>
                     </span>
                   </div>
-                  <p className="mt-1 text-[11.5px] leading-snug text-slate-600">{s.motivo}</p>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11.5px]">
+                    <span className="num rounded bg-white/80 px-1.5 py-0.5 font-semibold text-slate-600 ring-1 ring-[#F6D8A0]">
+                      P{formatNum(s.desempenho)} da rede
+                    </span>
+                    <span className="num rounded bg-white/80 px-1.5 py-0.5 text-slate-500 ring-1 ring-[#F6D8A0]">
+                      mediana {s.clusterAtual}: {formatNum(s.desempenhoClusterAtual)}
+                    </span>
+                    <span className="text-slate-600">
+                      {s.desempenho > s.desempenhoClusterAtual
+                        ? `gira como loja de ${s.clusterSugerido}`
+                        : `opera no patamar de ${s.clusterSugerido}`}
+                    </span>
+                  </div>
                 </div>
                 <Button
-                  variante="primario"
+                  variante="secundario"
                   tamanho="sm"
                   onClick={() => {
                     setAceitas((a) => [...a, s.lojaId])
@@ -186,7 +198,7 @@ export default function LojasPage() {
         </Banner>
       )}
 
-      <div className="grid gap-5 xl:grid-cols-[1.45fr_1fr]">
+      <div className="grid items-start gap-5 xl:grid-cols-[1.45fr_1fr]">
         {/* ------------------------------------------------- top 10 lojas -- */}
         <SectionCard
           titulo="Top 10 lojas"
@@ -219,7 +231,9 @@ export default function LojasPage() {
                     }}
                     className="focus-ring cursor-pointer border-b border-line/70 odd:bg-white even:bg-slate-50/50 hover:bg-cea-soft"
                   >
-                    <td className="num px-3 py-2 text-[12px] font-bold text-slate-300">{i + 1}</td>
+                    <td className="num px-3 py-2 text-[12px] font-medium tabular-nums text-slate-500">
+                      {i + 1}
+                    </td>
                     <td className="px-3 py-2">
                       <p className="font-medium leading-snug text-ink">{l.nome}</p>
                       <p className="num text-[11px] text-muted">

@@ -176,7 +176,7 @@ export default function DashboardPage() {
           <StatusChip tom="info">
             Digital {formatPct(DASHBOARD.digitalShare)} ({formatDelta(DASHBOARD.digitalVar)})
           </StatusChip>
-          <StatusChip tom="marca">C&amp;A Pay {formatPct(DASHBOARD.ceaPayShare, 0)}</StatusChip>
+          <StatusChip tom="info">C&amp;A Pay {formatPct(DASHBOARD.ceaPayShare, 0)}</StatusChip>
         </div>
       </div>
 
@@ -209,7 +209,7 @@ export default function DashboardPage() {
         <KpiCard
           label="Markdown acumulado"
           valor={formatPct(DASHBOARD.markdownAcumulado)}
-          sub={`Limite ${formatPct(DASHBOARD.markdownLimite, 0)} · folga ${formatPP(folgaMarkdown)}`}
+          sub={`Limite ${formatPct(DASHBOARD.markdownLimite, 0)} · folga ${formatPP(folgaMarkdown).replace(' p.p.', '\u00A0p.p.')}`}
           tomSub="alta"
           dica="Desconto médio concedido no acumulado da coleção, medido sobre o preço cheio. O limite é a verba de remarcação aprovada no OTB."
         />
@@ -223,14 +223,16 @@ export default function DashboardPage() {
         <KpiCard
           label="Sincronia ERP"
           valor={DASHBOARD.erpStatus}
-          sub={`Último push ${DASHBOARD.erpUltimoPush} · ${formatNum(DASHBOARD.erpErros)} erros`}
+          sub={`Push ${DASHBOARD.erpUltimoPush} · ${formatNum(DASHBOARD.erpErros)}\u00A0erros`}
           tomSub="alta"
           dica="Situação da última integração de plano, pedidos e preços com o sistema corporativo. Erros aqui travam a emissão de pedidos."
         />
       </div>
 
       {/* ------------------------------------- estilistas + top de cidades ---- */}
-      <div className="grid gap-4 xl:grid-cols-3">
+      {/* items-start: o card Top Cidades fecha na altura do conteúdo em vez de
+          esticar com rodapé morto quando o ranking ao lado é mais alto */}
+      <div className="grid gap-4 xl:grid-cols-3 xl:items-start">
         <SectionCard
           className="xl:col-span-2"
           titulo="Ranking de Estilistas"

@@ -122,6 +122,7 @@ export default function BenchmarkPage() {
           valor={BENCHMARK.corDoAno}
           sub="já presente na nossa cartela"
           tomSub="alta"
+          seta="nenhuma"
           dica="Cor de tendência do ano — entra como cor de entrada dos lançamentos da cápsula."
         />
         <KpiCard
@@ -177,11 +178,10 @@ export default function BenchmarkPage() {
             </p>
           </div>
         </div>
-        <p className="mt-3 text-[11.5px] leading-relaxed text-slate-400">
-          O conector é opcional: se o catálogo não responder em 3s, a tela segue com o snapshot de{' '}
-          {formatNum(BENCHMARK.coletaSnapshot.skus)} SKUs (faixa{' '}
+        <p className="mt-3 text-[11.5px] leading-relaxed text-slate-500">
+          Snapshot local de {formatNum(BENCHMARK.coletaSnapshot.skus)} SKUs (faixa{' '}
           {formatBRL(BENCHMARK.coletaSnapshot.min, 0)}–{formatBRL(BENCHMARK.coletaSnapshot.max, 0)})
-          e avisa no toast. A demo nunca depende da rede.
+          · preços revalidados quando o catálogo responde.
         </p>
       </SectionCard>
 
@@ -372,7 +372,7 @@ function CardMovimento({ m }: { m: MovimentoIA }) {
       <p className="mt-2.5 rounded-md bg-white px-2.5 py-1.5 text-[11.5px] font-semibold text-cea-deep">
         {m.impacto}
       </p>
-      <p className="mt-2 border-t border-line pt-2 text-[10.5px] leading-snug text-slate-400">
+      <p className="mt-2 border-t border-line pt-2 text-[11px] leading-snug text-slate-500">
         Base: {m.base}
       </p>
     </article>

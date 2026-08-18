@@ -31,10 +31,11 @@ export function BlocoClusterizacao() {
 
   function sugerir() {
     setCelulas(CLUSTERIZACAO_DEFAULT)
+    const pctEcomm = CLUSTERIZACAO_DEFAULT.find((c) => c.id === 'ecommerce')?.pct ?? 0
     push(
       'Distribuição sugerida aplicada',
       'ok',
-      `Voltou ao default: 82% em loja física e ${CLUSTERIZACAO_DEFAULT.find((c) => c.id === 'ecommerce')?.pct}% em e-commerce.`,
+      `Voltou ao default: ${formatPct(100 - pctEcomm, 0)} em loja física e ${formatPct(pctEcomm, 0)} em e-commerce.`,
     )
   }
 

@@ -7,7 +7,6 @@ import { EmptyGate } from '@/components/ui/EmptyGate'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Modal } from '@/components/ui/Modal'
-import { InputNumero } from '@/components/ui/InputNumero'
 import { useToast } from '@/components/ui/Toast'
 import { usePlano } from '@/app/PlanoProvider'
 import {
@@ -20,7 +19,7 @@ import {
   templateDaLinha,
   type TemplateGrade,
 } from '@/data/derived'
-import { formatNum, formatPct } from '@/lib/format'
+import { formatNum, formatPct, plural } from '@/lib/format'
 
 export default function GradePage() {
   const { push } = useToast()
@@ -28,6 +27,7 @@ export default function GradePage() {
   const { lineCarregado, linhas } = usePlano()
   const [drawerAberto, setDrawerAberto] = useState(false)
   const [quantidades, setQuantidades] = useState<Record<string, number>>({})
+  const [mostrarTodas, setMostrarTodas] = useState(false)
 
   /** Cada item da grade parte da quantidade retornada no line. */
   const itens = useMemo(
@@ -122,12 +122,14 @@ export default function GradePage() {
                 {t.tamanhos.map((tam, i) => (
                   <span
                     key={tam}
-                    title={`${tam}: ${t.curva[i]}% da curva`}
-                    className="flex-1 rounded bg-white px-1 py-1 text-center text-[10px] font-semibold text-slate-600"
+                    title={`${tam}: ${formatPct(t.curva[i], 0)} da curva`}
+                    className="flex-1 rounded bg-white px-1 py-1 text-center"
                   >
-                    {tam}
-                    <span className="num mt-0.5 block text-[9.5px] font-normal text-slate-400">
-                      {t.curva[i]}%
+                    <span className="block text-[10px] font-medium uppercase text-slate-500">
+                      {tam}
+                    </span>
+                    <span className="num mt-0.5 block text-[11px] font-semibold text-slate-700">
+                      {formatPct(t.curva[i], 0)}
                     </span>
                   </span>
                 ))}
@@ -140,7 +142,7 @@ export default function GradePage() {
       {foraDoMultiplo.length > 0 && (
         <SectionCard
           titulo="Ajuste necessário"
-          subtitulo={`${foraDoMultiplo.length} de ${itens.length} itens não fecham em packs inteiros — o line devolve a quantidade que o fornecedor conseguiu, não múltiplos de pack`}
+          subtitulo={`${formatNum(foraDoMultiplo.length)} de ${formatNum(itens.length)} ${foraDoMultiplo.length === 1 ? 'item não fecha' : 'itens não fecham'} em packs inteiros — o line devolve a quantidade que o fornecedor conseguiu, não múltiplos de pack`}
           acoes={
             <Button
               variante="primario"
@@ -153,9 +155,9 @@ export default function GradePage() {
                 const pecasDepois = Object.values(ajustes).reduce((a, v) => a + v, 0)
                 setQuantidades((atual) => ({ ...atual, ...ajustes }))
                 push(
-                  `${foraDoMultiplo.length} itens ajustados`,
+                  plural(foraDoMultiplo.length, 'item ajustado', 'itens ajustados'),
                   'ok',
-                  `+${formatNum(pecasDepois - pecasAntes)} peças para fechar todos os packs.`,
+                  `+${plural(pecasDepois - pecasAntes, 'peça')} para fechar todos os packs.`,
                 )
               }}
             >
@@ -163,36 +165,47 @@ export default function GradePage() {
             </Button>
           }
         >
-          <ul className="space-y-2">
-            {foraDoMultiplo.map((i) => (
-              <li
-                key={i.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#F6D8A0] bg-[var(--warn-soft)] p-3"
-              >
-                <div className="min-w-0">
-                  <p className="text-[12.5px] font-medium text-ink">{i.produto}</p>
-                  <p className="num text-[11.5px] text-muted">
-                    {formatNum(i.qtd)} peças não é múltiplo de {i.template.pecasPorPack} — sobram{' '}
-                    {formatNum(i.qtd % i.template.pecasPorPack)} peças soltas
-                  </p>
-                </div>
-                <Button
-                  tamanho="sm"
-                  onClick={() => {
-                    const ajustado = ajustarAoPack(i.qtd, i.template)
-                    setQuantidades((atual) => ({ ...atual, [i.id]: ajustado }))
-                    push(
-                      'Quantidade ajustada',
-                      'ok',
-                      `${formatNum(i.qtd)} → ${formatNum(ajustado)} peças (${formatNum(ajustado / i.template.pecasPorPack)} packs).`,
-                    )
-                  }}
+          <ul className="space-y-1.5">
+            {(mostrarTodas ? foraDoMultiplo : foraDoMultiplo.slice(0, 4)).map((i) => {
+              const sobra = i.qtd % i.template.pecasPorPack
+              return (
+                <li
+                  key={i.id}
+                  className="flex items-center justify-between gap-3 rounded-md border border-line border-l-2 border-l-warn bg-white py-2 pl-3 pr-2"
                 >
-                  Ajustar para {formatNum(ajustarAoPack(i.qtd, i.template))}
-                </Button>
-              </li>
-            ))}
+                  <p className="min-w-0 truncate text-[12.5px] text-ink">
+                    <span className="font-medium">{i.produto}</span>
+                    <span className="num text-muted">
+                      {' '}
+                      · {sobra === 1 ? 'sobra' : 'sobram'} {plural(sobra, 'pç', 'pç')} · pack{' '}
+                      {formatNum(i.template.pecasPorPack)}
+                    </span>
+                  </p>
+                  <Button
+                    tamanho="sm"
+                    onClick={() => {
+                      const ajustado = ajustarAoPack(i.qtd, i.template)
+                      setQuantidades((atual) => ({ ...atual, [i.id]: ajustado }))
+                      push(
+                        'Quantidade ajustada',
+                        'ok',
+                        `${formatNum(i.qtd)} → ${plural(ajustado, 'peça')} (${plural(ajustado / i.template.pecasPorPack, 'pack')}).`,
+                      )
+                    }}
+                  >
+                    Ajustar para {formatNum(ajustarAoPack(i.qtd, i.template))}
+                  </Button>
+                </li>
+              )
+            })}
           </ul>
+          {foraDoMultiplo.length > 4 && (
+            <div className="mt-2">
+              <Button variante="fantasma" tamanho="sm" onClick={() => setMostrarTodas((v) => !v)}>
+                {mostrarTodas ? 'Mostrar menos' : `Ver todas (${foraDoMultiplo.length})`}
+              </Button>
+            </div>
+          )}
         </SectionCard>
       )}
 
@@ -217,12 +230,17 @@ export default function GradePage() {
             </thead>
             <tbody>
               {itens.map((i) => (
-                <tr
-                  key={i.id}
-                  className={`border-b border-line/70 ${i.ok ? 'odd:bg-white even:bg-slate-50/50' : 'bg-[var(--warn-soft)]'}`}
-                >
+                <tr key={i.id} className="border-b border-line/70 odd:bg-white even:bg-slate-50/50">
                   <td className="num px-3 py-2 text-[12px] font-semibold text-slate-500">
-                    {i.ref}
+                    <span className="inline-flex items-center gap-1.5">
+                      {!i.ok && (
+                        <span
+                          className="h-1.5 w-1.5 shrink-0 rounded-full bg-warn"
+                          title="Fora do múltiplo de pack"
+                        />
+                      )}
+                      {i.ref}
+                    </span>
                   </td>
                   <td className="max-w-[190px] px-3 py-2 font-medium leading-snug text-ink">
                     {i.produto}
@@ -231,15 +249,11 @@ export default function GradePage() {
                     <span className="text-[11.5px] text-slate-600">{i.template.nome}</span>
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <InputNumero
+                    <InputQuantidade
                       valor={i.qtd}
                       onChange={(v) => setQuantidades((atual) => ({ ...atual, [i.id]: v }))}
-                      min={0}
-                      step={i.template.pecasPorPack}
-                      largura="104px"
                       invalido={!i.ok}
                       rotulo={`Quantidade de ${i.produto}`}
-                      className="justify-end"
                     />
                   </td>
                   <td className="num px-3 py-2 text-right font-semibold text-cea-deep">
@@ -321,5 +335,58 @@ function CurvaTemplate({ template }: { template: TemplateGrade }) {
         ))}
       </div>
     </div>
+  )
+}
+
+/**
+ * Campo de quantidade com formato-no-blur: em repouso exibe o número com
+ * separador de milhar (formatNum); no foco mostra o valor cru para edição.
+ * Mesma anatomia visual do InputNumero — o número guardado no estado não muda,
+ * só a exibição.
+ */
+function InputQuantidade({
+  valor,
+  onChange,
+  invalido,
+  rotulo,
+}: {
+  valor: number
+  onChange: (v: number) => void
+  invalido?: boolean
+  rotulo?: string
+}) {
+  const [focado, setFocado] = useState(false)
+  const [rascunho, setRascunho] = useState('')
+
+  function aplicar(bruto: string) {
+    const limpo = Number(bruto.replace(/\./g, '').replace(',', '.'))
+    if (!Number.isNaN(limpo)) onChange(Math.max(0, Math.round(limpo)))
+  }
+
+  return (
+    <span className="inline-flex w-[104px] items-center justify-end">
+      <input
+        type="text"
+        inputMode="numeric"
+        value={focado ? rascunho : formatNum(valor)}
+        aria-label={rotulo}
+        aria-invalid={invalido}
+        onFocus={() => {
+          setRascunho(String(valor))
+          setFocado(true)
+        }}
+        onChange={(e) => {
+          setRascunho(e.target.value)
+          aplicar(e.target.value)
+        }}
+        onBlur={() => {
+          setFocado(false)
+          if (rascunho.trim() === '') onChange(0)
+        }}
+        className={`num focus-ring w-full rounded-md border bg-white px-1.5 py-1 text-right text-[12.5px] font-semibold text-ink ${
+          invalido ? 'border-warn bg-[var(--warn-soft)]' : 'border-line'
+        }`}
+      />
+    </span>
   )
 }

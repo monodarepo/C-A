@@ -27,7 +27,7 @@ import {
   type NoCadastro,
 } from '@/data/derived'
 import { cea } from '@/lib/cea'
-import { formatBRL, formatNum, formatPct } from '@/lib/format'
+import { formatBRL, formatNum, formatPct, plural } from '@/lib/format'
 
 const ABAS = [
   { id: 'setor', rotulo: 'Cadastro de Setor' },
@@ -100,10 +100,10 @@ export default function CadastroPage() {
               Qualidade {formatPct(SCORE_CADASTRO, 0)}
             </StatusChip>
             <StatusChip tom="warn">
-              {formatNum(PENDENCIAS_CADASTRO.length)} pendência(s)
+              {plural(PENDENCIAS_CADASTRO.length, 'pendência')}
             </StatusChip>
             {totalNovos > 0 && (
-              <StatusChip tom="ok">{formatNum(totalNovos)} cadastro(s) nesta sessão</StatusChip>
+              <StatusChip tom="ok">{plural(totalNovos, 'cadastro')} nesta sessão</StatusChip>
             )}
           </>
         }
@@ -163,7 +163,7 @@ export default function CadastroPage() {
                   <span className="num text-[11px] text-muted">{c.hex}</span>
                   <span
                     className="num w-14 text-right text-[11px] text-slate-400"
-                    title={`${c.produtos} produto(s) do catálogo usam esta cor`}
+                    title={`${plural(c.produtos, 'produto do catálogo usa', 'produtos do catálogo usam')} esta cor`}
                   >
                     {formatNum(c.produtos)} pç
                   </span>
@@ -171,8 +171,7 @@ export default function CadastroPage() {
               ))}
             </ul>
             <p className="mt-3 border-t border-line pt-2.5 text-[11px] leading-snug text-slate-400">
-              Cores vêm da cartela real coletada no site. O hex é o tom aproximado usado no
-              placeholder de foto quando o conector não responde.
+              Cartela coletada do site oficial da C&amp;A.
             </p>
           </SectionCard>
         </div>
@@ -192,7 +191,10 @@ export default function CadastroPage() {
             <KpiCard
               label="Pendências abertas"
               valor={formatNum(PENDENCIAS_CADASTRO.length)}
-              sub={`${formatNum(PENDENCIAS_CADASTRO.filter((p) => p.severidade === 'Crítica').length)} crítica(s)`}
+              sub={plural(
+                PENDENCIAS_CADASTRO.filter((p) => p.severidade === 'Crítica').length,
+                'crítica',
+              )}
               tomSub="alerta"
               dica="Referências com campo obrigatório vazio que travam alguma etapa do processo."
             />
@@ -651,10 +653,10 @@ function RamoCadastro({
               <span
                 key={`${f.nome}-${i}`}
                 title={f.detalhe}
-                className={`rounded-md border px-2 py-1 text-[11.5px] ${
+                className={`rounded-md px-2 py-1 text-[11.5px] font-medium ${
                   i >= no.filhos.length
-                    ? 'border-[#A7E8D0] bg-[var(--ok-soft)] font-semibold text-[#0A7355]'
-                    : 'border-line bg-white text-slate-600'
+                    ? 'bg-[var(--ok-soft)] font-semibold text-[#0A7355]'
+                    : 'bg-blue-50 text-cea-blue'
                 }`}
               >
                 {f.nome}
@@ -662,23 +664,16 @@ function RamoCadastro({
             ))}
           </div>
 
-          {no.atributos?.map((a) => (
-            <div key={a.grupo}>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-                {a.grupo}
-              </p>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {a.termos.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded bg-white px-1.5 py-0.5 text-[11px] text-slate-500 ring-1 ring-line"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
+          {no.atributos && no.atributos.length > 0 && (
+            <div className="space-y-1">
+              {no.atributos.map((a) => (
+                <p key={a.grupo} className="text-[11.5px] leading-snug text-muted">
+                  <span className="font-medium text-slate-500">{a.grupo}:</span>{' '}
+                  {a.termos.join(' · ')}
+                </p>
+              ))}
             </div>
-          ))}
+          )}
 
           {no.nota && (
             <p className="border-t border-line pt-2 text-[11.5px] leading-snug text-slate-500">

@@ -17,14 +17,14 @@ import {
   type EventoCiclo,
   type TipoEvento,
 } from '@/data/derived'
-import { formatBRLCompact, formatNum, formatPct } from '@/lib/format'
+import { formatBRLCompact, formatNum, formatPct, plural } from '@/lib/format'
 
 const TIPOS: TipoEvento[] = ['EVENTO', 'COMERCIAL', 'CÁPSULA', 'CICLO', 'VITRINE']
 
-const TOM_TIPO: Record<TipoEvento, 'warn' | 'info' | 'marca' | 'ok' | 'neutro'> = {
+const TOM_TIPO: Record<TipoEvento, 'warn' | 'info' | 'violeta' | 'ok' | 'neutro'> = {
   EVENTO: 'warn',
   COMERCIAL: 'info',
-  'CÁPSULA': 'marca',
+  'CÁPSULA': 'violeta',
   CICLO: 'ok',
   VITRINE: 'neutro',
 }
@@ -183,7 +183,7 @@ export default function EventosPage() {
             return (
               <div
                 key={e.id}
-                className={`rounded-lg border p-3.5 transition ${
+                className={`flex h-full flex-col rounded-lg border p-3.5 transition ${
                   ativoNoCard ? 'border-cea-blue shadow-pop' : 'border-line'
                 } ${e.ativo ? 'bg-card' : 'bg-slate-50 opacity-70'}`}
               >
@@ -209,8 +209,8 @@ export default function EventosPage() {
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-[11.5px] leading-snug text-slate-600">{e.nota}</p>
-                <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-line pt-2">
+                <p className="mb-2.5 mt-2 text-[11.5px] leading-snug text-slate-600">{e.nota}</p>
+                <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-2">
                   {e.ref && (
                     <span className="num text-[11px] font-semibold text-slate-400">{e.ref}</span>
                   )}
@@ -280,7 +280,11 @@ export default function EventosPage() {
       <SectionCard
         titulo="Histórico de decisões"
         subtitulo="Ativações, criações e migrações Need → Dorsal desta sessão"
-        tag={<StatusChip tom="neutro">{decisoes.length} registro(s)</StatusChip>}
+        tag={
+          <StatusChip tom="neutro">
+            {decisoes.length === 0 ? 'Nenhum registro' : plural(decisoes.length, 'registro')}
+          </StatusChip>
+        }
       >
         {decisoes.length === 0 ? (
           <p className="rounded-lg border border-line bg-slate-50/60 p-4 text-[12.5px] leading-snug text-slate-600">

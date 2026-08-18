@@ -8,6 +8,7 @@ import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Modal } from '@/components/ui/Modal'
+import { Select } from '@/components/ui/Select'
 import { InputNumero } from '@/components/ui/InputNumero'
 import { useToast } from '@/components/ui/Toast'
 import { ListaDeCompras } from './ListaDeCompras'
@@ -21,7 +22,7 @@ import {
   PLANO,
   type LinhaPlano,
 } from '@/data/derived'
-import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct } from '@/lib/format'
+import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, plural } from '@/lib/format'
 
 const TODOS = 'todos'
 
@@ -159,7 +160,7 @@ export default function PlanoPage() {
               type="button"
               onClick={() => setOrigem(ativa ? TODOS : o)}
               aria-pressed={ativa}
-              title={`${qtdLinhas} linha(s) com origem ${o}`}
+              title={`${plural(qtdLinhas, 'linha')} com origem ${o}`}
               className={`focus-ring rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
                 ativa
                   ? 'border-cea-blue bg-cea-blue text-white'
@@ -230,27 +231,27 @@ export default function PlanoPage() {
         }
       >
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            <span className="mb-1 block">N1 · Departamento</span>
-            <select
-              value={sessao}
-              onChange={(e) => setSessao(e.target.value)}
-              className="focus-ring w-full rounded-lg border border-line bg-white px-2 py-1.5 text-[12px] font-normal normal-case text-ink"
-            >
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              N1 · Departamento
+            </span>
+            <Select value={sessao} onChange={(e) => setSessao(e.target.value)} className="w-full">
               <option value={TODOS}>Todos</option>
               {sessoes.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            <span className="mb-1 block">N3 · Categoria</span>
-            <select
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              N3 · Categoria
+            </span>
+            <Select
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
-              className="focus-ring w-full rounded-lg border border-line bg-white px-2 py-1.5 text-[12px] font-normal normal-case text-ink"
+              className="w-full"
             >
               <option value={TODOS}>Todas</option>
               {CATEGORIAS_PLANO.map((c) => (
@@ -258,37 +259,33 @@ export default function PlanoPage() {
                   {c}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            <span className="mb-1 block">Faixa de preço</span>
-            <select
-              value={faixa}
-              onChange={(e) => setFaixa(e.target.value)}
-              className="focus-ring w-full rounded-lg border border-line bg-white px-2 py-1.5 text-[12px] font-normal normal-case text-ink"
-            >
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Faixa de preço
+            </span>
+            <Select value={faixa} onChange={(e) => setFaixa(e.target.value)} className="w-full">
               <option value={TODOS}>Todas</option>
               {PIRAMIDE_PRECO.map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.id} · {f.rotulo}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            <span className="mb-1 block">Origem</span>
-            <select
-              value={origem}
-              onChange={(e) => setOrigem(e.target.value)}
-              className="focus-ring w-full rounded-lg border border-line bg-white px-2 py-1.5 text-[12px] font-normal normal-case text-ink"
-            >
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              Origem
+            </span>
+            <Select value={origem} onChange={(e) => setOrigem(e.target.value)} className="w-full">
               <option value={TODOS}>Todas</option>
               {ORIGENS_PLANO.map((o) => (
                 <option key={o} value={o}>
                   {o}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         </div>
         {filtrando && (
@@ -354,7 +351,7 @@ export default function PlanoPage() {
           subtitulo="Qualificado contra o baseline Original"
           tag={
             <StatusChip tom={historico.length ? 'info' : 'neutro'}>
-              {historico.length} alteraç{historico.length === 1 ? 'ão' : 'ões'} nesta sessão
+              {plural(historico.length, 'alteração', 'alterações')} nesta sessão
             </StatusChip>
           }
         >
@@ -403,7 +400,7 @@ export default function PlanoPage() {
           titulo="Comparação com o Line"
           subtitulo="Pedido planejado × retorno negociado com os fornecedores"
         >
-          <div className="flex flex-col items-start gap-2 rounded-lg border border-line bg-slate-50/60 p-4">
+          <div className="flex flex-col items-start gap-2 rounded-lg bg-slate-50 p-4">
             <StatusChip tom="neutro">Line ainda não devolvido</StatusChip>
             <p className="text-[12.5px] leading-snug text-slate-600">
               A comparação abre quando o line voltar dos fornecedores, com preço negociado e
@@ -449,17 +446,17 @@ export default function PlanoPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-[12px] font-semibold text-muted">
               <span className="mb-1 block uppercase tracking-wide">Categoria</span>
-              <select
+              <Select
                 value={novaCategoria}
                 onChange={(e) => setNovaCategoria(e.target.value)}
-                className="focus-ring w-full rounded-lg border border-line bg-white px-2.5 py-2 text-[13px] font-normal text-ink"
+                className="w-full font-normal normal-case tracking-normal"
               >
                 {CATEGORIAS_PLANO.map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label className="block text-[12px] font-semibold text-muted">
               <span className="mb-1 block uppercase tracking-wide">Quantidade</span>
@@ -498,7 +495,7 @@ export default function PlanoPage() {
               />
             </label>
           </div>
-          <p className="rounded-lg border border-line bg-slate-50/60 p-3 text-[12px] text-muted">
+          <p className="rounded-lg bg-slate-50 p-3 text-[12px] text-muted">
             Custo derivado: <strong className="num text-ink">{formatBRL(novoPv * (1 - novaMargem / 100))}</strong>{' '}
             por peça · investimento de{' '}
             <strong className="num text-ink">
@@ -526,7 +523,7 @@ function Impacto({
   positivo: boolean
 }) {
   return (
-    <div className="rounded-lg border border-line bg-slate-50/60 p-3">
+    <div className="rounded-lg bg-slate-50 p-3">
       <dt className="kpi-label">{rotulo}</dt>
       <dd className="num mt-1 text-[15px] font-semibold text-cea-deep">{qualificado}</dd>
       <dd className="num mt-0.5 text-[11.5px] text-muted">

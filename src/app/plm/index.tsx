@@ -27,7 +27,7 @@ import {
   type ItemPipeline,
   type RiscoPLM,
 } from '@/data/derived'
-import { formatBRL, formatDelta, formatNum, formatPct, formatPP } from '@/lib/format'
+import { formatBRL, formatDelta, formatNum, formatPct, plural } from '@/lib/format'
 
 export default function PlmPage() {
   const { push } = useToast()
@@ -57,15 +57,10 @@ export default function PlmPage() {
       />
 
       <Banner tom="info" titulo="Escopo desta tela">
-        <p>
-          <strong>Serve para:</strong> {ESCOPO_PLM.servePara}
-        </p>
-        <p className="mt-1">
-          <strong>Não confundir:</strong> {ESCOPO_PLM.naoConfundir}{' '}
-          <Link to="/pricing" className="font-semibold text-cea-blue hover:underline">
-            Ir para o Pricing →
-          </Link>
-        </p>
+        {ESCOPO_PLM.servePara} A remarcação em si é executada no{' '}
+        <Link to="/pricing" className="font-semibold text-cea-blue hover:underline">
+          Pricing →
+        </Link>
       </Banner>
 
       {/* ------------------------------------------------ ficha destaque -- */}
@@ -111,7 +106,7 @@ export default function PlmPage() {
             <CardEstagio key={e.fase} e={e} ativo={ficha.fase === e.fase} />
           ))}
         </div>
-        <p className="mt-3 border-t border-line pt-2.5 text-[11.5px] leading-relaxed text-slate-400">
+        <p className="mt-3 border-t border-line pt-2.5 text-[11px] leading-relaxed text-slate-500">
           {formatNum(TOTAL_CLASSIFICADO_PLM)} dos {formatNum(COLECAO.skusAtivos)} SKUs ativos estão
           classificados. Os outros {formatNum(SKUS_SEM_LEITURA_PLM)} têm menos de 4 semanas em loja e
           ainda não fecham leitura de velocidade — entram na classificação na virada da semana.
@@ -152,7 +147,7 @@ export default function PlmPage() {
             </tbody>
           </table>
         </div>
-        <p className="border-t border-line px-3 py-2 text-[11px] text-slate-400">
+        <p className="border-t border-line px-3 py-2 text-[11px] text-slate-500">
           Regra do risco: vermelho a partir de 20 semanas de cobertura ou velocidade ≤ −15%; amarelo
           a partir de 12 semanas ou velocidade negativa; verde no resto.
         </p>
@@ -196,8 +191,8 @@ export default function PlmPage() {
                 <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-line pt-2.5">
                   <span className="num text-[11.5px] text-muted">
                     {ligado
-                      ? `${formatNum(g.alcance)} SKU(s) na mira hoje`
-                      : `${formatNum(g.alcance)} SKU(s) sem cobertura da regra`}
+                      ? `${plural(g.alcance, 'SKU')} na mira hoje`
+                      : `${plural(g.alcance, 'SKU')} sem cobertura da regra`}
                   </span>
                   <button
                     type="button"
@@ -210,8 +205,8 @@ export default function PlmPage() {
                         `${g.id} · ${ligado ? 'pausado' : 'monitorando'}`,
                         ligado ? 'warn' : 'ok',
                         ligado
-                          ? `A regra para de sugerir — ${formatNum(g.alcance)} SKU(s) saem da mira.`
-                          : `A regra volta a avaliar ${formatNum(g.alcance)} SKU(s) por semana.`,
+                          ? `A regra para de sugerir — ${plural(g.alcance, 'SKU sai', 'SKUs saem')} da mira.`
+                          : `A regra volta a avaliar ${plural(g.alcance, 'SKU')} por semana.`,
                       )
                     }}
                     className={`focus-ring relative h-[22px] w-[40px] shrink-0 rounded-full transition ${
@@ -303,8 +298,8 @@ function FichaProduto({ ficha }: { ficha: FichaPLM }) {
         />
         <KpiCard
           label="Velocidade"
-          valor={`${formatDelta(ficha.velocidadeAntes)} → ${formatDelta(ficha.velocidadeDepois)}`}
-          sub={`${formatPP(aceleracao, 0)} no movimento`}
+          valor={formatDelta(ficha.velocidadeDepois)}
+          sub={`de ${formatDelta(ficha.velocidadeAntes)} antes do movimento`}
           tomSub={aceleracao > 0 ? 'alta' : aceleracao < 0 ? 'baixa' : 'neutra'}
           dica="Variação de venda semanal antes e depois do último movimento (markdown, reposição ou ampliação de cor)."
         />
@@ -320,6 +315,7 @@ function FichaProduto({ ficha }: { ficha: FichaPLM }) {
           valor={ficha.pulmao === 0 ? 'zerado' : formatNum(ficha.pulmao)}
           sub={ficha.pulmao === 0 ? 'nada a escoar' : 'peças a escoar'}
           tomSub={ficha.pulmao === 0 ? 'alta' : 'neutra'}
+          seta="nenhuma"
           dica="Peças em estoque que ainda precisam sair. Pulmão zero na fase 8 é liquidação bem executada."
         />
         <KpiCard
@@ -327,6 +323,7 @@ function FichaProduto({ ficha }: { ficha: FichaPLM }) {
           valor={formatPct(ficha.sellOut, 0)}
           sub={ficha.sellOut === 100 ? 'grade encerrada' : 'do total produzido'}
           tomSub={ficha.sellOut >= 70 ? 'alta' : ficha.sellOut < 30 ? 'neutra' : 'alerta'}
+          seta="nenhuma"
           dica="Percentual das peças produzidas que já foi vendido."
         />
       </div>

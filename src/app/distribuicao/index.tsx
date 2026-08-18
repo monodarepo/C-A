@@ -9,6 +9,7 @@ import { ProductImage } from '@/components/ui/ProductImage'
 import { EmptyGate } from '@/components/ui/EmptyGate'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Tabs } from '@/components/ui/Tabs'
+import { Select } from '@/components/ui/Select'
 import { Barra } from '@/components/ui/Barra'
 import { usePlano } from '@/app/PlanoProvider'
 import {
@@ -24,7 +25,7 @@ import {
   TOTAIS_DISTRIBUICAO,
   lojaPorNome,
 } from '@/data/derived'
-import { formatNum, formatPct } from '@/lib/format'
+import { formatNum, formatPct, plural } from '@/lib/format'
 
 const ABAS = [
   { id: 'loja', rotulo: 'Por loja' },
@@ -130,7 +131,7 @@ export default function DistribuicaoPage() {
         />
         <EmptyGate
           icone={<Icone nome="distribuicao" tamanho={22} />}
-          titulo="Carregue o Line antes de ver a distribuição"
+          titulo="Distribuição ainda não calculada"
           texto="A alocação é feita sobre a quantidade que entrou em pedido. Sem line devolvido não existe carga para distribuir."
           nota="A cadeia é Line → Grade → Emissão → Distribuição"
           cta={{ rotulo: 'Ir para o Line', icone: <Icone nome="seta" tamanho={15} />, onClick: () => navigate('/line') }}
@@ -148,7 +149,7 @@ export default function DistribuicaoPage() {
           <>
             <StatusChip tom="neutro">Somente leitura</StatusChip>
             <StatusChip tom={TOTAIS_DISTRIBUICAO.lacunas > 0 ? 'warn' : 'ok'}>
-              {TOTAIS_DISTRIBUICAO.lacunas} lacunas
+              {plural(TOTAIS_DISTRIBUICAO.lacunas, 'lacuna')}
             </StatusChip>
           </>
         }
@@ -215,17 +216,17 @@ export default function DistribuicaoPage() {
               <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                 <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                   <span className="mb-1 block">Loja</span>
-                  <select
+                  <Select
                     value={lojaId}
                     onChange={(e) => setLojaId(e.target.value)}
-                    className="focus-ring rounded-lg border border-line bg-white px-2.5 py-1.5 text-[13px] font-normal normal-case text-ink"
+                    className="min-w-[260px] font-normal normal-case tracking-normal"
                   >
                     {LOJAS_DISTRIBUICAO.map((l) => (
                       <option key={l.id} value={l.id}>
                         {l.nome} — Cluster {l.cluster} · Clima {l.clima}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted">
                   <StatusChip tom="info">Cluster {loja.cluster}</StatusChip>
@@ -464,7 +465,7 @@ export default function DistribuicaoPage() {
                 <p className="mt-1 text-[12.5px] leading-snug text-slate-600">
                   SKU de clima <strong>Quente</strong> não é distribuído em loja de clima{' '}
                   <strong>Fria</strong> nem <strong>Híbrida Fria</strong>. Hoje isso bloqueia{' '}
-                  {TOTAIS_DISTRIBUICAO.lacunas} células — as lojas de clima frio do recorte.
+                  {plural(TOTAIS_DISTRIBUICAO.lacunas, 'célula')} — as lojas de clima frio do recorte.
                 </p>
               </div>
               <div>
@@ -500,7 +501,7 @@ export default function DistribuicaoPage() {
                   <div key={g.rotulo} className="rounded-lg border border-line bg-slate-50/60 p-3.5">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="text-[12.5px] font-semibold text-cea-deep">{g.rotulo}</p>
-                      <span className="num text-[11px] text-muted">{g.lojas} lojas</span>
+                      <span className="num text-[11px] text-muted">{plural(g.lojas, 'loja')}</span>
                     </div>
                     <p className="num mt-1.5 font-display text-[19px] font-semibold text-cea-deep">
                       {formatNum(g.pecasPorLoja)}
@@ -509,7 +510,7 @@ export default function DistribuicaoPage() {
                     <p className="num mt-2 border-t border-line pt-2 text-[11.5px] text-muted">
                       {formatNum(g.pecas)} peças no total ·{' '}
                       <span className={g.lacunas ? 'font-semibold text-warn' : ''}>
-                        {g.lacunas} lacunas
+                        {plural(g.lacunas, 'lacuna')}
                       </span>
                     </p>
                   </div>

@@ -3,6 +3,7 @@ import { SectionCard } from '@/components/ui/SectionCard'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { Button } from '@/components/ui/Button'
 import { InputNumero } from '@/components/ui/InputNumero'
+import { Select } from '@/components/ui/Select'
 import { useToast } from '@/components/ui/Toast'
 import { formatBRL, formatNum, formatPct } from '@/lib/format'
 import {
@@ -186,20 +187,20 @@ export function BlocoGabarito() {
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
             Sessão
-            <select
+            <Select
               value={sessao}
               onChange={(e) => {
                 setSessao(e.target.value)
                 push(`Sessão ${e.target.value}`, 'info', 'O gabarito padrão muda por sessão.')
               }}
-              className="focus-ring rounded-lg border border-line bg-white px-2 py-1 text-[12px] font-normal normal-case text-ink"
+              className="font-normal normal-case tracking-normal"
             >
               {SESSOES_GABARITO.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <Button tamanho="sm" onClick={restaurar}>
             Restaurar

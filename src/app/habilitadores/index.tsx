@@ -54,9 +54,8 @@ export default function HabilitadoresPage() {
       />
 
       <Banner tom="info" titulo="Habilitadores não são atributos">
-        Habilitador é <strong>quanto e como comprar</strong> — verba, profundidade, packs, divisão
-        Dorsal × Need. Atributo é <strong>o que o produto é</strong> — fit, tecido, padronagem, cor.
-        A taxonomia de atributos fica em{' '}
+        Habilitador define <strong>quanto e como comprar</strong> (verba, packs, Dorsal × Need); o
+        que o produto é fica na taxonomia de{' '}
         <Link to="/atributos" className="font-semibold text-cea-blue hover:underline">
           Atributos de Produto
         </Link>
@@ -102,7 +101,7 @@ export default function HabilitadoresPage() {
 
       <p className="text-[11.5px] text-slate-400">
         Tudo nesta tela é parâmetro de entrada: as edições ficam em memória e alimentam o Plano de
-        Sortimento. Nenhum número aqui é gravado em sistema.
+        Sortimento, sem gravar nada em sistema.
       </p>
     </div>
   )

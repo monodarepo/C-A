@@ -21,18 +21,27 @@ import {
   VINCULOS_EVENTO,
   type TipoEvento,
 } from '@/data/derived'
-import { formatBRLCompact, formatDelta, formatNum, formatPct } from '@/lib/format'
+import {
+  formatBRL,
+  formatBRLCompact,
+  formatDelta,
+  formatNum,
+  formatPct,
+  plural,
+} from '@/lib/format'
 
 /**
  * Valores de compensação vivem na casa dos milhares: "R$ 310 mil" lê melhor que
- * "R$ 310,00 mil". Acima de 1 milhão volta a usar 2 casas.
+ * "R$ 310,00 mil". Acima de 1 milhão volta a usar 2 casas. Zero sai como
+ * "R$ 0" — sem centavos ao lado de valores compactos.
  */
-const brl = (v: number) => formatBRLCompact(v, Math.abs(v) >= 1e6 ? 2 : 0)
+const brl = (v: number) =>
+  v === 0 ? formatBRL(0, 0) : formatBRLCompact(v, Math.abs(v) >= 1e6 ? 2 : 0)
 
-const TOM_TAG: Record<TipoEvento, 'warn' | 'info' | 'ok' | 'marca' | 'neutro'> = {
+const TOM_TAG: Record<TipoEvento, 'warn' | 'info' | 'ok' | 'violeta' | 'neutro'> = {
   EVENTO: 'warn',
   COMERCIAL: 'info',
-  'CÁPSULA': 'marca',
+  'CÁPSULA': 'violeta',
   CICLO: 'ok',
   VITRINE: 'neutro',
 }
@@ -158,7 +167,7 @@ export default function RetroalimentacaoPage() {
       <ReguaDeBanda banda={banda} />
 
       {/* -------------------------------------------------- inclusões ---- */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid items-start gap-4 lg:grid-cols-2">
         <SectionCard
           titulo="Inclusões da parede"
           subtitulo="Itens que o Mapa trouxe e o plano original não tinha"
@@ -326,7 +335,7 @@ export default function RetroalimentacaoPage() {
         subtitulo="Decisões da parede, compensações e mudanças de quantidade desta sessão"
         tag={
           <StatusChip tom="neutro">
-            {decisoes.length + historico.length} registro(s)
+            {plural(decisoes.length + historico.length, 'registro')}
           </StatusChip>
         }
       >

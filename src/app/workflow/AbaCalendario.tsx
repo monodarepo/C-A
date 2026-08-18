@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { useToast } from '@/components/ui/Toast'
-import { formatDataCurta, segundaDaSemanaISO } from '@/lib/format'
+import { formatDataCurta, plural, segundaDaSemanaISO } from '@/lib/format'
 import {
   ANO_CALENDARIO,
   AREAS,
@@ -100,7 +100,7 @@ export function AbaCalendario() {
     push(
       'Sugestão aplicada',
       'ok',
-      `${alvo?.nome} foi ${conflito.deslocamento > 0 ? 'adiada' : 'antecipada'} em ${Math.abs(conflito.deslocamento)} semanas.`,
+      `${alvo?.nome} foi ${conflito.deslocamento > 0 ? 'adiada' : 'antecipada'} em ${plural(Math.abs(conflito.deslocamento), 'semana')}.`,
     )
   }
 
@@ -181,7 +181,7 @@ export function AbaCalendario() {
       {/* ----------------------------------------------------------- gantt --- */}
       <SectionCard
         titulo={`Calendário de Processos de Compras · ${ANO_CALENDARIO}`}
-        subtitulo="52 semanas · clique numa barra para ver a atividade · barras curtas mostram só a cor da área"
+        subtitulo={`${SEMANAS_NO_ANO} semanas · clique numa barra para ver o detalhe da atividade`}
         compacto
         acoes={
           <span className="flex flex-wrap items-center gap-2.5 text-[10.5px] text-muted">
@@ -284,10 +284,9 @@ export function AbaCalendario() {
           </div>
         </div>
         <p className="border-t border-line px-3 py-2 text-[11px] text-slate-400">
-          O Gantt cobre o ano civil de {ANO_CALENDARIO}: atividades do Inverno 2 que avançam para{' '}
-          {ANO_CALENDARIO + 1} aparecem encostadas na semana {SEMANAS_NO_ANO}. Campanhas em vermelho
-          vêm do calendário comercial real da C&amp;A; a liquidação de janeiro é a janela padrão do
-          varejo.
+          Campanhas em vermelho vêm do calendário comercial real da C&amp;A; atividades do
+          Inverno 2 que avançam para {ANO_CALENDARIO + 1} ficam encostadas na semana{' '}
+          {SEMANAS_NO_ANO}.
         </p>
       </SectionCard>
 
@@ -314,7 +313,7 @@ export function AbaCalendario() {
         subtitulo="Sobreposições entre coleções que disputam a mesma equipe ou o mesmo CD"
         tag={
           <StatusChip tom={conflitosAbertos.length > 0 ? 'warn' : 'ok'}>
-            {conflitosAbertos.length} aberto{conflitosAbertos.length === 1 ? '' : 's'}
+            {plural(conflitosAbertos.length, 'aberto')}
           </StatusChip>
         }
       >

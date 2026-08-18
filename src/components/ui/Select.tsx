@@ -20,7 +20,7 @@ export const Select = forwardRef<HTMLSelectElement, Props>(function Select(
       <select
         ref={ref}
         {...rest}
-        className="focus-ring w-full appearance-none rounded-lg border border-line bg-white py-[7px] pl-3 pr-8 text-[13px] text-ink transition-colors hover:border-line-forte"
+        className="focus-ring w-full appearance-none truncate rounded-lg border border-line bg-white py-[7px] pl-3 pr-8 text-[13px] text-ink transition-colors hover:border-line-forte disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
       >
         {children}
       </select>

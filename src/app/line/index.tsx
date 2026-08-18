@@ -10,7 +10,7 @@ import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
 import { usePlano } from '@/app/PlanoProvider'
 import { COLECAO, LIMITE_ACEITE_LINE, LINHAS_LINE, LINHAS_PLANO } from '@/data/derived'
-import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct } from '@/lib/format'
+import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, plural } from '@/lib/format'
 
 export default function LinePage() {
   const { push } = useToast()
@@ -40,7 +40,7 @@ export default function LinePage() {
         />
         <EmptyGate
           icone={<Icone nome="pacote" tamanho={22} />}
-          titulo="Carregar Line devolvido"
+          titulo="Line ainda não devolvido pelos fornecedores"
           texto="O line é o que os fornecedores devolvem depois da negociação: preço fechado e quantidade confirmada por referência. Carregue para comparar com o plano e decidir item a item."
           nota={`Demo · devolução simulada de ${LINHAS_LINE.length} itens`}
           cta={{
@@ -100,15 +100,20 @@ export default function LinePage() {
         />
         <KpiCard
           label="Diferença"
-          valor={formatBRLCompact(totais.delta, 2)}
+          valor={
+            totais.delta < 0
+              ? `−${formatBRLCompact(Math.abs(totais.delta), 2)}`
+              : formatBRLCompact(totais.delta, 2)
+          }
           sub={`${formatDelta(totais.deltaPct)} vs pedido`}
           tomSub={totais.delta <= 0 ? 'alta' : 'alerta'}
+          seta={totais.delta < 0 ? 'desce' : 'auto'}
           dica="Negativo é bom: significa que a negociação trouxe o custo abaixo do planejado."
         />
         <KpiCard
           label="Decisões"
           valor={`${formatNum(totais.aceitar)} / ${formatNum(LINHAS_LINE.length)}`}
-          sub={`${totais.renegociar} pendentes de renegociação`}
+          sub={`${plural(totais.renegociar, 'pendente')} de renegociação`}
           tomSub={totais.renegociar > 0 ? 'alerta' : 'alta'}
           dica={`Aceite automático quando o desvio de preço fica em até ${LIMITE_ACEITE_LINE}%; acima disso a linha entra como Renegociar.`}
         />

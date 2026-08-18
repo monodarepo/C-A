@@ -7,6 +7,7 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
+import { Select } from '@/components/ui/Select'
 import { DataTable, type Coluna } from '@/components/ui/DataTable'
 import { useToast } from '@/components/ui/Toast'
 import {
@@ -246,12 +247,11 @@ export default function OtbPage() {
         titulo="Camada somente leitura"
         acoes={<StatusChip tom="info">há {OTB_ULTIMA_LEITURA_MIN} min</StatusChip>}
       >
-        O OTB é aprovado no sistema corporativo e chega aqui pronto. Esta tela lê e compara — quem
-        altera quantidade é o{' '}
+        O OTB chega aprovado do corporativo — quem altera quantidade é o{' '}
         <Link to="/plano" className="font-semibold text-cea-blue hover:underline">
           Plano de Sortimento
         </Link>
-        . Última leitura há {OTB_ULTIMA_LEITURA_MIN} minutos.
+        .
       </Banner>
 
       {/* ------------------------------------------------ filtro N1 a N7 --- */}
@@ -300,7 +300,7 @@ export default function OtbPage() {
                 <span className="mb-1 flex items-center gap-1 uppercase tracking-wide text-slate-400">
                   {nivel.nivel} · {nivel.rotulo}
                 </span>
-                <select
+                <Select
                   value={desabilitado ? TODOS : valor}
                   disabled={desabilitado}
                   onChange={(e) => setar(e.target.value)}
@@ -309,7 +309,11 @@ export default function OtbPage() {
                       ? `${nivel.nivel} (${nivel.rotulo}) é detalhado no Plano de Sortimento — o OTB é aprovado por nível agregado`
                       : undefined
                   }
-                  className="focus-ring w-full rounded-lg border border-line bg-white px-2 py-1.5 text-[12px] font-normal text-ink disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                  className={`w-full font-normal ${
+                    desabilitado
+                      ? '[&>select]:cursor-not-allowed [&>select]:bg-slate-100 [&>select]:text-slate-400'
+                      : ''
+                  }`}
                 >
                   <option value={TODOS}>{desabilitado ? 'no Plano →' : 'Todos'}</option>
                   {lista.map((o) => (
@@ -317,7 +321,7 @@ export default function OtbPage() {
                       {o}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
             )
           })}
@@ -335,6 +339,7 @@ export default function OtbPage() {
       {/* --------------------------------------------------------- KPIs --- */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <KpiCard
+          compacto
           label="Venda planejada"
           valor={formatBRLCompact(totais.plano * 1e6, 2)}
           sub={`${formatDelta(totais.varPct)} vs ano anterior`}
@@ -342,6 +347,7 @@ export default function OtbPage() {
           dica="Receita que a coleção precisa entregar na temporada, aprovada no OTB corporativo."
         />
         <KpiCard
+          compacto
           label="OTB"
           valor={formatBRLCompact(totais.otb * 1e6)}
           sub={`${formatPct((totais.otb / totais.plano) * 100)} da venda planejada`}
@@ -349,6 +355,7 @@ export default function OtbPage() {
           dica="Verba total disponível para compra na temporada, a preço de custo."
         />
         <KpiCard
+          compacto
           label="ATB"
           valor={formatBRLCompact(totais.atb * 1e6)}
           sub={`${formatPct((totais.atb / totais.otb) * 100)} do OTB ainda livre`}
@@ -356,6 +363,7 @@ export default function OtbPage() {
           dica="Available to Buy: a parte do OTB ainda não comprometida, reservada para recompra de best sellers dentro da temporada."
         />
         <KpiCard
+          compacto
           label="Margem planejada"
           valor={formatPct(totais.margem)}
           sub={`Meta ${formatPct(META_MARGEM_OTB, 0)}`}
@@ -363,6 +371,7 @@ export default function OtbPage() {
           dica="Margem bruta que o mix planejado entrega, ponderada pela venda de cada categoria."
         />
         <KpiCard
+          compacto
           label="Markdown planejado"
           valor={formatPct(OTB.markdownPlanejado)}
           sub="Verba de remarcação da temporada"
@@ -370,6 +379,7 @@ export default function OtbPage() {
           dica="Desconto médio que o plano já assume para escoar a coleção — entra no cálculo da margem."
         />
         <KpiCard
+          compacto
           label="Sell-through alvo"
           valor={formatPct(OTB.sellThroughAlvo, 0)}
           sub={`Cobertura ${formatNum(totais.coberturaSemanas, 1)} semanas`}

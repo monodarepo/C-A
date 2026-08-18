@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { Select } from '@/components/ui/Select'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { useToast } from '@/components/ui/Toast'
 import { iniciaisPessoa } from '@/lib/cea'
-import { formatDataCurta, segundaDaSemanaISO } from '@/lib/format'
+import { formatDataCurta, plural, segundaDaSemanaISO } from '@/lib/format'
 import { Icone } from '@/components/ui/Icone'
 import {
   AREAS,
@@ -100,10 +101,10 @@ export function AbaWorkflow() {
         <div className="flex flex-wrap items-end gap-3">
           <label className="text-[12px] font-semibold text-muted">
             <span className="mb-1 block uppercase tracking-wide">Responsável</span>
-            <select
+            <Select
               value={responsavel}
               onChange={(e) => setResponsavel(e.target.value)}
-              className="focus-ring rounded-lg border border-line bg-white px-2.5 py-1.5 text-[13px] font-medium text-ink"
+              className="min-w-[220px] font-medium"
             >
               <option value="todos">Todos ({todas.length})</option>
               {responsaveisComEntrega.map((r) => (
@@ -111,30 +112,30 @@ export function AbaWorkflow() {
                   {r.nome} — {r.area}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
 
           <label className="text-[12px] font-semibold text-muted">
             <span className="mb-1 block uppercase tracking-wide">Semana de referência</span>
-            <select
+            <Select
               value={semana}
               onChange={(e) => {
                 setSemana(Number(e.target.value))
                 push(`Semana ${e.target.value}`, 'info', 'Os prazos foram recalculados.')
               }}
-              className="focus-ring rounded-lg border border-line bg-white px-2.5 py-1.5 text-[13px] font-medium text-ink"
+              className="font-medium"
             >
               {SEMANAS_SELECIONAVEIS.map((s) => (
                 <option key={s} value={s}>
                   Semana {s} · {formatDataCurta(segundaDaSemanaISO(s))}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
 
           {totalAtrasadas > 0 && (
             <StatusChip tom="warn" ponto className="mb-1.5">
-              {totalAtrasadas} entrega{totalAtrasadas > 1 ? 's' : ''} com prazo vencido
+              {plural(totalAtrasadas, 'entrega')} com prazo vencido
             </StatusChip>
           )}
         </div>
@@ -178,7 +179,7 @@ export function AbaWorkflow() {
                     {etapa.nome}
                   </h3>
                   <p className="mt-1 text-[10px] uppercase tracking-wide text-slate-400">
-                    {cards.length} entrega{cards.length === 1 ? '' : 's'}
+                    {plural(cards.length, 'entrega')}
                   </p>
                 </header>
 
@@ -254,8 +255,8 @@ export function AbaWorkflow() {
       </div>
 
       <p className="text-[11px] text-slate-400">
-        Etapa atual: <strong className="text-slate-500">{etapaAtual.nome}</strong> · role o quadro
-        para o lado para ver as 16 etapas · pessoas fictícias, referências de produto reais.
+        Etapa atual: <strong className="text-slate-500">{etapaAtual.nome}</strong> · pessoas
+        fictícias, referências de produto reais.
       </p>
 
       {/* ---------------------------------------------- modal nova entrega --- */}
@@ -287,47 +288,47 @@ export function AbaWorkflow() {
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="block text-[12px] font-semibold text-muted">
               <span className="mb-1 block uppercase tracking-wide">Etapa</span>
-              <select
+              <Select
                 value={etapaNova}
                 onChange={(e) => setEtapaNova(Number(e.target.value))}
-                className="focus-ring w-full rounded-lg border border-line bg-white px-2.5 py-2 text-[13px] font-normal text-ink"
+                className="w-full font-normal"
               >
                 {ETAPAS_WORKFLOW.map((e) => (
                   <option key={e.numero} value={e.numero}>
                     {String(e.numero).padStart(2, '0')} · {e.nome}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
 
             <label className="block text-[12px] font-semibold text-muted">
               <span className="mb-1 block uppercase tracking-wide">Área</span>
-              <select
+              <Select
                 value={areaNova}
                 onChange={(e) => setAreaNova(e.target.value as Area)}
-                className="focus-ring w-full rounded-lg border border-line bg-white px-2.5 py-2 text-[13px] font-normal text-ink"
+                className="w-full font-normal"
               >
                 {AREAS.map((a) => (
                   <option key={a} value={a}>
                     {a}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
 
             <label className="block text-[12px] font-semibold text-muted">
               <span className="mb-1 block uppercase tracking-wide">Responsável</span>
-              <select
+              <Select
                 value={responsavelNovo}
                 onChange={(e) => setResponsavelNovo(e.target.value)}
-                className="focus-ring w-full rounded-lg border border-line bg-white px-2.5 py-2 text-[13px] font-normal text-ink"
+                className="w-full font-normal"
               >
                 {RESPONSAVEIS.map((r) => (
                   <option key={r.nome} value={r.nome}>
                     {r.nome}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           </div>
 

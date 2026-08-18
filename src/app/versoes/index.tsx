@@ -24,6 +24,7 @@ import {
   formatDelta,
   formatNum,
   formatPct,
+  plural,
 } from '@/lib/format'
 
 export default function VersoesPage() {
@@ -116,7 +117,7 @@ export default function VersoesPage() {
 
       {/* ------------------------------------------ cards das versões ---- */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="card-base border-l-4 border-l-slate-300 p-4">
+        <div className="card-base flex flex-col border-l-4 border-l-slate-300 p-4">
           <div className="flex items-baseline justify-between gap-2">
             <h2 className="font-display text-[15px] font-semibold text-cea-deep">Plano Original</h2>
             <StatusChip tom="neutro">baseline imutável</StatusChip>
@@ -130,21 +131,21 @@ export default function VersoesPage() {
             <Metrica rotulo="Margem" valor={formatPct(totaisOriginal.margem)} />
             <Metrica rotulo="PC médio" valor={formatBRL(totaisOriginal.pcMedio)} />
           </div>
-          <p className="mt-3 text-[11.5px] leading-snug text-muted">
+          <p className="mt-auto pt-3 text-[11.5px] leading-snug text-muted">
             Gerado pelos habilitadores e pelo histórico, antes de qualquer qualificação. Não muda —
             é a referência de comparação.
           </p>
         </div>
 
         <div
-          className={`card-base border-l-4 p-4 ${banda.estourou ? 'border-l-warn' : 'border-l-cea-blue'}`}
+          className={`card-base flex flex-col border-l-4 p-4 ${banda.estourou ? 'border-l-warn' : 'border-l-cea-blue'}`}
         >
           <div className="flex items-baseline justify-between gap-2">
             <h2 className="font-display text-[15px] font-semibold text-cea-deep">
               Plano Qualificado
             </h2>
             <StatusChip tom={banda.estourou ? 'warn' : 'ok'}>
-              {historico.length} alteraç{historico.length === 1 ? 'ão' : 'ões'}
+              {plural(historico.length, 'alteração', 'alterações')}
             </StatusChip>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -176,7 +177,7 @@ export default function VersoesPage() {
               positivo={totaisQualificado.pcMedio >= totaisOriginal.pcMedio}
             />
           </div>
-          <p className="mt-3 text-[11.5px] leading-snug text-muted">
+          <p className="mt-auto pt-3 text-[11.5px] leading-snug text-muted">
             Reflete ao vivo o que está no{' '}
             <Link to="/plano" className="font-semibold text-cea-blue hover:underline">
               Plano de Sortimento
@@ -281,7 +282,7 @@ export default function VersoesPage() {
                             push(
                               `${g.chave} aprovado`,
                               'ok',
-                              `${g.linhas} linha(s) · ${formatBRLCompact(g.invQ, 2)} de investimento.`,
+                              `${plural(g.linhas, 'linha')} · ${formatBRLCompact(g.invQ, 2)} de investimento.`,
                             )
                           }}
                         >
@@ -323,7 +324,7 @@ export default function VersoesPage() {
       {/* -------------------------------- alterações vs original ---- */}
       <SectionCard
         titulo="Alterações vs Original"
-        subtitulo={`${qualificacoes.length} qualificações no plano`}
+        subtitulo={`${plural(qualificacoes.length, 'qualificação', 'qualificações')} no plano`}
         compacto
       >
         {qualificacoes.length === 0 ? (
@@ -387,10 +388,10 @@ export default function VersoesPage() {
       <SectionCard
         titulo="Histórico de alterações"
         subtitulo="Cada mudança feita no Plano de Sortimento nesta sessão"
-        tag={<StatusChip tom="neutro">{historico.length} registro(s)</StatusChip>}
+        tag={<StatusChip tom="neutro">{plural(historico.length, 'registro')}</StatusChip>}
       >
         {historico.length === 0 ? (
-          <div className="rounded-lg border border-line bg-slate-50/60 p-4">
+          <div className="rounded-lg bg-slate-50 p-4">
             <p className="text-[12.5px] leading-snug text-slate-600">
               Nenhuma alteração nesta sessão ainda. Mude uma quantidade no{' '}
               <Link to="/plano" className="font-semibold text-cea-blue hover:underline">
