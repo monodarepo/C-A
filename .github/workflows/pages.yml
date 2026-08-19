@@ -1,0 +1,56 @@
+# Publica o mockup no GitHub Pages a cada push na branch de desenvolvimento.
+# O artefato é o build de arquivo único (HashRouter + CSS, fontes e fotos
+# embutidos): uma única página, sem rota quebrada no F5 e sem dependência
+# externa.
+name: Publicar no GitHub Pages
+
+on:
+  push:
+    branches: [claude/estruturar-projeto-ca-7skxm7]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Gerar a página única
+        run: npm run build:pagina
+
+      - name: Montar o site
+        run: |
+          mkdir -p _site
+          cp dist-pagina/plano-sortimento-cea.html _site/index.html
+          touch _site/.nojekyll
+
+      # enablement liga o Pages do repositório na primeira execução
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

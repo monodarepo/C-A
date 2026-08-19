@@ -30,6 +30,7 @@ import {
   totaisOTB,
   type LinhaOTB,
 } from '@/data/derived'
+import { exportarArquivo } from '@/lib/exportar'
 import { formatBRLCompact, formatDelta, formatNum, formatPct } from '@/lib/format'
 
 const TODOS = 'todos'
@@ -90,7 +91,7 @@ export default function OtbPage() {
     }, 900)
   }
 
-  function exportarCSV() {
+  async function exportarCSV() {
     const cabecalho = [
       'Categoria',
       'N1',
@@ -136,15 +137,21 @@ export default function OtbPage() {
       .join('\n')
 
     // \uFEFF (BOM) faz o Excel pt-BR abrir os acentos corretamente
-    const url = URL.createObjectURL(
-      new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }),
-    )
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `otb-${COLECAO.nome.toLowerCase().replace(/\s+/g, '-')}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-    push('CSV exportado', 'ok', `${linhas.length} categorias + linha de total.`)
+    const nome = `otb-${COLECAO.nome.toLowerCase().replace(/\s+/g, '-')}.csv`
+    const r = await exportarArquivo(nome, `\uFEFF${csv}`)
+    if (r.estado === 'salvo') {
+      push('CSV exportado', 'ok', `${formatNum(linhas.length)} categorias + linha de total.`)
+    } else if (r.estado === 'copiado') {
+      push(
+        'CSV copiado',
+        'ok',
+        `${formatNum(linhas.length)} categorias na área de transferência — cole no Excel e separe por ponto e vírgula.`,
+      )
+    } else if (r.estado === 'recusado') {
+      push('Exportação cancelada', 'info', 'Nada foi salvo. O botão continua aqui quando quiser.')
+    } else {
+      push('Não deu para exportar', 'warn', `O download foi bloqueado (${r.motivo}).`)
+    }
   }
 
   const colunas: Coluna<LinhaOTB>[] = [

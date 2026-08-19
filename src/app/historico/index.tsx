@@ -215,6 +215,12 @@ export default function HistoricoPage() {
         'ok',
         `${formatNum(dados.ranking.length)} SKUs com os filtros atuais, separado por ponto e vírgula.`,
       )
+    } else if (r.estado === 'copiado') {
+      push(
+        'CSV copiado',
+        'ok',
+        `${formatNum(dados.ranking.length)} SKUs na área de transferência — cole no Excel e use Dados › Texto para colunas (;).`,
+      )
     } else if (r.estado === 'recusado') {
       push('Exportação cancelada', 'info', 'Nada foi salvo. O botão continua aqui quando quiser.')
     } else {

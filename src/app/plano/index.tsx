@@ -22,6 +22,7 @@ import {
   PLANO,
   type LinhaPlano,
 } from '@/data/derived'
+import { exportarArquivo } from '@/lib/exportar'
 import { formatBRL, formatBRLCompact, formatDelta, formatNum, formatPct, plural } from '@/lib/format'
 
 const TODOS = 'todos'
@@ -537,7 +538,7 @@ function Impacto({
 }
 
 /** CSV da lista de compras (separador e decimal no padrão pt-BR). */
-function exportarCSV(
+async function exportarCSV(
   linhas: LinhaPlano[],
   push: (t: string, tom?: 'ok' | 'info' | 'warn' | 'crit', d?: string) => void,
 ) {
@@ -579,11 +580,23 @@ function exportarCSV(
     .map((linha) => linha.map((c) => String(c).replace('.', ',')).join(';'))
     .join('\n')
   // \uFEFF (BOM) para o Excel pt-BR abrir os acentos
-  const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'plano-de-sortimento-verao-26-27.csv'
-  a.click()
-  URL.revokeObjectURL(url)
-  push('CSV exportado', 'ok', `${linhas.length} linhas com quantidade original e qualificada.`)
+  const nome = `plano-de-sortimento-${COLECAO.nome.toLowerCase().replace(/\s+/g, '-')}.csv`
+  const r = await exportarArquivo(nome, `\uFEFF${csv}`)
+  if (r.estado === 'salvo') {
+    push(
+      'CSV exportado',
+      'ok',
+      `${formatNum(linhas.length)} linhas com quantidade original e qualificada.`,
+    )
+  } else if (r.estado === 'copiado') {
+    push(
+      'CSV copiado',
+      'ok',
+      `${formatNum(linhas.length)} linhas na área de transferência — cole no Excel e separe por ponto e vírgula.`,
+    )
+  } else if (r.estado === 'recusado') {
+    push('Exportação cancelada', 'info', 'Nada foi salvo. O botão continua aqui quando quiser.')
+  } else {
+    push('Não deu para exportar', 'warn', `O download foi bloqueado (${r.motivo}).`)
+  }
 }

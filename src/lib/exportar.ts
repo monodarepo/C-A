@@ -1,18 +1,22 @@
 /**
- * Entrega de arquivo ao usuário, funcionando nos dois lugares onde a demo roda.
+ * Entrega de arquivo ao usuário, funcionando nos três lugares onde a demo roda.
  *
- * No navegador normal (dev ou build servido) o caminho é o de sempre: blob +
- * link temporário. Na página publicada como artifact o visualizador bloqueia
- * download iniciado pela própria página — lá quem entrega é a capability
- * `downloads`, que mostra uma confirmação e pode ser recusada.
+ * 1. Navegador normal (dev, build servido, GitHub Pages): blob + link
+ *    temporário, o caminho de sempre.
+ * 2. Página publicada com a capability `downloads`: quem entrega é o
+ *    visualizador, com confirmação que pode ser recusada.
+ * 3. Página publicada SEM capability alguma — que é o que permite compartilhar
+ *    o link publicamente: o visualizador bloqueia qualquer download iniciado
+ *    pela própria página, então o conteúdo vai para a área de transferência e
+ *    o usuário cola no Excel. Nada de botão morto.
  *
- * A função devolve o que de fato aconteceu para o chamador poder dar o toast
- * certo: a regra 8 do CLAUDE.md diz que nenhum clique morre em silêncio, e um
- * botão que não faz nada no artifact seria exatamente isso.
+ * A função devolve o que de fato aconteceu para o chamador dar o toast certo
+ * (regra 8 do CLAUDE.md: nenhum clique morre em silêncio).
  */
 
 export type ResultadoExportacao =
   | { estado: 'salvo' }
+  | { estado: 'copiado' }
   | { estado: 'recusado' }
   | { estado: 'erro'; motivo: string }
 
@@ -33,6 +37,44 @@ function trocarExtensao(nome: string, extensao: string): string {
   return nome.replace(/\.[^.]+$/, '') + '.' + extensao
 }
 
+/**
+ * A página publicada roda dentro de um iframe do visualizador, que barra
+ * download iniciado pela própria página. Fora dele (dev, build servido, Pages)
+ * o link temporário funciona normalmente.
+ */
+function dentroDoVisualizador(): boolean {
+  try {
+    return window.self !== window.top
+  } catch {
+    return true // cross-origin ao ler window.top já significa iframe
+  }
+}
+
+/** Área de transferência: caminho moderno, com execCommand como reserva. */
+async function copiarParaAreaDeTransferencia(conteudo: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(conteudo)
+    return true
+  } catch {
+    /* segue para a reserva */
+  }
+
+  try {
+    const campo = document.createElement('textarea')
+    campo.value = conteudo
+    campo.setAttribute('readonly', '')
+    campo.style.position = 'fixed'
+    campo.style.opacity = '0'
+    document.body.appendChild(campo)
+    campo.select()
+    const copiou = document.execCommand('copy')
+    document.body.removeChild(campo)
+    return copiou
+  } catch {
+    return false
+  }
+}
+
 function baixarPeloNavegador(nome: string, conteudo: string, tipo: string): void {
   const url = URL.createObjectURL(new Blob([conteudo], { type: tipo }))
   const a = document.createElement('a')
@@ -49,10 +91,17 @@ export async function exportarArquivo(
 ): Promise<ResultadoExportacao> {
   const usar = runtime()?.use
 
-  if (typeof usar !== 'function') {
-    baixarPeloNavegador(nome, conteudo, tipo)
-    return { estado: 'salvo' }
+  async function semDownload(): Promise<ResultadoExportacao> {
+    if (!dentroDoVisualizador()) {
+      baixarPeloNavegador(nome, conteudo, tipo)
+      return { estado: 'salvo' }
+    }
+    return (await copiarParaAreaDeTransferencia(conteudo))
+      ? { estado: 'copiado' }
+      : { estado: 'erro', motivo: 'area_de_transferencia' }
   }
+
+  if (typeof usar !== 'function') return semDownload()
 
   let downloads: Downloads | null = null
   try {
@@ -61,10 +110,7 @@ export async function exportarArquivo(
     downloads = null
   }
 
-  if (!downloads) {
-    baixarPeloNavegador(nome, conteudo, tipo)
-    return { estado: 'salvo' }
-  }
+  if (!downloads) return semDownload()
 
   try {
     await downloads.save({ filename: nome, data: conteudo })
